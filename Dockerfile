@@ -13,9 +13,7 @@ COPY stuwin-monorepo/packages/shared/package.json /temp/dev/packages/shared/
 
 # Install dependencies for the monorepo
 # We run it in the /temp/dev which will be our monorepo root
-RUN cd /temp/dev && bun install && \
-    echo "DEBUG: Checking /temp/dev/node_modules/.bin..." && \
-    ls -la /temp/dev/node_modules/.bin
+RUN cd /temp/dev && bun install
 
 # Stage 2: Prerelease (Source copy and Build)
 FROM base AS prerelease
@@ -28,11 +26,7 @@ COPY stuwin-monorepo/ .
 # We do this AFTER copying source code to ensure node_modules are not overwritten
 COPY --from=install /temp/dev/node_modules ./node_modules
 
-# DEBUG: Check if node_modules exists and has content
-RUN echo "DEBUG: Checking /app/node_modules..." && \
-    ls -la /app/node_modules && \
-    echo "DEBUG: Checking /app/node_modules/.bin..." && \
-    (ls -la /app/node_modules/.bin || echo "Server bin not found")
+
 
 
 # Ensure node_modules binaries are in PATH (both root and workspace)
@@ -48,12 +42,9 @@ ENV NEXT_PUBLIC_S3_PREFIX=$NEXT_PUBLIC_S3_PREFIX
 ARG NEXT_PUBLIC_ABLY_API_KEY
 ENV NEXT_PUBLIC_ABLY_API_KEY=$NEXT_PUBLIC_ABLY_API_KEY
 
-# Build the Next.js app
+# Build the Next.js app using bunx (bypasses .bin symlink issues)
 WORKDIR /app/frameworks/next
-RUN echo "DEBUG: Listing binaries..." && \
-    (ls -la /app/node_modules/.bin || echo "Root bin not found") && \
-    (ls -la /app/frameworks/next/node_modules/.bin || echo "Workspace next bin not found") && \
-    bun run build
+RUN bunx next build
 
 # Stage 3: Release
 FROM base AS release
