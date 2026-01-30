@@ -1,0 +1,17 @@
+{
+  "title": "Фильтры",
+  "apply_filters": "Применить фильтры",
+  "clear_filters": "Сбросить",
+  "question_id": "ID вопроса",
+  "search_question": "Поиск вопроса",
+  "subject": "Предмет",
+  "topic": "Тема",
+  "complexity": "Сложность",
+  "grade_level": "Класс",
+  "author_id": "ID автора",
+  "all_subjects": "Все предметы",
+  "all_levels": "Все уровни",
+  "select_subject_first": "Сначала выберите предмет",
+  "all_topics": "Все темы"
+}
+

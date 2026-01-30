@@ -1,0 +1,18 @@
+{
+    "choose_your_journey": "Öz",
+    "journey": "Yolunu Seç",
+    "get_started_message": "Başlamaq üçün SHAGGUIDE-dən necə istifadə edəcəyinizi bilməliyik. Ehtiyaclarınıza uyğun iş sahəsi növünü seçin.",
+    "im_student": "Mən Tələbəyəm",
+    "student_desc": "Dərslərə qoşulun, tədris materiallarına daxil olun və akademik gedişatınızı izləyin.",
+    "start_learning": "Öyrənməyə Başla",
+    "im_parent": "Mən Valideynəm",
+    "parent_desc": "Övladınızın gedişatını izləyin və onların məktəbi ilə əlaqədə qalın.",
+    "start_monitoring": "İzləməyə Başla",
+    "im_tutor": "Mən Repetitoram",
+    "tutor_desc": "Fərdi dərslər təklif edin və tələbələrinizi müstəqil şəkildə idarə edin.",
+    "apply_as_tutor": "Repetitor kimi müraciət et",
+    "im_provider": "Mən Mərkəzəm",
+    "provider_desc": "Təhsil məzmununu və tələbələri idarə etmək üçün təşkilatınızı qeydiyyatdan keçirin.",
+    "apply_as_provider": "Mərkəz kimi müraciət et",
+    "staff_access_notice": "Heyət girişi yalnız administrasiya tərəfindən təyin edilir."
+}

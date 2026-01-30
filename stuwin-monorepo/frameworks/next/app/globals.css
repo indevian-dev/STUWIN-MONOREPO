@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Primary brand colors */
+  --color-brand: #7ee30f;
+  --color-brand-primary: #7ee30f;
+  --color-brand-secondary: #0f172b;
+
+  /* Background colors */
+  --color-bglight: #f7f6f6;
+  --color-brand-soft: #1b2d81;
+  --color-brand-light: #e6e8ef;
+  --color-brand-surface: #cacedd;
+  --color-surface: #cacedd;
+
+  /* Text colors */
+  --color-dark: #0f172a;
+  --color-light: #f8fafc;
+  --color-body: #64748b;
+
+  /* Utility colors */
+  --color-brand-success: #10b981;
+  --color-brand-warning: #f59e0b;
+  --color-brand-error: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-border: #e2e8f0;
+
+  /* Neutral colors */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-700: #334155;
+  --color-neutral-900: #0f172a;
+
+  /* Border radius */
+  --radius-primary: 0.75rem;
+}
+
+html {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Global gradient backgrounds */
+.bg-section-gradient-cool {
+  background: linear-gradient(to right, #f0f9ff, #ffffff, #eef2ff);
+}
+
+.bg-section-gradient-warm {
+  background: linear-gradient(to right, #fef3c7, #ffffff, #fee2e2);
+}
+
+.bg-section-gradient-neutral {
+  background: linear-gradient(to bottom, #f8fafc, #ffffff, #f1f5f9);
+}
+
+
+.bg-section-gradient-brand {
+  background: linear-gradient(to right, #e6e8ef, #ffffff, #cacedd);
+}
+
+@utility layout-main-grid {
+  @apply relative text-black transition-all duration-300 max-w-7xl mx-auto grid grid-cols-5 gap-4 my-4 px-4;
+}
+
+/* Loader animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}

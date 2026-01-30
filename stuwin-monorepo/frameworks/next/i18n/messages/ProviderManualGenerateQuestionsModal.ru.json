@@ -1,0 +1,17 @@
+{
+  "title": "Создать вопросы для темы",
+  "complexity_levels": "Уровни сложности",
+  "easy": "Легкий",
+  "medium": "Средний",
+  "hard": "Сложный",
+  "questions_per_complexity": "Вопросов на уровень сложности",
+  "language": "Язык",
+  "azerbaijani": "Азербайджанский",
+  "russian": "Русский",
+  "english": "Английский",
+  "cancel_button": "Отмена",
+  "generate_button": "Создать вопросы",
+  "generating": "В очереди...",
+  "select_complexity_warning": "Пожалуйста, выберите хотя бы один уровень сложности"
+}
+

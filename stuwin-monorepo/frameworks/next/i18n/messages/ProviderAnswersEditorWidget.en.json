@@ -1,0 +1,11 @@
+{
+  "label": "Answer Options",
+  "required": "*",
+  "add_answer": "+ Add Another Answer",
+  "remove": "Remove",
+  "correct_answer_label": "Correct Answer:",
+  "not_selected": "Not selected",
+  "select_hint": "Select the radio button next to the correct answer",
+  "minimum_answers": "minimum 2, maximum 6"
+}
+

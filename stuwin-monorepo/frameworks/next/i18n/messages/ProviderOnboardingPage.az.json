@@ -1,0 +1,22 @@
+{
+    "application_submitted": "Müraciət Göndərildi!",
+    "review_message": "Əla! Təşkilat müraciətiniz baxış mərhələsindədir. Heyətimiz məlumatlarınızı yoxlayacaq və tezliklə iş sahənizi təsdiqləyəcək.",
+    "back_to_home": "Ana səhifəyə qayıt",
+    "back": "Geri",
+    "register_as": "Mərkəz kimi",
+    "provider": "Qeydiyyatdan keç",
+    "provider_message": "Məzmun təqdim etmək və tələbə resurslarını idarə etmək üçün SHAGGUIDE-a təhsil təşkilatı kimi qoşulun.",
+    "org_name": "Təşkilat Adı",
+    "org_name_placeholder": "MƏS. HARVARD AKADEMİYASI",
+    "address": "Rəsmi Ünvan",
+    "address_placeholder": "KÜÇƏ, ŞƏHƏR, POÇT İNDEKSU",
+    "reg_number": "Qeydiyyat #",
+    "reg_number_placeholder": "KOD",
+    "phone": "Əlaqə nömrəsi",
+    "phone_placeholder": "+994 ...",
+    "submitting": "Müraciət göndərilir...",
+    "submit_for_approval": "Təsdiq üçün göndər",
+    "fill_fields_warn": "Zəhmət olmasa təşkilat adını və ünvanını daxil edin",
+    "application_failed": "Müraciət uğursuz oldu",
+    "failed_submit": "Müraciəti göndərmək mümkün olmadı"
+}

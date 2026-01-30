@@ -1,0 +1,17 @@
+{
+  "title": "Mövzu üçün Suallar Yarat",
+  "complexity_levels": "Mürəkkəblik Səviyyələri",
+  "easy": "Asan",
+  "medium": "Orta",
+  "hard": "Çətin",
+  "questions_per_complexity": "Hər Mürəkkəblik üçün Suallar",
+  "language": "Dil",
+  "azerbaijani": "Azərbaycan",
+  "russian": "Rus",
+  "english": "İngilis",
+  "cancel_button": "Ləğv et",
+  "generate_button": "Suallar Yarat",
+  "generating": "Növbəyə alınır...",
+  "select_complexity_warning": "Zəhmət olmasa ən azı bir mürəkkəblik səviyyəsi seçin"
+}
+

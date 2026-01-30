@@ -1,0 +1,14 @@
+{
+  "title": "Редактировать тему",
+  "topic_name": "Название темы",
+  "subject": "Предмет",
+  "grade_level": "Класс",
+  "ai_summary": "AI Резюме",
+  "topic_content": "Содержание темы",
+  "loading_data": "Загрузка данных темы...",
+  "cancel_button": "Отмена",
+  "update_button": "Обновить тему",
+  "updating": "Обновление...",
+  "required": "*"
+}
+

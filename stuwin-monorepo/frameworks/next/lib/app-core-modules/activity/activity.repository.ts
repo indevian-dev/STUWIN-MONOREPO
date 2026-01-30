@@ -1,0 +1,139 @@
+
+import { eq, desc, and } from "drizzle-orm";
+import { studentQuizzes, studentHomeworks, studentLearningSessions, studentQuizReports } from "@/lib/app-infrastructure/database/schema";
+import { BaseRepository } from "../domain/BaseRepository";
+import { type DbClient } from "@/lib/app-infrastructure/database";
+
+/**
+ * ActivityRepository - Handles assessment and session data (Quizzes, Homeworks, Sessions)
+ */
+export class ActivityRepository extends BaseRepository {
+    // ═══════════════════════════════════════════════════════════════
+    // QUIZZES
+    // ═══════════════════════════════════════════════════════════════
+
+    async findQuizById(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.select().from(studentQuizzes).where(eq(studentQuizzes.id, id)).limit(1);
+        return result[0] || null;
+    }
+
+    async listQuizzesByAccount(accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select()
+            .from(studentQuizzes)
+            .where(eq(studentQuizzes.studentAccountId, accountId))
+            .orderBy(desc(studentQuizzes.createdAt));
+    }
+
+    async createQuiz(data: typeof studentQuizzes.$inferInsert, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(studentQuizzes).values(data).returning();
+        return result[0];
+    }
+
+    async updateQuiz(id: string, data: Partial<typeof studentQuizzes.$inferInsert>, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.update(studentQuizzes).set(data).where(eq(studentQuizzes.id, id)).returning();
+        return result[0];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // QUIZ REPORTS
+    // ═══════════════════════════════════════════════════════════════
+
+    async findQuizReportByQuizId(quizId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select()
+            .from(studentQuizReports as any)
+            .where(eq((studentQuizReports as any).quizId, quizId))
+            .limit(1);
+        return result[0] || null;
+    }
+
+    async createQuizReport(data: any, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(studentQuizReports as any).values(data).returning();
+        return result[0];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // HOMEWORKS
+    // ═══════════════════════════════════════════════════════════════
+
+    async findHomeworkById(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.select().from(studentHomeworks).where(eq(studentHomeworks.id, id)).limit(1);
+        return result[0] || null;
+    }
+
+    async listHomeworksByAccount(accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select()
+            .from(studentHomeworks)
+            .where(eq(studentHomeworks.studentAccountId, accountId))
+            .orderBy(desc(studentHomeworks.createdAt));
+    }
+
+    async createHomework(data: any, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(studentHomeworks).values(data).returning();
+        return result[0];
+    }
+
+    async updateHomework(id: string, data: any, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.update(studentHomeworks).set(data).where(eq(studentHomeworks.id, id)).returning();
+        return result[0];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // LEARNING SESSIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    async findSessionById(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.select().from(studentLearningSessions).where(eq(studentLearningSessions.id, id)).limit(1);
+        return result[0] || null;
+    }
+
+    async createSession(data: typeof studentLearningSessions.$inferInsert, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(studentLearningSessions).values(data).returning();
+        return result[0];
+    }
+
+    async updateSession(id: string, data: Partial<typeof studentLearningSessions.$inferInsert>, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .update(studentLearningSessions)
+            .set({ ...data, updatedAt: new Date() })
+            .where(eq(studentLearningSessions.id, id))
+            .returning();
+        return result[0];
+    }
+
+    async findActiveSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic', tx?: DbClient) {
+        const client = tx ?? this.db;
+
+        const conditions = [
+            eq(studentLearningSessions.studentAccountId, accountId),
+            eq(studentLearningSessions.status, 'active')
+        ];
+
+        if (contextType === 'quiz') conditions.push(eq(studentLearningSessions.quizId, contextId));
+        else if (contextType === 'homework') conditions.push(eq(studentLearningSessions.homeworkId, contextId));
+        else if (contextType === 'topic') conditions.push(eq(studentLearningSessions.topicId, contextId));
+
+        const result = await client
+            .select()
+            .from(studentLearningSessions)
+            .where(and(...conditions))
+            .limit(1);
+
+        return result[0] || null;
+    }
+}

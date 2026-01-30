@@ -1,0 +1,19 @@
+{
+    "find_your_child": "Övladınızı",
+    "child": "Tapın",
+    "parent_message": "Övladınızın məktəbini və tədris sahələrini tapmaq üçün onun FİN kodunu (Şəxsiyyət vəsiqəsinin kodu) daxil edin.",
+    "fin_placeholder": "TƏLƏBƏNUN FİN KODUNU DAXİL EDİN (MƏS. 123ABC4)",
+    "searching": "Axtarılır...",
+    "search": "Axtar",
+    "available_workspaces": "Mövcud Tələbə İş Sahələri",
+    "finishing": "Tamamlanır...",
+    "continue_to_dashboard": "İdarə Panelinə davam et",
+    "back": "Geri",
+    "valid_fin_warn": "Zəhmət olmasa keçərli bir FİN daxil edin",
+    "no_students_found": "Tələbə tapılmadı",
+    "search_failed": "Axtarış uğursuz oldu",
+    "select_workspace_warn": "İzləmək üçün ən azı bir iş sahəsi seçin",
+    "success_message": "Valideyn iş sahəsi uğurla yaradıldı!",
+    "onboarding_failed": "Qeydiyyat uğursuz oldu",
+    "failed_complete_onboarding": "Qeydiyyatı tamamlamaq mümkün olmadı"
+}

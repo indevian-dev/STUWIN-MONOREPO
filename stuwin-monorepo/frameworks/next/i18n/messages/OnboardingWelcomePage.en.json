@@ -1,0 +1,18 @@
+{
+    "choose_your_journey": "Choose Your",
+    "journey": "Journey",
+    "get_started_message": "To get started, we need to know how you'll be using SHAGGUIDE. Pick the workspace type that fits your needs.",
+    "im_student": "I'm a Student",
+    "student_desc": "Join classes, access learning materials, and track your academic progress.",
+    "start_learning": "Start Learning",
+    "im_parent": "I'm a Parent",
+    "parent_desc": "Monitor your child's progress and stay connected with their school.",
+    "start_monitoring": "Start Monitoring",
+    "im_tutor": "I'm a Tutor",
+    "tutor_desc": "Offer private lessons and manage your students independently.",
+    "apply_as_tutor": "Apply as Tutor",
+    "im_provider": "I'm a Provider",
+    "provider_desc": "Register your organization to manage educational content and students.",
+    "apply_as_provider": "Apply as Provider",
+    "staff_access_notice": "Staff access is assigned by administration strictly."
+}

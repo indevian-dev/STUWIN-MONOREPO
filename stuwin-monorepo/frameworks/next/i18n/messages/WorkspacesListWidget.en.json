@@ -1,0 +1,13 @@
+{
+    "no_active_workspaces": "No Active Workspaces",
+    "no_workspaces_message": "You don't have any workspaces yet. Create a new one or discover organizations to join to get started.",
+    "created": "Created",
+    "student": "Student",
+    "provider": "Provider / Academy",
+    "staff": "Staff Dashboard",
+    "parent": "Parent / Monitor",
+    "tutor": "Tutor Workspace",
+    "admin": "System Admin",
+    "personal": "Personal",
+    "default_description": "Access instructional resources, tools, and community features tailored for excellence."
+}

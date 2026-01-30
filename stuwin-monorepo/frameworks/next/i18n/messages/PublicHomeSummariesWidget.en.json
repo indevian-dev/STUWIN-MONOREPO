@@ -1,0 +1,26 @@
+{
+  "section_hint": "Dynamic Academic Summaries",
+  "title": "Stay Ahead with Automated Summaries",
+  "body": "From daily homework to monthly progress, get concise and actionable summaries that keep everyone aligned.",
+  "modes_intro_title": "Multi-Level Perspectives",
+  "modes_intro_body": "View summaries from different angles: as a quick review, a deep dive, or a progress report.",
+  "cta": "Explore Summaries",
+  "items": [
+    {
+      "title": "Daily Homework Summary",
+      "body": "Key concepts and takeaways from today's assignments."
+    },
+    {
+      "title": "Quiz Performance Analysis",
+      "body": "What went well and where to focus before the next test."
+    },
+    {
+      "title": "Weekly Progress Recap",
+      "body": "A broad view of the week's learning journey and effort."
+    },
+    {
+      "title": "Monthly Mastery Overview",
+      "body": "Long-term trends and curriculum coverage summary."
+    }
+  ]
+}

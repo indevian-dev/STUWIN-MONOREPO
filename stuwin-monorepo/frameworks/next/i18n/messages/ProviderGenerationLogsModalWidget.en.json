@@ -1,0 +1,12 @@
+{
+  "title": "Generation Logs",
+  "loading": "Loading logs...",
+  "no_logs": "No generation logs yet",
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "close_button": "Close",
+  "generated": "Generated",
+  "questions": "questions using",
+  "topic_name": "Topic:"
+}
+

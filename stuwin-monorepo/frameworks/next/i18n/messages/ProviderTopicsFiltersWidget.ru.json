@@ -1,0 +1,15 @@
+{
+  "title": "Фильтры",
+  "show_filters": "Показать фильтры",
+  "hide_filters": "Скрыть фильтры",
+  "topic_id": "ID темы",
+  "topic_name": "Название темы",
+  "subject": "Предмет",
+  "grade_level": "Класс",
+  "all_subjects": "Все предметы",
+  "all_grades": "Все классы",
+  "apply_filters": "Применить фильтры",
+  "reset_filters": "Сбросить фильтры",
+  "active": "Активен"
+}
+

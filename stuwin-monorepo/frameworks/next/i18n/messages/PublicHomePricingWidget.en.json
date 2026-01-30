@@ -1,0 +1,34 @@
+{
+    "header": "Transparent Pricing for Every Learner",
+    "subheader": "Choose the plan that fits your educational journey. Upgrade any time to unlock advanced AI features and deeper learning insights.",
+    "most_popular": "Most Popular",
+    "per_month": "/ month",
+    "cta": "Get Started",
+    "tiers": {
+        "free": {
+            "title": "Free",
+            "subtitle": "Basic Explorer"
+        },
+        "pro": {
+            "title": "Pro",
+            "subtitle": "Advanced Learner"
+        },
+        "workspace": {
+            "title": "Workspace",
+            "subtitle": "Team & School"
+        }
+    },
+    "features": {
+        "limited_ai": "5 AI Analyzes per day",
+        "basic_quizzes": "Standard Quizzes",
+        "public_resources": "Public Study Materials",
+        "unlimited_ai": "Unlimited AI Analyzes",
+        "deep_dive": "Deep Dive Feature Enabled",
+        "custom_quizzes": "Personalized Quiz paths",
+        "priority_support": "Priority 24/7 Support",
+        "team_management": "Manage multiple students",
+        "shared_content": "Shared Library & Folders",
+        "detailed_reports": "Advanced Parent Reports",
+        "bulk_discounts": "Bulk License Discounts"
+    }
+}

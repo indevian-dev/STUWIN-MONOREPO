@@ -1,0 +1,15 @@
+{
+  "title": "Filtrlər",
+  "show_filters": "Filtrləri Göstər",
+  "hide_filters": "Filtrləri Gizlət",
+  "topic_id": "Mövzu ID",
+  "topic_name": "Mövzu Adı",
+  "subject": "Fənn",
+  "grade_level": "Sinif Səviyyəsi",
+  "all_subjects": "Bütün Fənlər",
+  "all_grades": "Bütün Siniflər",
+  "apply_filters": "Filtrləri Tətbiq Et",
+  "reset_filters": "Filtrləri Sıfırla",
+  "active": "Aktiv"
+}
+

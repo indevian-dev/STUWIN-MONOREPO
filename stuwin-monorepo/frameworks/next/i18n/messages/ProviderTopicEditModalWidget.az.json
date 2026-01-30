@@ -1,0 +1,14 @@
+{
+  "title": "Mövzunu Redaktə et",
+  "topic_name": "Mövzu Adı",
+  "subject": "Fənn",
+  "grade_level": "Sinif Səviyyəsi",
+  "ai_summary": "AI Xülasəsi",
+  "topic_content": "Mövzu Məzmunu",
+  "loading_data": "Mövzu məlumatları yüklənir...",
+  "cancel_button": "Ləğv et",
+  "update_button": "Mövzunu Yenilə",
+  "updating": "Yenilənir...",
+  "required": "*"
+}
+

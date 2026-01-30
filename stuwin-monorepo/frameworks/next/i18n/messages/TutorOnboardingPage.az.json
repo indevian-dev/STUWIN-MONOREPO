@@ -1,0 +1,20 @@
+{
+    "application_submitted": "Müraciət Göndərildi!",
+    "review_message": "Repetitor müraciətiniz baxış mərhələsindədir. İş sahəniz təsdiqləndikdən sonra sizə bildiriş göndəriləcək.",
+    "back_to_home": "Ana səhifəyə qayıt",
+    "back": "Geri",
+    "become_tutor": "Repetitor",
+    "tutor": "Ol",
+    "share_knowledge": "Bilgilərinizi paylaşın və platformada tələbələrə dərs keçməyə başlayın.",
+    "display_title": "Görünən Başlıq",
+    "display_title_placeholder": "MƏS. RİYAZİYYAT MÜƏLLİMİ SARAH",
+    "subjects": "Fənlər (vergüllə)",
+    "subjects_placeholder": "RİYAZİYYAT, FİZİKA, KİMYA",
+    "experience": "İş təcrübəsi",
+    "experience_placeholder": "MƏS. 5 İL",
+    "submitting": "Göndərilir...",
+    "submit_application": "Müraciəti göndər",
+    "fill_fields_warn": "Zəhmət olmasa peşəkar başlığınızı və fənləri daxil edin",
+    "application_failed": "Müraciət uğursuz oldu",
+    "failed_submit": "Müraciəti göndərmək mümkün olmadı"
+}

@@ -1,0 +1,21 @@
+{
+  "question": "Вопрос",
+  "subject": "Предмет",
+  "grade_level": "Класс",
+  "complexity": "Сложность",
+  "answers": "Варианты ответов",
+  "correct_answer": "Правильный ответ",
+  "explanation_guide": "Руководство по объяснению",
+  "save_button": "Сохранить вопрос",
+  "update_button": "Обновить вопрос",
+  "create_button": "Создать вопрос",
+  "cancel_button": "Отмена",
+  "saving": "Сохранение...",
+  "select_subject": "Выберите предмет",
+  "select_grade": "Выберите класс",
+  "select_complexity": "Выберите сложность",
+  "easy": "Легкий",
+  "medium": "Средний",
+  "hard": "Сложный"
+}
+

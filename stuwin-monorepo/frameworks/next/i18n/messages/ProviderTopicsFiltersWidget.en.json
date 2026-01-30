@@ -1,0 +1,15 @@
+{
+  "title": "Filters",
+  "show_filters": "Show Filters",
+  "hide_filters": "Hide Filters",
+  "topic_id": "Topic ID",
+  "topic_name": "Topic Name",
+  "subject": "Subject",
+  "grade_level": "Grade Level",
+  "all_subjects": "All Subjects",
+  "all_grades": "All Grades",
+  "apply_filters": "Apply Filters",
+  "reset_filters": "Reset Filters",
+  "active": "Active"
+}
+

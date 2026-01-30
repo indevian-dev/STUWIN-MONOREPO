@@ -1,0 +1,20 @@
+{
+  "title": "Mövzuların İdarəsi",
+  "loading": "Mövzular yüklənir...",
+  "no_items": "Mövzu tapılmadı",
+  "create_first": "İlk Mövzunuzu Yaradın",
+  "add_new_topic": "Yeni Mövzu Əlavə et",
+  "show_logs": "Yaratma Qeydlərini Göstər",
+  "total_topics": "Cəmi Mövzular:",
+  "filtered": "Filtrlənmiş:",
+  "no_match": "Heç bir mövzu filtrə uyğun gəlmir",
+  "view": "Bax",
+  "edit": "Redaktə et",
+  "delete": "Sil",
+  "generate": "Yarat",
+  "ai_active": "AI Aktiv",
+  "confirm_deletion": "Silinməni Təsdiq et",
+  "delete_warning": "Bu mövzunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.",
+  "cancel": "Ləğv et"
+}
+

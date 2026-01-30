@@ -1,0 +1,16 @@
+{
+  "title": "Add New Topic",
+  "topic_name": "Topic Name",
+  "subject": "Subject",
+  "grade_level": "Grade Level",
+  "ai_summary": "AI Summary",
+  "topic_content": "Topic Content",
+  "select_subject": "Select a subject",
+  "placeholder_summary": "Enter a short AI-generated summary of the topic",
+  "placeholder_content": "Enter the full topic content (5000-10000 words)...",
+  "cancel_button": "Cancel",
+  "create_button": "Create Topic",
+  "creating": "Creating...",
+  "required": "*"
+}
+

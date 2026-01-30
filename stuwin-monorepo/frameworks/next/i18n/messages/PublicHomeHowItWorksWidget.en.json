@@ -1,0 +1,47 @@
+{
+  "badge": "Shagguide Research-Based Approach",
+  "title": "A Smarter Way to Learn in 4 Guided Steps",
+  "body": "We don’t just give answers. We break down complex topics into digestible blocks and guide you through the reasoning process.",
+  "steps": [
+    {
+      "title": "Focused Micro-Learning",
+      "body": "Topics are split into small blocks to ensure deep understanding without skipping details."
+    },
+    {
+      "title": "Guided AI Assistance",
+      "body": "Our AI provides leading hints and clarifying questions instead of just giving the answer."
+    },
+    {
+      "title": "Reinforced Practice",
+      "body": "If you struggle, we explain again and re-test with new problems to ensure true mastery."
+    },
+    {
+      "title": "Human Tutor Connection",
+      "body": "If the student is still stuck, a human tutor is ready to step in and help clarify."
+    }
+  ],
+  "card_subtitle": "Visionary AI Flow",
+  "card_title": "Designed for Mastery, Not Just Completion",
+  "card_body": "By slowing down the 'skip' impulse, we match how the human brain actually learns—through focus, effort, and personalized feedback.",
+  "stats": [
+    {
+      "label": "Retention Rate",
+      "value": "+40%"
+    },
+    {
+      "label": "Guided steps",
+      "value": "100%"
+    },
+    {
+      "label": "Skip delay",
+      "value": "Active"
+    },
+    {
+      "label": "Learning style",
+      "value": "Adaptive"
+    }
+  ],
+  "cta_primary": "Join Shagguide",
+  "cta_secondary": "View Research",
+  "disclaimer": "Safe. Guided. Professional. Switch language in the header."
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Edit Topic",
+  "topic_name": "Topic Name",
+  "subject": "Subject",
+  "grade_level": "Grade Level",
+  "ai_summary": "AI Summary",
+  "topic_content": "Topic Content",
+  "loading_data": "Loading topic data...",
+  "cancel_button": "Cancel",
+  "update_button": "Update Topic",
+  "updating": "Updating...",
+  "required": "*"
+}
+

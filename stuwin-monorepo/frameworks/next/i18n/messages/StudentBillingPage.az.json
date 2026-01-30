@@ -1,0 +1,13 @@
+{
+    "title": "Ödəniş və Abunəlik",
+    "subtitle": "Planınızı, ödəniş tarixinizi və ödəniş üsullarını idarə edin.",
+    "current_plan": "HAZIRKI PLAN",
+    "expires_on": "Bitmə vaxtı",
+    "active": "Aktiv",
+    "month": "Ay",
+    "select_plan": "İndi Təkmilləşdir",
+    "current": "Hazırkı Plan",
+    "have_coupon": "Kupon kodunuz var?",
+    "apply": "Tətbiq et",
+    "coupon_applied": "Kupon tətbiq olundu! {percent}% endirim ödəniş zamanı hesablanacaq."
+}

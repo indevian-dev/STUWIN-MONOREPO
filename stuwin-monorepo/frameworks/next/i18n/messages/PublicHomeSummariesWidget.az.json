@@ -1,0 +1,26 @@
+{
+  "section_hint": "Dinamik Akademik Xülasələr",
+  "title": "Avtomatlaşdırılmış Xülasələrlə Öndə Olun",
+  "body": "Gündəlik ev tapşırıqlarından aylıq tərəqqiyə qədər hər kəsi məlumatlı saxlayan qısa və faydalı xülasələr alın.",
+  "modes_intro_title": "Çoxsəviyyəli Baxış",
+  "modes_intro_body": "Təhsilə müxtəlif tərəflərdən baxın: sürətli təkrar, dərin təhlil və ya tərəqqi hesabatı kimi.",
+  "cta": "Xülasələri Kəşf Et",
+  "items": [
+    {
+      "title": "Gündəlik Ev Tapşırığı Xülasəsi",
+      "body": "Bugünkü tapşırıqlardan əsas anlayışlar və nəticələr."
+    },
+    {
+      "title": "Kvizin Performans Analizi",
+      "body": "Nəyin yaxşı getdiyini və növbəti testdən əvvəl haraya fokuslanmalı olduğunuzu öyrənin."
+    },
+    {
+      "title": "Həftəlik Tərəqqi İcmalı",
+      "body": "Həftəlik öyrənmə səyahətinin və göstərilən səyin geniş mənzərəsi."
+    },
+    {
+      "title": "Aylıq Ustadlıq Baxışı",
+      "body": "Uzunmüddətli trendlər və tədris proqramının əhatə dairəsinin xülasəsi."
+    }
+  ]
+}

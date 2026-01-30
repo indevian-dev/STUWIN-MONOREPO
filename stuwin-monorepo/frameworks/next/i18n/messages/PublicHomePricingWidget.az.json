@@ -1,0 +1,34 @@
+{
+    "header": "Hər bir şagird üçün şəffaf qiymətlər",
+    "subheader": "Təhsil yolunuza uyğun planı seçin. Süni intellektin qabaqcıl funksiyalarını və daha dərindən öyrənmə imkanlarını əldə etmək üçün istənilən vaxt təkmilləşdirin.",
+    "most_popular": "Ən Populyar",
+    "per_month": "/ ay",
+    "cta": "Başlayın",
+    "tiers": {
+        "free": {
+            "title": "Pulsuz",
+            "subtitle": "Əsas Tədqiqatçı"
+        },
+        "pro": {
+            "title": "Pro",
+            "subtitle": "Qabaqcıl Şagird"
+        },
+        "workspace": {
+            "title": "İş Sahəsi",
+            "subtitle": "Komanda və Məktəb"
+        }
+    },
+    "features": {
+        "limited_ai": "Gündəlik 5 AI təhlili",
+        "basic_quizzes": "Standart testlər",
+        "public_resources": "İctimai dərs materialları",
+        "unlimited_ai": "Limitsiz AI təhlili",
+        "deep_dive": "Dərin Təhlil (Deep Dive) funksiyası",
+        "custom_quizzes": "Fərdi test yolları",
+        "priority_support": "Prioritet 24/7 dəstək",
+        "team_management": "Çox sayda şagirdin idarə edilməsi",
+        "shared_content": "Paylaşılan kitabxana və qovluqlar",
+        "detailed_reports": "Qabaqcıl valideyn hesabatları",
+        "bulk_discounts": "Toplu lisenziya endirimləri"
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "label": "Cavab Variantları",
+  "required": "*",
+  "add_answer": "+ Başqa Cavab Əlavə et",
+  "remove": "Sil",
+  "correct_answer_label": "Düzgün Cavab:",
+  "not_selected": "Seçilməyib",
+  "select_hint": "Düzgün cavabın yanındakı radio düyməsini seçin",
+  "minimum_answers": "minimum 2, maksimum 6"
+}
+

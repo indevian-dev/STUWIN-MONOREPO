@@ -1,0 +1,35 @@
+{
+  "section_hint": "Mastery-Based Evaluations",
+  "title": "Reinforced Learning Through Testing",
+  "body": "Tests are not the end, they are a beginning. Our AI identifies what you haven't mastered yet and guides you until you do.",
+  "items": [
+    {
+      "title": "Guided Step-by-Step",
+      "body": "If you get it wrong, we don't just show the answer. We explain the 'why' and guide you through a similar problem."
+    },
+    {
+      "title": "Homework Mentor",
+      "body": "Guided hints for your homework assignments. Learn the technique, not just the result."
+    },
+    {
+      "title": "Recursive Learning",
+      "body": "The AI tracks your mistakes and re-introduces topics in new contexts until mastery is achieved."
+    },
+    {
+      "title": "Mastery Tracking",
+      "body": "Visual progress bars showing what % of the curriculum you have truly mastered."
+    }
+  ],
+  "sidebar": {
+    "ready": "Personalized Practice",
+    "title": "Smart Drill Engine",
+    "hint": "Adaptive Topic Selection",
+    "focus_label": "Mastery Objective",
+    "focus_topics": "Logic • Equations • Analysis",
+    "questions_label": "Drills",
+    "questions_value": "Varies",
+    "modes_label": "Learning Style",
+    "modes_value": "Visual + Textual",
+    "note": "The AI adapts the difficulty and explanation style based on your previous performance to maximize retention."
+  }
+}

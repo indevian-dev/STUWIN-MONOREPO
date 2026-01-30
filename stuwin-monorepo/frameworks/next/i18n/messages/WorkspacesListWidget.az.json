@@ -1,0 +1,13 @@
+{
+    "no_active_workspaces": "Aktiv iş sahəsi yoxdur",
+    "no_workspaces_message": "Hələ ki, heç bir iş sahəniz yoxdur. Başlamaq üçün yeni birini yaradın və ya təşkilatları kəşf edin.",
+    "created": "Yaradılıb",
+    "student": "Tələbə",
+    "provider": "Mərkəz / Akademiya",
+    "staff": "Heyət Paneli",
+    "parent": "Valideyn / Nəzarət",
+    "tutor": "Repetitor İş Sahəsi",
+    "admin": "Sistem Admini",
+    "personal": "Şəxsi",
+    "default_description": "Mükəmməllik üçün hazırlanmış tədris resurslarına, alətlərə və icma funksiyalarına daxil olun."
+}

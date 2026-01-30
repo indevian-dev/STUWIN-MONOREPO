@@ -1,0 +1,16 @@
+{
+  "title": "Добавить новую тему",
+  "topic_name": "Название темы",
+  "subject": "Предмет",
+  "grade_level": "Класс",
+  "ai_summary": "AI Резюме",
+  "topic_content": "Содержание темы",
+  "select_subject": "Выберите предмет",
+  "placeholder_summary": "Введите краткое AI-резюме темы",
+  "placeholder_content": "Введите полное содержание темы (5000-10000 слов)...",
+  "cancel_button": "Отмена",
+  "create_button": "Создать тему",
+  "creating": "Создание...",
+  "required": "*"
+}
+

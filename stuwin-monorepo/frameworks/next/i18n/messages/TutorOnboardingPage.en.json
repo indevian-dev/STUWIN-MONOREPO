@@ -1,0 +1,20 @@
+{
+    "application_submitted": "Application Submitted!",
+    "review_message": "Your Tutor application is under review. We will notify you once your workspace is approved for teaching.",
+    "back_to_home": "Back to Home",
+    "back": "Back",
+    "become_tutor": "Become a",
+    "tutor": "Tutor",
+    "share_knowledge": "Share your knowledge and start teaching students on the platform.",
+    "display_title": "Display Title",
+    "display_title_placeholder": "E.G. MATH TUTOR SARAH",
+    "subjects": "Subjects via Comma",
+    "subjects_placeholder": "MATH, PHYSICS, CHEMISTRY",
+    "experience": "Years of Experience",
+    "experience_placeholder": "E.G. 5 YEARS",
+    "submitting": "Submitting...",
+    "submit_application": "Submit Application",
+    "fill_fields_warn": "Please fill in your professional title and subjects",
+    "application_failed": "Application failed",
+    "failed_submit": "Failed to submit application"
+}

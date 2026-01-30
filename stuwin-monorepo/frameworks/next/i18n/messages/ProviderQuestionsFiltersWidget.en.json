@@ -1,0 +1,17 @@
+{
+  "title": "Filters",
+  "apply_filters": "Apply Filters",
+  "clear_filters": "Reset",
+  "question_id": "Question ID",
+  "search_question": "Search Question",
+  "subject": "Subject",
+  "topic": "Topic",
+  "complexity": "Complexity",
+  "grade_level": "Grade Level",
+  "author_id": "Author ID",
+  "all_subjects": "All Subjects",
+  "all_levels": "All Levels",
+  "select_subject_first": "Select subject first",
+  "all_topics": "All Topics"
+}
+

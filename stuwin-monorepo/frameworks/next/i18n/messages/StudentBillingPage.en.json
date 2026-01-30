@@ -1,0 +1,13 @@
+{
+    "title": "Billing & Subscription",
+    "subtitle": "Manage your plan, billing history and payment methods.",
+    "current_plan": "CURRENT PLAN",
+    "expires_on": "Expires on",
+    "active": "Active",
+    "month": "Month",
+    "select_plan": "Upgrade Now",
+    "current": "Current Plan",
+    "have_coupon": "Have a coupon code?",
+    "apply": "Apply",
+    "coupon_applied": "Coupon applied! {percent}% discount will be calculated at checkout."
+}

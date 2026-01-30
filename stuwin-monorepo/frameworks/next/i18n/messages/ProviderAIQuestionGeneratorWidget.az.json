@@ -1,0 +1,17 @@
+{
+  "title": "AI Sual Generatoru",
+  "description": "Fənn, sinif səviyyəsi və mövzuya əsasən avtomatik olaraq suallar yaradın",
+  "subject": "Fənn",
+  "grade_level": "Sinif Səviyyəsi",
+  "complexity": "Mürəkkəblik",
+  "language": "Yaradılma Dili",
+  "topic": "Mövzu",
+  "count": "Sualların Sayı",
+  "generate_button": "Suallar Yarat",
+  "generating": "Yaradılır...",
+  "cancel_button": "Ləğv et",
+  "generated_title": "Yaradılmış Suallar",
+  "max_questions": "Hər yaratmada maksimum 10 sual",
+  "saved_to_db": "Suallar verilənlər bazasına yadda saxlanıldı"
+}
+

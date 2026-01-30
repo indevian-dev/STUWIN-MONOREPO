@@ -1,0 +1,11 @@
+{
+    "discover_organizations": "Discover Educational Organizations",
+    "search_placeholder": "Search by organization name or code...",
+    "sending": "Sending...",
+    "request_access": "Request Access",
+    "join_request_success": "Join request sent successfully!",
+    "join_request_error": "Failed to send request",
+    "no_description": "No description available for this organization.",
+    "no_orgs_found": "No organizations found",
+    "try_searching_different": "Try searching for a different name or browse all active centers."
+}
