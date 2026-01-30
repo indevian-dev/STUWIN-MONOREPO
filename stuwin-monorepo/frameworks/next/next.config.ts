@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  turbopack: {
+    root: '../../',
+  },
 };
 
 export default withNextIntl(nextConfig);
