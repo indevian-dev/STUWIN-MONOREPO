@@ -1,5 +1,5 @@
 {
-  "badge": "Shagguide Research-Based Approach",
+  "badge": "stuwin.ai Research-Based Approach",
   "title": "A Smarter Way to Learn in 4 Guided Steps",
   "body": "We don’t just give answers. We break down complex topics into digestible blocks and guide you through the reasoning process.",
   "steps": [
@@ -41,7 +41,7 @@
       "value": "Adaptive"
     }
   ],
-  "cta_primary": "Join Shagguide",
+  "cta_primary": "Join stuwin.ai",
   "cta_secondary": "View Research",
   "disclaimer": "Safe. Guided. Professional. Switch language in the header."
 }

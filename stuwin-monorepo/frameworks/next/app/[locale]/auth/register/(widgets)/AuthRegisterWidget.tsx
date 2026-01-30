@@ -13,6 +13,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
+import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image
   from 'next/image';
 import { parseCookies } from 'nookies';
@@ -265,7 +266,7 @@ export default function AuthRegisterWidget() {
             <Link href="/" className="flex items-center gap-3 text-white hover:text-light">
               <div>
                 <p className="text-xs uppercase tracking-wide opacity-80">{t('navigate_back')}</p>
-                <p className="text-lg font-semibold">{t('shagguide_home')}</p>
+                <p className="text-lg font-semibold">{t('stuwin_ai_home')}</p>
               </div>
             </Link>
             <div className="space-y-3 pt-4">
@@ -292,7 +293,7 @@ export default function AuthRegisterWidget() {
           <div className="bg-white rounded-primary shadow-xl p-6 sm:p-8">
             <div className="flex items-center justify-between mb-6">
               <Link href="/" className="inline-flex items-center gap-2 text-dark hover:text-brand">
-                <Image src={"/logo.svg"} alt="Back to home page" width="120" height="60" />
+                <GlobalLogoTile width={120} height={40} />
               </Link>
               <Link href="/auth/login" className="text-sm font-semibold text-brand hover:text-brand/80">
                 {t('already_registered')}

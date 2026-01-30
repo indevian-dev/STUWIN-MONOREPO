@@ -4,7 +4,7 @@ import { withPageAuth } from '@/lib/app-access-control/interceptors';
 function StudentRootPage() {
   return (
     <div>
-      <StudentPageTitleWidget pageTitle="Shagguide Student Dashboard" />
+      <StudentPageTitleWidget pageTitle="stuwin.ai Student Dashboard" />
     </div>
   );
 }

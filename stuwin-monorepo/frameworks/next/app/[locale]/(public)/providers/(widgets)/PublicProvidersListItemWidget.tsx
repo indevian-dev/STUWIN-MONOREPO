@@ -30,8 +30,8 @@ type PublicProvidersListItemWidgetProps = {
 export function PublicProvidersListItemWidget({ Provider }: PublicProvidersListItemWidgetProps): React.JSX.Element | null {
   if (!Provider) return null;
 
-  const logoUrl = Provider.logo 
-    ? `https://s3.tebi.io/shagguide/Providers/${Provider.id}/${Provider.logo}`
+  const logoUrl = Provider.logo
+    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   return (

@@ -55,7 +55,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
   const accountIdRef = useRef<string | null>(null);
 
   const getStorageKey = useCallback((accountId: string) => {
-    return accountId ? `shagguide_bookmarks_${accountId}` : null;
+    return accountId ? `stuwin.ai_bookmarks_${accountId}` : null;
   }, []);
 
   const loadFromStorage = useCallback((accountId: string) => {

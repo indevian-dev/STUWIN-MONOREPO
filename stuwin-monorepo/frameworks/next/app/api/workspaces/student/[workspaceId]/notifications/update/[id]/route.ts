@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import type { ApiRouteHandler, ApiHandlerContext } from "@/types/next";
 import { NextResponse } from "next/server";
 import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { eq, and, accountsNotifications } from "@/lib/app-infrastructure/database";
+import { eq, and } from "drizzle-orm";
+import { accountNotifications } from "@/lib/app-infrastructure/database/schema";
 export const PATCH: ApiRouteHandler = withApiHandler(
   async (
     request: NextRequest,

@@ -57,7 +57,7 @@ export function StudentLayoutClient({
   const navConfig: DomainNavConfig = {
     domain: "student",
     logoSrc: "/logo.svg",
-    label: "SHAGGUIDE",
+    label: "stuwin.ai",
     subtitle: "Dashboard",
     fastNavLinks: [
       {

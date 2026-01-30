@@ -1,12 +1,12 @@
 {
   "navigate_back": "Geriyə keç",
-  "shagguide_home": "SHAGGUIDE Ana Səhifə",
+  "stuwin_ai_home": "stuwin.ai Ana Səhifə",
   "welcome_back": "Xoş gəldiniz",
   "welcome_description": "Sürətli və aydın giriş ilə öyrənmə səyahətinizə daxil olun.",
   "feature_sync": "Cihazlar arasında sinxronizasiya",
   "feature_dashboard": "Fərdiləşdirilmiş panel ilə irəliləyişinizi izləyin",
   "feature_secure": "Cihaz konteksti ilə təhlükəsiz giriş",
-  "new_to_shagguide": "Shagguide-da yenisiz?",
+  "new_to_stuwin_ai": "stuwin.ai-da yenisiz?",
   "create_account": "Hesab yaradın",
   "need_account": "Hesabınız yoxdur?",
   "sign_in": "Daxil ol",
@@ -27,4 +27,3 @@
   "login_failed_credentials": "Giriş uğursuz: Yanlış məlumatlar",
   "login_error": "Xəta: {message}"
 }
-

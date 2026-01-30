@@ -86,11 +86,11 @@ export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest,
 
     if (channel === 'email') {
       const emailSubjects: Record<string, string> = {
-        verification: 'Verify Your Email - Shagguide',
-        password_reset: 'Password Reset - Shagguide',
-        '2fa': 'Two-Factor Authentication - Shagguide',
-        email_change: 'Verify Your New Email - Shagguide',
-        phone_change: 'Verify Email for Phone Change - Shagguide'
+        verification: 'Verify Your Email - stuwin.ai',
+        password_reset: 'Password Reset - stuwin.ai',
+        '2fa': 'Two-Factor Authentication - stuwin.ai',
+        email_change: 'Verify Your New Email - stuwin.ai',
+        phone_change: 'Verify Email for Phone Change - stuwin.ai'
       };
 
       const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'User';
@@ -103,7 +103,7 @@ export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest,
 
       const result = await sendMail({
         to: user.email,
-        subject: emailSubjects[operation] || 'Verification Code - Shagguide',
+        subject: emailSubjects[operation] || 'Verification Code - stuwin.ai',
         html: html || ''
       });
 

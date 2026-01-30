@@ -53,7 +53,7 @@ export function ProviderLayoutClient({
   const navConfig: DomainNavConfig = {
     domain: "provider",
     logoSrc: "/logo.svg",
-    label: "SHAGGUIDE",
+    label: "stuwin.ai",
     subtitle: "Provider",
     fastNavLinks: [
       {

@@ -10,13 +10,16 @@ import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/G
 
 export function SubscriptionManagementClient() {
     const t = useTranslations('StudentBillingPage'); // Reusing translations for now
-    const { subscriptionType, subscribedUntil } = useGlobalAuthProfileContext();
+    const { getEffectiveSubscription, loading: profileLoading } = useGlobalAuthProfileContext();
+    const params = useParams();
+    const workspaceId = params.workspaceId as string || 'root';
+
+    // Determine effective subscription (Plan A: Workspace Specific, Plan B: Type Wide)
+    const effectiveSubscription = getEffectiveSubscription(workspaceId, 'student'); // Assuming 'student' type for now, ideally fetch from workspace details
 
     const [tiers, setTiers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
-    const [couponCode, setCouponCode] = useState('');
-    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
 
     useEffect(() => {
         const fetchTiers = async () => {
@@ -44,52 +47,13 @@ export function SubscriptionManagementClient() {
         fetchTiers();
     }, []);
 
-    const handleUpgrade = async (tierId: string) => {
-        try {
-            setActionLoading(tierId);
-            const response = await apiCallForSpaHelper({
-                method: 'POST',
-                url: `/api/workspaces/root/billing/pay`,
-                body: {
-                    tierId,
-                    couponCode: appliedCoupon?.code,
-                    language: 'az'
-                }
-            });
-
-            if (response.data && response.data.redirectUrl) {
-                window.location.href = response.data.redirectUrl;
-            } else {
-                alert("Failed to initiate payment. Please try again.");
-            }
-        } catch (error: any) {
-            console.error("Upgrade error:", error);
-            alert(error.message || "Something went wrong");
-        } finally {
-            setActionLoading(null);
-        }
+    const handleUpgrade = (tierId: string) => {
+        // Pass scope to checkout
+        window.location.href = `/workspaces/billing/checkout?tierId=${tierId}&scope=WORKSPACE&scopeId=${workspaceId}`;
     };
 
-    const handleApplyCoupon = async () => {
-        if (!couponCode) return;
-        try {
-            setActionLoading('coupon');
-            const response = await apiCallForSpaHelper({
-                method: 'POST',
-                url: `/api/workspaces/root/billing/coupon`,
-                body: { code: couponCode }
-            });
-            if (response.data) {
-                setAppliedCoupon(response.data);
-            }
-        } catch (error: any) {
-            alert(error.message || "Invalid coupon");
-        } finally {
-            setActionLoading(null);
-        }
-    };
 
-    if (loading) return (
+    if (loading || profileLoading) return (
         <div className="flex items-center justify-center p-24">
             <PiArrowsClockwiseBold className="text-4xl text-brand-primary animate-spin" />
         </div>
@@ -111,13 +75,18 @@ export function SubscriptionManagementClient() {
                     <div>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('current_plan')}</p>
                         <h2 className="text-2xl font-black text-slate-900 uppercase">
-                            {subscriptionType || 'Free Account'}
+                            {effectiveSubscription?.type || 'Free Account'}
                         </h2>
+                        {effectiveSubscription?.source === 'WORKSPACE_TYPE' && (
+                            <span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md mt-1 inline-block">
+                                Inherited from Workspace Type
+                            </span>
+                        )}
                     </div>
                 </div>
-                {subscribedUntil && (
+                {effectiveSubscription?.until && (
                     <div className="px-6 py-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold">
-                        {t('expires_on')}: {new Date(subscribedUntil).toLocaleDateString()}
+                        {t('expires_on')}: {effectiveSubscription.until.toLocaleDateString()}
                     </div>
                 )}
             </div>
@@ -125,9 +94,7 @@ export function SubscriptionManagementClient() {
             {/* Tiers */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {Array.isArray(tiers) && tiers.map((tier) => {
-                    const isCurrent = subscriptionType?.toLowerCase() === tier.type?.toLowerCase();
-                    const discount = appliedCoupon?.discountPercent || 0;
-                    const finalPrice = tier.price * (1 - discount / 100);
+                    const isCurrent = effectiveSubscription?.type?.toLowerCase() === tier.type?.toLowerCase();
 
                     return (
                         <div
@@ -146,14 +113,9 @@ export function SubscriptionManagementClient() {
 
                             <div className="mb-8">
                                 <span className="text-4xl font-black">
-                                    {appliedCoupon ? finalPrice.toFixed(2) : tier.price}
+                                    {tier.price}
                                 </span>
                                 <span className="text-slate-500 text-sm font-bold ml-1">AZN / {t('month')}</span>
-                                {appliedCoupon && (
-                                    <p className="text-xs text-emerald-600 font-bold mt-1">
-                                        {discount}% discount applied!
-                                    </p>
-                                )}
                             </div>
 
                             <button
@@ -188,32 +150,6 @@ export function SubscriptionManagementClient() {
                 })}
             </div>
 
-            {/* Coupons */}
-            <div className="mt-16 p-8 bg-slate-50 rounded-[2.5rem] max-w-2xl mx-auto border border-slate-200">
-                <h3 className="text-lg font-black text-slate-900 mb-4">{t('have_coupon')}</h3>
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="SUMMER2026"
-                        className="flex-1 px-6 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary uppercase font-bold"
-                    />
-                    <button
-                        onClick={handleApplyCoupon}
-                        disabled={!!actionLoading}
-                        className="px-8 py-3 rounded-2xl bg-slate-900 text-white font-black hover:bg-slate-800 transition-all disabled:opacity-50"
-                    >
-                        {actionLoading === 'coupon' ? <PiArrowsClockwiseBold className="animate-spin" /> : t('apply')}
-                    </button>
-                </div>
-                {appliedCoupon && (
-                    <div className="mt-4 flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                        <PiCheckCircleFill />
-                        {t('coupon_applied', { percent: appliedCoupon.discountPercent })}
-                    </div>
-                )}
-            </div>
         </div>
     );
 }

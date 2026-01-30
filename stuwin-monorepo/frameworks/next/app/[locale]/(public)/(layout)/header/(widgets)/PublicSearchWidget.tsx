@@ -210,7 +210,7 @@ export function PublicSearchWidget({ hideOnCardFilters = false }: PublicSearchWi
                                                 <div className="flex-shrink-0">
                                                     {(result._source?.images?.[0] || result.images?.[0]) ? (
                                                         <Image
-                                                            src={`https://shagguide.s3.tebi.io/cards/${result._source?.storage_prefix || result.storage_prefix}/${result._source?.images?.[0] || result.images?.[0]}`}
+                                                            src={`https://stuwin.ai.s3.tebi.io/cards/${result._source?.storage_prefix || result.storage_prefix}/${result._source?.images?.[0] || result.images?.[0]}`}
                                                             alt={result._source?.title || result.title}
                                                             width={64}
                                                             height={64}
@@ -321,7 +321,7 @@ export function PublicSearchWidget({ hideOnCardFilters = false }: PublicSearchWi
                                             <div className="flex-shrink-0">
                                                 {(result._source?.images?.[0] || result.images?.[0]) ? (
                                                     <Image
-                                                        src={`https://shagguide.s3.tebi.io/cards/${result._source?.storage_prefix || result.storage_prefix}/${result._source?.images?.[0] || result.images?.[0]}`}
+                                                        src={`https://stuwin.ai.s3.tebi.io/cards/${result._source?.storage_prefix || result.storage_prefix}/${result._source?.images?.[0] || result.images?.[0]}`}
                                                         alt={result._source?.title || result.title}
                                                         width={64}
                                                         height={64}

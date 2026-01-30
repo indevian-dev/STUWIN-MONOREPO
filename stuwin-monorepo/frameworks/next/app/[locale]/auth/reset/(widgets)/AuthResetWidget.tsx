@@ -8,6 +8,7 @@ import {
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image
   from 'next/image';
 
@@ -139,7 +140,7 @@ export default function AuthResetWidget() {
       <div className="w-full max-w-md grid grid-cols-1 justify-center items-center gap-2">
         <Link href="/" className="text-sm text-dark mb-4 grid grid-cols-1 justify-center items-center gap-2">
           <div className="col-span-1 flex justify-center items-center">
-            <Image src="/logo.svg" alt="Back to home page" width="140" height="70" />
+            <GlobalLogoTile width={140} height={50} />
           </div>
           <div className="col-span-1 text-sm text-dark text-center">Back to home page</div>
         </Link>

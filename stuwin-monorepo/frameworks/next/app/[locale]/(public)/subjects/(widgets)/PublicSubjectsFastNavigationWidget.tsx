@@ -66,7 +66,7 @@ export function PublicSubjectsFastNavigationWidget({ subject }: PublicSubjectsFa
     if (!contextLoading) {
       loadSubjects();
     }
-    }, [subject, allSubjects, contextLoading, getSubSubjects]);
+  }, [subject, allSubjects, contextLoading, getSubSubjects]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-full  p-8"><div className="loader h-8 w-8"></div></div>;
@@ -86,7 +86,7 @@ export function PublicSubjectsFastNavigationWidget({ subject }: PublicSubjectsFa
           return (
             <Link key={subject.id} href={`/subjects/${subject.slug}-${subject.id}`} passHref className={`col-span-12 px-2 pt-2 pb-4 rounded flex items-start  relative overflow-hidden ${subject.type === 'digital' ? 'bg-dark/10 text-dark' : 'bg-brand/5 text-dark'}`} >
               {subject.icon ? (
-                <img src={`https://s3.tebi.io/shagguide/subjects/${subject.id}/${subject.icon}`} alt={subject.title} className="h-2/3 lg:h-2/3 absolute bottom-0 right-0 opacity-100" />
+                <img src={`https://s3.tebi.io/stuwin.ai/subjects/${subject.id}/${subject.icon}`} alt={subject.title} className="h-2/3 lg:h-2/3 absolute bottom-0 right-0 opacity-100" />
               ) : (
                 <div className="h-12 w-12  flex items-center justify-center absolute bottom-0 right-0">
                 </div>

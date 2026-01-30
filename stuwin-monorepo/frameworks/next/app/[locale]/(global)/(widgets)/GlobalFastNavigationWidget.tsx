@@ -42,7 +42,7 @@ export function GlobalFastNavigationWidget({
   const isAuthenticated = !!userId;
 
   // Common bottom bar styling (mobile fixed, desktop relative)
-  const bottomBarClasses = "fixed md:relative flex justify-between items-center gap-3 px-4 py-2 bottom-0 left-0 right-0 z-10 bg-white/70";
+  const bottomBarClasses = "fixed md:relative flex justify-between items-center gap-3 px-4 py-2 bottom-0 left-0 right-0 z-10";
   const backdropBlurClasses = "w-full h-full backdrop-blur-md inset-0 absolute -z-1";
 
   if (isPublic) {

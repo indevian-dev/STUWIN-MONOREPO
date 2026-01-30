@@ -31,8 +31,8 @@ interface PublicProviderCardTileProps {
 export function PublicProviderCardTile({ Provider, compact = false }: PublicProviderCardTileProps) {
   if (!Provider) return null;
 
-  const logoUrl = Provider.logo 
-    ? `https://s3.tebi.io/shagguide/Providers/${Provider.id}/${Provider.logo}`
+  const logoUrl = Provider.logo
+    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   if (compact) {

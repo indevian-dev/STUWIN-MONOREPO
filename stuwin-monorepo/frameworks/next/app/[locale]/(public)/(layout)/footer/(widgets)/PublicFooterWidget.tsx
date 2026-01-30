@@ -1,9 +1,7 @@
-"use client";
-
 import Image
   from 'next/image';
 import { Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl'; 
+import { useTranslations } from 'next-intl';
 
 export function PublicFooterWidget() {
 
@@ -29,7 +27,7 @@ export function PublicFooterWidget() {
                   />
                 </Link>
                 <p className="dark:text-body-color-dark mb-9 text-sm leading-relaxed text-body-color">
-                'A quizzing and guide platform for school students. Empowering learning with interactive quizzes and helpful guides.'
+                  'A quizzing and guide platform for school students. Empowering learning with interactive quizzes and helpful guides.'
                 </p>
                 <div className="flex items-center">
                   <a
@@ -89,8 +87,8 @@ export function PublicFooterWidget() {
                     </svg>
                   </a>
                 </div>
-              </div>
-            </div>
+              </div >
+            </div >
 
             <div className="w-full px-4 sm:w-1/2 md:w-1/2 lg:w-2/12 xl:w-2/12">
               <div className="mb-12 lg:mb-16">
@@ -193,15 +191,15 @@ export function PublicFooterWidget() {
                 </ul>
               </div>
             </div>
-          </div>
+          </div >
 
           <div className="h-1 w-full bg-gradient-to-r from-transparent via-brand to-transparent"></div>
           <div className="py-8">
             <p className="text-center text-base text-body-color dark:text-white">
-              Shagguide - All rights reserved
+              stuwin.ai - All rights reserved
             </p>
           </div>
-        </div>
+        </div >
         <div className="absolute right-0 top-14 z-[-1] rotate-180">
           <svg
             width="79"
@@ -434,7 +432,7 @@ export function PublicFooterWidget() {
             </defs>
           </svg>
         </div>
-      </footer>
+      </footer >
     </>
   );
 }

@@ -68,7 +68,7 @@ export default function PublicContactWidget() {
                                 </a>
                             </p>
                             <p>
-                                <a className='text-sm text-ink-muted hover:text-brand' href="mailto:info@shagguide.az">info@shagguide.az</a>
+                                <a className='text-sm text-ink-muted hover:text-brand' href="mailto:info@stuwin.ai.az">info@stuwin.ai.az</a>
                             </p>
                         </div>
 

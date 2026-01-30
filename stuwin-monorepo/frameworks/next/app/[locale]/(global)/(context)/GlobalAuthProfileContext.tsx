@@ -41,14 +41,26 @@ interface GlobalAuthProfileContextType {
     avatarUrl: string | null;
     subscriptionType: string | null;
     subscribedUntil: string | null;
-    loading: boolean;
+    isLoading: boolean;
+    loading: boolean; // Alias for backward compatibility
     error: any;
     getInitials: (name?: string) => string;
     clearProfile: () => void;
-    // updateFromAuthPayload: (payload: AuthContextPayload) => void; // Removed from public interface
     refreshProfile: () => Promise<void>;
     isReady: boolean;
     isAuthenticated: boolean;
+    subscriptions: ActiveSubscription[];
+    getEffectiveSubscription: (workspaceId: string, workspaceType: string) => { type: string; until: Date | null; source: 'WORKSPACE' | 'WORKSPACE_TYPE' | 'NONE' } | null;
+}
+
+export interface ActiveSubscription {
+    id: string;
+    scope: 'WORKSPACE_TYPE' | 'WORKSPACE';
+    scopeId: string;
+    planType: string;
+    startsAt: string; // ISO date string from JSON
+    endsAt: string | null;
+    status: string;
 }
 
 const GlobalAuthProfileContext = createContext<GlobalAuthProfileContextType | null>(null);
@@ -69,6 +81,7 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [subscriptionType, setSubscriptionType] = useState<string | null>(null);
     const [subscribedUntil, setSubscribedUntil] = useState<string | null>(null);
+    const [subscriptions, setSubscriptions] = useState<ActiveSubscription[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<any>(null);
 
@@ -76,7 +89,7 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         const getInitialState = () => {
             if (typeof window === 'undefined') return null;
             try {
-                const saved = localStorage.getItem('shagguide_profile');
+                const saved = localStorage.getItem('stuwin.ai_profile');
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     // Only use if less than 60 minutes old for initial snap
@@ -103,6 +116,7 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             setAvatarUrl(initialState.avatarUrl || null);
             setSubscriptionType(initialState.subscriptionType || null);
             setSubscribedUntil(initialState.subscribedUntil || null);
+            setSubscriptions(initialState.subscriptions || []);
         }
     }, []);
 
@@ -117,14 +131,15 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         setAvatarUrl(null);
         setSubscriptionType(null);
         setSubscribedUntil(null);
-        localStorage.removeItem('shagguide_profile');
+        setSubscriptions([]);
+        localStorage.removeItem('stuwin.ai_profile');
     }, []);
 
     // Create a ref to always have the latest state values without triggering dependency updates
-    const stateRef = React.useRef({ userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil });
+    const stateRef = React.useRef({ userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions });
     useEffect(() => {
-        stateRef.current = { userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil };
-    }, [userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil]);
+        stateRef.current = { userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions };
+    }, [userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions]);
 
     const updateFromAuthPayload = useCallback((payload: AuthContextPayload) => {
         try {
@@ -145,6 +160,7 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             const newAvatarUrl = payload.user?.avatarUrl || null;
             const newSubscribedUntil = (payload.account as any)?.subscribedUntil || (payload.account as any)?.workspaceSubscribedUntil || null;
             const newSubscriptionType = (payload.account as any)?.subscriptionType || (payload.account as any)?.workspaceSubscriptionType || null;
+            const newSubscriptions = (payload as any).subscriptions || [];
 
             if (newUserId) setUserId(newUserId);
             if (newFirstName) setFirstName(newFirstName);
@@ -156,6 +172,7 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             setAvatarUrl(newAvatarUrl);
             setSubscribedUntil(newSubscribedUntil);
             setSubscriptionType(newSubscriptionType);
+            setSubscriptions(newSubscriptions);
 
             // Update localStorage using latest values (fallback to current state if payload missing field)
             const dataToStore = {
@@ -169,9 +186,10 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
                 avatarUrl: newAvatarUrl || stateRef.current.avatarUrl,
                 subscriptionType: newSubscriptionType || stateRef.current.subscriptionType,
                 subscribedUntil: newSubscribedUntil || stateRef.current.subscribedUntil,
+                subscriptions: newSubscriptions.length > 0 ? newSubscriptions : stateRef.current.subscriptions,
                 timestamp: Date.now()
             };
-            localStorage.setItem('shagguide_profile', JSON.stringify(dataToStore));
+            localStorage.setItem('stuwin.ai_profile', JSON.stringify(dataToStore));
 
             setLoading(false);
             setError(null);
@@ -225,6 +243,42 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     };
 
+    const getEffectiveSubscription = useCallback((workspaceId: string, workspaceType: string) => {
+        const now = new Date();
+
+        // 1. Check Workspace Specific
+        const workspaceSub = subscriptions.find(s =>
+            s.scope === 'WORKSPACE' &&
+            s.scopeId === workspaceId &&
+            s.status === 'active' &&
+            (!s.endsAt || new Date(s.endsAt) > now)
+        );
+        if (workspaceSub) {
+            return {
+                type: workspaceSub.planType,
+                until: workspaceSub.endsAt ? new Date(workspaceSub.endsAt) : null,
+                source: 'WORKSPACE' as const
+            };
+        }
+
+        // 2. Check Workspace Type
+        const typeSub = subscriptions.find(s =>
+            s.scope === 'WORKSPACE_TYPE' &&
+            s.scopeId === workspaceType &&
+            s.status === 'active' &&
+            (!s.endsAt || new Date(s.endsAt) > now)
+        );
+        if (typeSub) {
+            return {
+                type: typeSub.planType,
+                until: typeSub.endsAt ? new Date(typeSub.endsAt) : null,
+                source: 'WORKSPACE_TYPE' as const
+            };
+        }
+
+        return null;
+    }, [subscriptions]);
+
     const value = {
         userId,
         firstName,
@@ -236,14 +290,16 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         avatarUrl,
         subscriptionType,
         subscribedUntil,
+        subscriptions,
         loading,
+        isLoading: loading, // Alias for consistency
         error,
         getInitials,
         clearProfile,
-        // updateFromAuthPayload, // Removed from public value
         refreshProfile: loadProfileData,
         isReady: !loading,
         isAuthenticated: !!userId,
+        getEffectiveSubscription
     };
 
     return (

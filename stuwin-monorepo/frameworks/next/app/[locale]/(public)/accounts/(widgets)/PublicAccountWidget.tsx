@@ -160,7 +160,7 @@ function PublicAccountWidget() {
         {/* Avatar */}
         <div className='relative'>
           <img
-            src={`https://s3.tebi.io/shagguide/avatars/${account.id}/${account.avatar}`}
+            src={`https://s3.tebi.io/stuwin.ai/avatars/${account.id}/${account.avatar}`}
             alt=" "
             className="rounded-full w-32 h-32 object-cover bg-gray-100"
           />

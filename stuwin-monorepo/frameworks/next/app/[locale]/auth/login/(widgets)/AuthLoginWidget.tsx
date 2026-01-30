@@ -12,6 +12,7 @@ import Image
 import { Link } from '@/i18n/routing';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import { loadClientSideCoLocatedTranslations }
   from '@/i18n/i18nClientSide';
 
@@ -154,7 +155,7 @@ export function AuthLoginWidget() {
             <Link href="/" className="flex items-center gap-3 text-white hover:text-light">
               <div>
                 <p className="text-xs uppercase tracking-wide opacity-80">{t('navigate_back')}</p>
-                <p className="text-lg font-semibold">{t('shagguide_home')}</p>
+                <p className="text-lg font-semibold">{t('stuwin_ai_home')}</p>
               </div>
             </Link>
             <div className="space-y-3 pt-4">
@@ -167,7 +168,7 @@ export function AuthLoginWidget() {
               </ul>
             </div>
             <div className="mt-auto">
-              <p className="text-sm text-white/70 mb-3">{t('new_to_shagguide')}</p>
+              <p className="text-sm text-white/70 mb-3">{t('new_to_stuwin_ai')}</p>
               <button
                 type="button"
                 className="w-full rounded-primary bg-white text-brand font-semibold py-3 px-4 hover:bg-light/90 transition"
@@ -181,7 +182,7 @@ export function AuthLoginWidget() {
           <div className="bg-white/90 backdrop-blur rounded-primary border border-border shadow-xl p-6 sm:p-8">
             <div className="flex items-center justify-between mb-6">
               <Link href="/" className="inline-flex items-center gap-2 text-dark hover:text-brand">
-                <Image src={"/logo.svg"} alt="Back to home page" width="120" height="60" />
+                <GlobalLogoTile width={120} height={40} />
               </Link>
               <Link href="/auth/register" className="text-sm font-semibold text-brand hover:text-brand/80">
                 {t('need_account')}

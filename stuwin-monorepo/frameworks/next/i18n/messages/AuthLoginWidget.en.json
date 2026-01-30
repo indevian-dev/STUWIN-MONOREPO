@@ -1,12 +1,12 @@
 {
   "navigate_back": "Navigate back",
-  "shagguide_home": "SHAGGUIDE Home",
+  "stuwin_ai_home": "stuwin.ai Home",
   "welcome_back": "Welcome back",
   "welcome_description": "Access your learning journey with a refreshed, focused sign-in built for speed and clarity.",
   "feature_sync": "Stay in sync across devices",
   "feature_dashboard": "Track progress with personalized dashboard",
   "feature_secure": "Secure login with device context",
-  "new_to_shagguide": "New to Shagguide?",
+  "new_to_stuwin_ai": "New to stuwin.ai?",
   "create_account": "Create an account",
   "need_account": "Need an account?",
   "sign_in": "Sign in",
@@ -27,4 +27,3 @@
   "login_failed_credentials": "Login failed: Invalid credentials",
   "login_error": "Error: {message}"
 }
-

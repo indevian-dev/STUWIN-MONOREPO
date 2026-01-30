@@ -1,12 +1,12 @@
 {
   "navigate_back": "Назад",
-  "shagguide_home": "SHAGGUIDE Главная",
+  "stuwin_ai_home": "stuwin.ai Главная",
   "welcome_back": "Добро пожаловать",
   "welcome_description": "Получите доступ к своему обучению с обновленным, сфокусированным входом, созданным для скорости и ясности.",
   "feature_sync": "Синхронизация на всех устройствах",
   "feature_dashboard": "Отслеживание прогресса с персонализированной панелью",
   "feature_secure": "Безопасный вход с контекстом устройства",
-  "new_to_shagguide": "Впервые в Shagguide?",
+  "new_to_stuwin_ai": "Впервые в stuwin.ai?",
   "create_account": "Создать аккаунт",
   "need_account": "Нужен аккаунт?",
   "sign_in": "Войти",
@@ -27,4 +27,3 @@
   "login_failed_credentials": "Ошибка входа: Неверные учетные данные",
   "login_error": "Ошибка: {message}"
 }
-

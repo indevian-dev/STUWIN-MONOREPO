@@ -49,8 +49,8 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
     );
   }
 
-  const logoUrl = Provider.logo 
-    ? `https://s3.tebi.io/shagguide/Providers/${Provider.id}/${Provider.logo}`
+  const logoUrl = Provider.logo
+    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   return (
@@ -101,7 +101,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                   </span>
                 </div>
               )}
-              
+
               {Provider.phone && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <FiPhone size={18} />
@@ -110,7 +110,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                   </a>
                 </div>
               )}
-              
+
               {Provider.email && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <FiMail size={18} />
@@ -119,13 +119,13 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                   </a>
                 </div>
               )}
-              
+
               {Provider.website && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <FiGlobe size={18} />
-                  <a 
-                    href={Provider.website} 
-                    target="_blank" 
+                  <a
+                    href={Provider.website}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-brand"
                   >
@@ -144,22 +144,20 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
           <nav className="flex">
             <button
               onClick={() => setActiveTab('about')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'about'
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'about'
                   ? 'border-brand text-brand'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Haqqında
             </button>
             {Provider.location && (
               <button
                 onClick={() => setActiveTab('location')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'location'
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'location'
                     ? 'border-brand text-brand'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Ünvan
               </button>
@@ -177,7 +175,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
               <div className="text-gray-700 leading-relaxed">
                 {Provider.description || 'Ətraflı məlumat yoxdur'}
               </div>
-              
+
               {/* Additional Info Section */}
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -202,9 +200,9 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                     {Provider.website && (
                       <p className="flex items-center gap-2">
                         <FiGlobe size={14} />
-                        <a 
-                          href={Provider.website} 
-                          target="_blank" 
+                        <a
+                          href={Provider.website}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="hover:text-brand"
                         >
@@ -227,7 +225,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                   <span>{Provider.location.address}</span>
                 </p>
               )}
-              
+
               {Provider.location.latitude && Provider.location.longitude && (
                 <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
                   <PublicSingleMarkerMapWidget

@@ -49,7 +49,7 @@ export async function sendMail({ to, html, subject }: SendMailOptions): Promise<
     const emailPayload = {
       from: {
         address: process.env.MAIL_FROM || process.env.MAIL_USER!,
-        name: process.env.MAIL_FROM_NAME || "ShagGuide"
+        name: process.env.MAIL_FROM_NAME || "stuwin.ai"
       },
       to: recipients,
       subject: subject,

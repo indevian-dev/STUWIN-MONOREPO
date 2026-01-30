@@ -1,6 +1,6 @@
 {
   "navigate_back": "Navigate back",
-  "shagguide_home": "SHAGGUIDE Home",
+  "stuwin_ai_home": "stuwin.ai Home",
   "create_your_account": "Create your account",
   "secure_onboarding_description": "Simple, secure onboarding with clear validation and built-in verification.",
   "feature_password_strength": "Guided password strength indicators",
@@ -10,7 +10,7 @@
   "go_to_login": "Go to login",
   "already_registered": "Already registered?",
   "create_account": "Create account",
-  "join_description": "Join Shagguide to save progress, track learning, and sync across devices.",
+  "join_description": "Join stuwin.ai to save progress, track learning, and sync across devices.",
   "registration_type": "Registration Type",
   "student": "Student",
   "parent": "Parent",

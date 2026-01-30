@@ -13,6 +13,7 @@ import {
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { Link } from '@/i18n/routing';
+import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image from 'next/image';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 import { loadClientSideCoLocatedTranslations } from '@/i18n/i18nClientSide';
@@ -244,7 +245,7 @@ export function AuthVerificationWidget({
                 <form onSubmit={handleVerify} className="bg-white rounded-primary p-4 sm:p-8 space-y-6">
                     {showLogo && (
                         <Link href="/" className={`inline-flex flex-col ${isEmail ? 'items-start' : 'items-center'} gap-2 text-dark hover:text-brand transition-colors`}>
-                            <Image src={"/logo.svg"} alt={t('logo_alt')} width="200" height="70" />
+                            <GlobalLogoTile width={200} height={50} />
                             <span className="text-xs text-body">{t('back_to_home')}</span>
                         </Link>
                     )}

@@ -30,9 +30,12 @@ export interface AuthResult {
     status: number;
 }
 
+import { PaymentRepository } from "../payment/payment.repository";
+
 export class AuthService extends BaseService {
     constructor(
         private readonly repository: AuthRepository,
+        private readonly paymentRepo: PaymentRepository,
         private readonly ctx?: AuthContext
     ) {
         super();
@@ -124,7 +127,16 @@ export class AuthService extends BaseService {
     async getAuthProfile(): Promise<AuthResult> {
         try {
             if (!this.ctx?.userId) {
-                return { success: false, error: "Not authenticated", status: 401 };
+                // Return null profile instead of 401 to avoid redirect loops
+                return {
+                    success: true,
+                    status: 200,
+                    data: {
+                        user: null,
+                        account: null,
+                        subscriptions: []
+                    }
+                };
             }
 
             const user = await this.repository.findUserById(this.ctx.userId);
@@ -137,7 +149,8 @@ export class AuthService extends BaseService {
                 return { success: false, error: "Account not found", status: 404 };
             }
 
-            // Removed workspace fetching from profile - will be fetched separately
+            // Fetch active subscriptions from new table
+            const activeSubscriptions = await this.paymentRepo.getActiveSubscriptions(account.id);
 
             return {
                 success: true,
@@ -153,6 +166,12 @@ export class AuthService extends BaseService {
                         phoneVerified: user.phoneIsVerified,
                         avatarUrl: await this.getAvatarUrl(user.id),
                     },
+                    account: {
+                        id: account.id,
+                        subscriptionType: (account as any).subscriptionType, // Legacy
+                        subscribedUntil: (account as any).subscribedUntil, // Legacy
+                    },
+                    subscriptions: activeSubscriptions
                 }
             };
         } catch (error) {

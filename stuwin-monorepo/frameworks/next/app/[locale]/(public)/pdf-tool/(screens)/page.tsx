@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import { PdfToolManagementWidget } from '../(widgets)/PdfToolManagementWidget';
 
 export const metadata = {
-    title: 'Shagguide - PDF Tools'
+    title: 'stuwin.ai - PDF Tools'
 };
 
 export default function PdfToolPage() {

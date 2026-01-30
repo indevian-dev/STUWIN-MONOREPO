@@ -1,6 +1,6 @@
 {
   "navigate_back": "Назад",
-  "shagguide_home": "SHAGGUIDE Главная",
+  "stuwin_ai_home": "stuwin.ai Главная",
   "create_your_account": "Создайте аккаунт",
   "secure_onboarding_description": "Простая и безопасная регистрация с четкой проверкой и встроенной верификацией.",
   "feature_password_strength": "Индикаторы надежности пароля",
@@ -10,7 +10,7 @@
   "go_to_login": "Перейти к входу",
   "already_registered": "Уже зарегистрированы?",
   "create_account": "Создать аккаунт",
-  "join_description": "Присоединяйтесь к Shagguide, чтобы сохранять прогресс, отслеживать обучение и синхронизировать данные между устройствами.",
+  "join_description": "Присоединяйтесь к stuwin.ai, чтобы сохранять прогресс, отслеживать обучение и синхронизировать данные между устройствами.",
   "registration_type": "Тип регистрации",
   "student": "Студент",
   "parent": "Родитель",

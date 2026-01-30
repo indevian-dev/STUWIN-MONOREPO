@@ -150,19 +150,19 @@ function generateGlobalEmail({
   <div class="container">
     <div class="header">
       <div class="logo-container">
-        <img src="https://shagguide.com/logo.png" alt="SHAGGUIDE" width="280" height="68" style="display: inline-block;">
+        <img src="https://stuwin.ai/stuwinlogo.png" alt="STUWIN.AI" width="280" style="display: inline-block; height: auto;">
       </div>
     </div>
     <div class="content">
       ${generateBodyContent(body)}
     </div>
     <div class="footer">
-      <p><strong>SHAGGUIDE</strong></p>
+      <p><strong>stuwin.ai</strong></p>
       <p>Your trusted guide for educational institutions</p>
-      <p style="margin-top: 15px;">Contact: support@shagguide.com</p>
-      <p>Visit us: <a href="https://shagguide.com" style="color: #73C816; text-decoration: none;">www.shagguide.com</a></p>
+      <p style="margin-top: 15px;">Contact: support@stuwin.ai</p>
+      <p>Visit us: <a href="https://stuwin.ai" style="color: #73C816; text-decoration: none;">www.stuwin.ai</a></p>
       <p style="margin-top: 15px; font-size: 11px;">This is an automated message, please do not reply to this email.</p>
-      <p style="font-size: 11px;">&copy; ${new Date().getFullYear()} SHAGGUIDE. All rights reserved.</p>
+      <p style="font-size: 11px;">&copy; ${new Date().getFullYear()} stuwin.ai. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -199,7 +199,7 @@ export function generateOtpEmail({
       { type: 'copyable', content: otp },
       { type: 'general', content: `This code will expire in ${expiryMinutes} minutes.` },
       { type: 'general', content: "If you didn't request this password reset, please ignore this email or contact our support team if you have concerns." },
-      { type: 'general', content: 'Thank you,<br>The SHAGGUIDE Team' }
+      { type: 'general', content: 'Thank you,<br>The stuwin.ai Team' }
     ]
   });
 }
@@ -223,7 +223,7 @@ export function generateVerificationOtpEmail({
       { type: 'copyable', content: otp },
       { type: 'general', content: `This code will expire in ${expiryMinutes} minutes.` },
       { type: 'general', content: "If you didn't request this email verification, please ignore this email or contact our support team if you have concerns." },
-      { type: 'general', content: 'Thank you,<br>The SHAGGUIDE Team' }
+      { type: 'general', content: 'Thank you,<br>The stuwin.ai Team' }
     ]
   });
 }
@@ -234,15 +234,15 @@ export function generateWelcomeEmail({ username }: { username: string }): EmailT
   }
 
   return generateGlobalEmail({
-    title: 'Welcome to SHAGGUIDE!',
+    title: 'Welcome to stuwin.ai!',
     username: username,
     body: [
-      { type: 'boldBig', content: 'Welcome to SHAGGUIDE!' },
+      { type: 'boldBig', content: 'Welcome to stuwin.ai!' },
       { type: 'general', content: `Hello ${username},` },
-      { type: 'general', content: 'Thank you for joining SHAGGUIDE! Your account has been successfully created and verified.' },
+      { type: 'general', content: 'Thank you for joining stuwin.ai! Your account has been successfully created and verified.' },
       { type: 'general', content: 'You can now start exploring educational institutions and their programs on our platform.' },
       { type: 'general', content: 'If you have any questions or need assistance, feel free to contact our support team.' },
-      { type: 'general', content: 'Best regards,<br>The SHAGGUIDE Team' }
+      { type: 'general', content: 'Best regards,<br>The stuwin.ai Team' }
     ]
   });
 }
@@ -261,15 +261,15 @@ export function generateCardApprovalEmail({
   }
 
   return generateGlobalEmail({
-    title: 'Your Listing Has Been Approved - SHAGGUIDE',
+    title: 'Your Listing Has Been Approved - stuwin.ai',
     username: username,
     body: [
       { type: 'boldBig', content: 'Your Listing Has Been Approved!' },
       { type: 'general', content: `Hello ${username},` },
       { type: 'general', content: `Great news! Your listing "${cardTitle}" has been reviewed and approved by our team.` },
-      { type: 'general', content: 'Your listing is now live and visible on the SHAGGUIDE platform.' },
+      { type: 'general', content: 'Your listing is now live and visible on the stuwin.ai platform.' },
       { type: 'general', content: 'You can view and manage your listing from your dashboard.' },
-      { type: 'general', content: 'Thank you for choosing SHAGGUIDE,<br>The SHAGGUIDE Team' }
+      { type: 'general', content: 'Thank you for choosing stuwin.ai,<br>The stuwin.ai Team' }
     ]
   });
 }
@@ -295,7 +295,7 @@ export function generateCardRejectionEmail({
   const additionalText = reasonText ? ` Additional details: ${reasonText}` : '';
 
   return generateGlobalEmail({
-    title: 'Listing Update Request - SHAGGUIDE',
+    title: 'Listing Update Request - stuwin.ai',
     username: username,
     body: [
       { type: 'boldBig', content: 'Listing Update Required' },
@@ -304,7 +304,7 @@ export function generateCardRejectionEmail({
       { type: 'general', content: `Issues found: ${reasonsList}.${additionalText}` },
       { type: 'general', content: 'Please update your listing with the corrected information and resubmit it for review. You can make these changes from your dashboard.' },
       { type: 'general', content: 'If you have any questions about these requirements, please contact our support team.' },
-      { type: 'general', content: 'Thank you for your understanding,<br>The SHAGGUIDE Team' }
+      { type: 'general', content: 'Thank you for your understanding,<br>The stuwin.ai Team' }
     ]
   });
 }

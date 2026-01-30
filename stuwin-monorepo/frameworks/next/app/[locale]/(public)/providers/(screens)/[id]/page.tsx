@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/Providers/${id}`,
       ...(Provider.logo && {
         images: [{
-          url: `https://s3.tebi.io/shagguide/Providers/${Provider.id}/${Provider.logo}`
+          url: `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
         }]
       })
     },

@@ -10,9 +10,9 @@ interface StaffImagesGalleryWidgetProps {
   storage_prefix?: string;
 }
 
-export default function StaffImagesGalleryWidget({ 
-  images, 
-  storage_prefix = 'cards' 
+export default function StaffImagesGalleryWidget({
+  images,
+  storage_prefix = 'cards'
 }: StaffImagesGalleryWidgetProps) {
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -24,7 +24,7 @@ export default function StaffImagesGalleryWidget({
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const imageUrlPrefix = 'https://s3.tebi.io/shagguide/cards/' + storage_prefix + "/";
+  const imageUrlPrefix = 'https://s3.tebi.io/stuwin.ai/cards/' + storage_prefix + "/";
 
   return (
     <div className="flex flex-col items-center w-full md:max-w-[200px] lg:max-w-[300px] pl-4">

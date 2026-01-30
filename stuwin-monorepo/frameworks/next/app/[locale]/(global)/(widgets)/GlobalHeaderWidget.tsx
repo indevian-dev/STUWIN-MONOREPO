@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { DomainNavConfig } from '@/types';
 import { GlobalHeaderBrandTile } from '@/app/[locale]/(global)/(tiles)/GlobalHeaderBrandTile';
 import { PublicLangSwitcherWidget } from '@/app/[locale]/(public)/(layout)/header/(widgets)/PublicLangSwitcherWidget';
+import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 
 interface GlobalHeaderWidgetProps {
   config: DomainNavConfig;
@@ -31,15 +32,7 @@ export function GlobalHeaderWidget({
     <>
       <header className="sticky top-0 z-20 w-full bg-linear-to-b from-white/95 via-white/90 to-white/70">
         <nav className="z-20 text-dark max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center">
-            <Image
-              src={logoSrc}
-              alt={label}
-              width="200"
-              height="80"
-              className="translate-y-2"
-            />
-          </Link>
+          <GlobalLogoTile width={180} height={60} className="translate-y-1" href="/" />
           {/* Center section - Custom content (e.g., running stroke, search) */}
           {children && children}
 

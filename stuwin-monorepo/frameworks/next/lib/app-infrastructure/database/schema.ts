@@ -66,7 +66,7 @@ export const userSessions = pgTable("user_sessions", {
     device: varchar("device"),
     browser: varchar("browser"),
     os: varchar("os"),
-    metadata: json("metadata"),
+    metadata: json("meta_data"),
     ip: varchar("ip"),
     expireAt: timestamp("expire_at", { withTimezone: true }),
     accountId: varchar("account_id").references(() => accounts.id),
@@ -145,6 +145,28 @@ export const paymentCoupons = pgTable("payment_coupons", {
     usageCount: bigint("usage_count", { mode: "number" }),
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
     isActive: boolean("is_active"),
+});
+
+export const activeSubscriptions = pgTable("active_subscriptions", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    accountId: varchar("account_id").references(() => accounts.id), // Owner/Payer
+
+    // Scope Definitions
+    scope: varchar("scope").notNull(), // Enum: 'WORKSPACE_TYPE', 'WORKSPACE'
+    scopeId: varchar("scope_id").notNull(), // 'student'/'provider' (for TYPE) OR workspace_id (for WORKSPACE)
+
+    // Plan Details
+    planType: varchar("plan_type").notNull(), // e.g. 'pro', 'premium' (matches paymentSubscriptions.type)
+    planId: varchar("plan_id"), // Optional FK to paymentSubscriptions.id
+
+    // Period & Status
+    startsAt: timestamp("starts_at", { withTimezone: true }).defaultNow(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    status: varchar("status").default('active'), // 'active', 'cancelled', 'expired'
+
+    // Metadata
+    metadata: jsonb("metadata").default({}),
+    paymentTransactionId: varchar("payment_transaction_id"),
 });
 
 export const workspaceToWorkspace = pgTable("workspace_to_workspace", {
@@ -307,6 +329,7 @@ export const studentHomeworks = pgTable("student_homeworks", {
     imageUrl: varchar("image_url"),
     imageStoragePath: varchar("image_storage_path"),
     textContent: text("text_content"),
+    originalFileName: varchar("original_file_name"),
     media: jsonb("media").default([]),
     status: varchar("status").notNull().default("pending"),
     learningConversationId: varchar("learning_conversation_id").references(() => studentLearningSessions.id),

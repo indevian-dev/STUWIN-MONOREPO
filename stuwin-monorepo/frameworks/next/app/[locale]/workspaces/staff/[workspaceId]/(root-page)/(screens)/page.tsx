@@ -5,7 +5,7 @@ function StaffRootPage() {
 
   return (
     <>
-      <StaffPageTitleTile pageTitle="Shagguide Staff Dashboard" />
+      <StaffPageTitleTile pageTitle="stuwin.ai Staff Dashboard" />
       <div className="w-full">
         <p>Welcome to the Dashboard</p>
       </div>
