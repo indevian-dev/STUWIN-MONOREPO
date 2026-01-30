@@ -42,9 +42,9 @@ ENV NEXT_PUBLIC_S3_PREFIX=$NEXT_PUBLIC_S3_PREFIX
 ARG NEXT_PUBLIC_ABLY_API_KEY
 ENV NEXT_PUBLIC_ABLY_API_KEY=$NEXT_PUBLIC_ABLY_API_KEY
 
-# Build the Next.js app using Bun's module resolution
+# Build the Next.js app - invoke next directly via bun
 WORKDIR /app/frameworks/next
-RUN bun --bun run build
+RUN bun next build
 
 # Stage 3: Release
 FROM base AS release
