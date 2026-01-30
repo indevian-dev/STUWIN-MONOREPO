@@ -13,7 +13,9 @@ COPY stuwin-monorepo/packages/shared/package.json /temp/dev/packages/shared/
 
 # Install dependencies for the monorepo
 # We run it in the /temp/dev which will be our monorepo root
-RUN cd /temp/dev && bun install
+RUN cd /temp/dev && bun install && \
+    echo "DEBUG: Checking /temp/dev/node_modules/.bin..." && \
+    ls -la /temp/dev/node_modules/.bin
 
 # Stage 2: Prerelease (Source copy and Build)
 FROM base AS prerelease
@@ -25,6 +27,12 @@ COPY stuwin-monorepo/ .
 # Copy dependencies from install stage
 # We do this AFTER copying source code to ensure node_modules are not overwritten
 COPY --from=install /temp/dev/node_modules ./node_modules
+
+# DEBUG: Check if node_modules exists and has content
+RUN echo "DEBUG: Checking /app/node_modules..." && \
+    ls -la /app/node_modules && \
+    echo "DEBUG: Checking /app/node_modules/.bin..." && \
+    (ls -la /app/node_modules/.bin || echo "Server bin not found")
 
 
 # Ensure node_modules binaries are in PATH (both root and workspace)
