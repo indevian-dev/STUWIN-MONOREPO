@@ -18,11 +18,13 @@ RUN cd /temp/dev && bun install
 # Stage 2: Prerelease (Source copy and Build)
 FROM base AS prerelease
 WORKDIR /app
-# Copy dependencies from install stage
-COPY --from=install /temp/dev/node_modules ./node_modules
 # Copy ONLY the contents of stuwin-monorepo folder to /app root
 # This effectively makes /app the monorepo root inside the container
 COPY stuwin-monorepo/ .
+
+# Copy dependencies from install stage
+# We do this AFTER copying source code to ensure node_modules are not overwritten
+COPY --from=install /temp/dev/node_modules ./node_modules
 
 
 # Ensure node_modules binaries are in PATH (both root and workspace)
