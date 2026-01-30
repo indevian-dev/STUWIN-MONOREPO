@@ -1,0 +1,22 @@
+{
+    "application_submitted": "Application Submitted!",
+    "review_message": "Great! Your organization application is now under review. Our Staff members will verify your details and approve your workspace soon.",
+    "back_to_home": "Back to Home",
+    "back": "Back",
+    "register_as": "Register as",
+    "provider": "Provider",
+    "provider_message": "Join stuwin.ai as an educational organization to provide content and manage student resources.",
+    "org_name": "Organization Name",
+    "org_name_placeholder": "E.G. HARVARD ACADEMY",
+    "address": "Official Address",
+    "address_placeholder": "STREET, CITY, ZIP",
+    "reg_number": "Registration #",
+    "reg_number_placeholder": "ID CODE",
+    "phone": "Contact Phone",
+    "phone_placeholder": "+994 ...",
+    "submitting": "Submitting Application...",
+    "submit_for_approval": "Submit for Approval",
+    "fill_fields_warn": "Please fill in the organization name and address",
+    "application_failed": "Application failed",
+    "failed_submit": "Failed to submit application"
+}

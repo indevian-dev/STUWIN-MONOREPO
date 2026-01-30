@@ -1,0 +1,14 @@
+{
+    "title": "Kupon İdarəetməsi",
+    "subtitle": "Şagirdlər üçün promo kuponlar yaradın və idarə edin.",
+    "create_new": "Yeni Kupon",
+    "discount": "Endirim",
+    "created": "Yaradılıb",
+    "status_active": "Aktiv",
+    "status_inactive": "Deaktiv",
+    "modal_title": "Promo Kupon Yarat",
+    "field_code": "Kupon Kodu",
+    "field_discount": "Endirim Faizi",
+    "cancel": "Ləğv et",
+    "create": "Kuponu Yarat"
+}

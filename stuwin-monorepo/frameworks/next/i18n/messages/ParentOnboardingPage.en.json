@@ -1,0 +1,19 @@
+{
+    "find_your_child": "Find Your",
+    "child": "Child",
+    "parent_message": "Enter your child's FIN (Identity Code) to find their school and learning workspaces.",
+    "fin_placeholder": "ENTER STUDENT FIN (E.G. 123ABC4)",
+    "searching": "Searching...",
+    "search": "Search",
+    "available_workspaces": "Available Student Workspaces",
+    "finishing": "Finishing...",
+    "continue_to_dashboard": "Continue to Dashboard",
+    "back": "Back",
+    "valid_fin_warn": "Please enter a valid FIN",
+    "no_students_found": "No students found",
+    "search_failed": "Search failed",
+    "select_workspace_warn": "Please select at least one workspace to monitor",
+    "success_message": "Parent workspace created successfully!",
+    "onboarding_failed": "Onboarding failed",
+    "failed_complete_onboarding": "Failed to complete onboarding"
+}

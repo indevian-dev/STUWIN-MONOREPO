@@ -1,0 +1,21 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@stuwin/shared": [
+        "../../packages/shared/src/index"
+      ],
+      "@/types": [
+        "../../packages/shared/src/index"
+      ],
+      "@/types/*": [
+        "../../packages/shared/src/*"
+      ]
+    }
+  }
+}

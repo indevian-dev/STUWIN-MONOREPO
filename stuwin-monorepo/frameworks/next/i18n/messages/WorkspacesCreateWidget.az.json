@@ -1,0 +1,17 @@
+{
+    "new_workspace": "Yeni İş Sahəsi",
+    "choose_operational_mode": "Əməliyyat rejimini seçin",
+    "define_workspace": "{type} sahəsini təyin edin",
+    "workspace_identity": "İş sahesi kimliyi",
+    "operational_context": "Əməliyyat konteksti",
+    "finalize_workspace": "İş SAHƏSİNİ TAMAMLA",
+    "initializing": "BAŞLAYIR...",
+    "back": "GERİ",
+    "enter_name_error": "Zəhmət olmasa iş sahəsi adını daxil edin",
+    "student_portal": "Tələbə Portalı",
+    "student_desc": "Kurslarda iştirak edin, qiymətləndirmələrdən keçin və öyrənmə gedişatını izləyin.",
+    "content_creator": "Məzmun Yaradıcısı",
+    "content_creator_desc": "Kurikulumlar hazırlayın, suallar tərtib edin və premium məzmun dərc edin.",
+    "academy_management": "Akademiya İdarəetməsi",
+    "academy_management_desc": "Müəssisə əməliyyatlarına, müəllim heyətinə və tələbə analitikasına nəzarət edin."
+}

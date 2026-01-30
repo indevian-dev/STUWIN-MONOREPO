@@ -1,0 +1,11 @@
+{
+    "discover_organizations": "Təhsil Təşkilatlarını Kəşf Edin",
+    "search_placeholder": "Təşkilat adı və ya kodu ilə axtarış...",
+    "sending": "Göndərilir...",
+    "request_access": "Giriş tələb et",
+    "join_request_success": "Qoşulma sorğusu uğurla göndərildi!",
+    "join_request_error": "Sorğu göndərilə bilmədi",
+    "no_description": "Bu təşkilat üçün təsvir mövcud deyil.",
+    "no_orgs_found": "Təşkilat tapılmadı",
+    "try_searching_different": "Fərqli bir adla axtarmağa çalışın və ya bütün aktiv mərkəzlərə baxın."
+}

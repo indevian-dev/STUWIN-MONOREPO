@@ -1,0 +1,21 @@
+{
+  "question": "Question",
+  "subject": "Subject",
+  "grade_level": "Grade Level",
+  "complexity": "Complexity",
+  "answers": "Answer Options",
+  "correct_answer": "Correct Answer",
+  "explanation_guide": "Explanation Guide",
+  "save_button": "Save Question",
+  "update_button": "Update Question",
+  "create_button": "Create Question",
+  "cancel_button": "Cancel",
+  "saving": "Saving...",
+  "select_subject": "Select a Subject",
+  "select_grade": "Select Grade Level",
+  "select_complexity": "Select Complexity",
+  "easy": "Easy",
+  "medium": "Medium",
+  "hard": "Hard"
+}
+

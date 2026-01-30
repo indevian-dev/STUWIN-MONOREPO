@@ -1,0 +1,29 @@
+{
+  "section_hint": "Supportive Parenting Tools",
+  "title": "Constructive Reports for Busy Parents",
+  "body": "Focus on your child's effort and progress. We provide detailed analyses of the study process to reduce negative pressure and motivate students.",
+  "safety": {
+    "title": "Positive Reinforcement Defaults",
+    "body": "Reports are designed to highlight what has been achieved and where help is needed, encouraging a positive learning environment.",
+    "control_label": "Parental Insight Center",
+    "control_value": "Process-based reports • Effort tracking • Safe-mode monitoring"
+  },
+  "items": [
+    {
+      "title": "Effort-First Reporting",
+      "body": "See how much work your child put into a topic, not just the final score."
+    },
+    {
+      "title": "Motivational Summaries",
+      "body": "Weekly digests that celebrate progress and guide future efforts."
+    },
+    {
+      "title": "Transparency Boost",
+      "body": "Reduce the student's impulse to hide bad results through constructive feedback."
+    },
+    {
+      "title": "Growth Mindset Insights",
+      "body": "Understand how your child learns best and where they've shown resilience."
+    }
+  ]
+}

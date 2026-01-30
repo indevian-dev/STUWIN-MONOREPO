@@ -1,0 +1,14 @@
+{
+    "title": "Coupon Management",
+    "subtitle": "Create and manage promotional coupons for students.",
+    "create_new": "New Coupon",
+    "discount": "Discount",
+    "created": "Created",
+    "status_active": "Active",
+    "status_inactive": "Inactive",
+    "modal_title": "Create Promotional Coupon",
+    "field_code": "Coupon Code",
+    "field_discount": "Discount Percentage",
+    "cancel": "Cancel",
+    "create": "Create Coupon"
+}

@@ -1,0 +1,9 @@
+{
+  "label": "Complexity",
+  "placeholder": "Select Complexity",
+  "required": "*",
+  "easy": "Easy",
+  "medium": "Medium",
+  "hard": "Hard"
+}
+

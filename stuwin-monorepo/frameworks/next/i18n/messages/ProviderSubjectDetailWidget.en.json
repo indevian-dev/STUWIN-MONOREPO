@@ -1,0 +1,6 @@
+{
+  "errorFetchingData": "Failed to load subject data",
+  "error": "Error",
+  "subjectNotFound": "Subject not found",
+  "retry": "Retry"
+}

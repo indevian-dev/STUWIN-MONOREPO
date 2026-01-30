@@ -1,0 +1,17 @@
+{
+    "new_workspace": "New Workspace",
+    "choose_operational_mode": "Choose your operational mode",
+    "define_workspace": "Define your {type}",
+    "workspace_identity": "Workspace Identity",
+    "operational_context": "Operational Context",
+    "finalize_workspace": "FINALIZE WORKSPACE",
+    "initializing": "INITIALIZING...",
+    "back": "BACK",
+    "enter_name_error": "Please enter a workspace name",
+    "student_portal": "Student Portal",
+    "student_desc": "Engage with courses, take assessments, and track learning progress.",
+    "content_creator": "Content Creator",
+    "content_creator_desc": "Architect curriculums, draft questions, and publish premium content.",
+    "academy_management": "Academy Management",
+    "academy_management_desc": "Oversee institutional operations, faculty, and student analytics."
+}

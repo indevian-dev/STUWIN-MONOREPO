@@ -1,0 +1,21 @@
+{
+  "question": "Sual",
+  "subject": "Fənn",
+  "grade_level": "Sinif Səviyyəsi",
+  "complexity": "Mürəkkəblik",
+  "answers": "Cavab Variantları",
+  "correct_answer": "Düzgün Cavab",
+  "explanation_guide": "İzahat Bələdçisi",
+  "save_button": "Suali Yadda saxla",
+  "update_button": "Suali Yenilə",
+  "create_button": "Sual Yarat",
+  "cancel_button": "Ləğv et",
+  "saving": "Yadda saxlanılır...",
+  "select_subject": "Fənn seçin",
+  "select_grade": "Sinif səviyyəsi seçin",
+  "select_complexity": "Mürəkkəblik seçin",
+  "easy": "Asan",
+  "medium": "Orta",
+  "hard": "Çətin"
+}
+

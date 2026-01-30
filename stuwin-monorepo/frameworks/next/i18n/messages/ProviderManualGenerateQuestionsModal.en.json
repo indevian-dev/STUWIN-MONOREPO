@@ -1,0 +1,17 @@
+{
+  "title": "Generate Questions for Topic",
+  "complexity_levels": "Complexity Levels",
+  "easy": "Easy",
+  "medium": "Medium",
+  "hard": "Hard",
+  "questions_per_complexity": "Questions per Complexity",
+  "language": "Language",
+  "azerbaijani": "Azerbaijani",
+  "russian": "Russian",
+  "english": "English",
+  "cancel_button": "Cancel",
+  "generate_button": "Generate Questions",
+  "generating": "Queueing...",
+  "select_complexity_warning": "Please select at least one complexity level"
+}
+

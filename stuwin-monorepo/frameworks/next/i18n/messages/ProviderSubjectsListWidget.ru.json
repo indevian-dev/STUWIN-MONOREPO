@@ -1,0 +1,20 @@
+{
+  "errorFetchingSubjects": "Не удалось загрузить предметы",
+  "error": "Ошибка",
+  "retry": "Повторить",
+  "noSubjects": "Нет доступных предметов",
+  "noSubjectsDescription": "В настоящее время в системе нет активных предметов",
+  "allSubjects": "Все Предметы",
+  "createNewSubject": "Создать Новый Предмет",
+  "subjectCreatedSuccessfully": "Предмет успешно создан",
+  "errorCreatingSubject": "Произошла ошибка при создании предмета",
+  "subjectTitle": "Название Предмета",
+  "enterSubjectTitle": "Введите название предмета",
+  "subjectSlug": "Слаг (URL-дружественное имя)",
+  "enterSubjectSlug": "Введите слаг (например, matematika)",
+  "description": "Описание",
+  "enterSubjectDescription": "Введите краткое описание предмета",
+  "cancel": "Отмена",
+  "creating": "Создание...",
+  "createSubject": "Создать Предмет"
+}

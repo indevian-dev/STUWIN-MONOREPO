@@ -1,0 +1,16 @@
+{
+  "title": "Yeni Mövzu Əlavə et",
+  "topic_name": "Mövzu Adı",
+  "subject": "Fənn",
+  "grade_level": "Sinif Səviyyəsi",
+  "ai_summary": "AI Xülasəsi",
+  "topic_content": "Mövzu Məzmunu",
+  "select_subject": "Fənn seçin",
+  "placeholder_summary": "Mövzunun qısa AI xülasəsini daxil edin",
+  "placeholder_content": "Tam mövzu məzmununu daxil edin (5000-10000 söz)...",
+  "cancel_button": "Ləğv et",
+  "create_button": "Mövzu Yarat",
+  "creating": "Yaradılır...",
+  "required": "*"
+}
+

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /docs/policy
+Allow: /docs/terms
+Allow: /deactivation

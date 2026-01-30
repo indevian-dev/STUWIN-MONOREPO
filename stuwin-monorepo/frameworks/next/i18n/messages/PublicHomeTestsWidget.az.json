@@ -1,0 +1,35 @@
+{
+  "section_hint": "Ustadlıq üçün Qiymətləndirmə",
+  "title": "Testlər vasitəsilə Möhkəmləndirmə",
+  "body": "Testlər son deyil, başlanğıcdır. Süni intellektimiz hələ mənimsəmədiyiniz sahələri tapır və öyrənənə qədər sizi yönləndirir.",
+  "items": [
+    {
+      "title": "Yönləndirici Addımlar",
+      "body": "Səhv etdikdə sadəcə cavabı göstərmirik. Səbəbi izah edirik və bənzər bir tapşırıqla sizi yenidən sınayırıq."
+    },
+    {
+      "title": "Ev İşləri Mentoru",
+      "body": "Ev tapşırıqları üçün yönləndirici ipucular. Nəticəni deyil, həll texnikasını öyrənin."
+    },
+    {
+      "title": "Təkrarı Öyrənmə",
+      "body": "AI səhvlərinizi izləyir və mövzu tam mənimsənilənə qədər onu fərqli kontekstlərdə qarşınıza çıxarır."
+    },
+    {
+      "title": "Ustadlıq İzləmə",
+      "body": "Məktəb proqramının neçə faizini həqiqətən mənimsədiyinizi göstərən vizual tərəqqi paneli."
+    }
+  ],
+  "sidebar": {
+    "ready": "Fərdi Təcrübə",
+    "title": "Ağıllı Məşq Sistemi",
+    "hint": "Adaptiv Mövzu Seçimi",
+    "focus_label": "Ustadlıq Məqsədi",
+    "focus_topics": "Məntiq • Tənliklər • Analiz",
+    "questions_label": "Məşqlər",
+    "questions_value": "Dəyişən",
+    "modes_label": "Öyrənmə Tərzi",
+    "modes_value": "Vizual + Mətn",
+    "note": "Süni intellekt əvvəlki performansınıza əsasən çətinliyi və izah tərzini fərdi şəkildə uyğunlaşdırır."
+  }
+}

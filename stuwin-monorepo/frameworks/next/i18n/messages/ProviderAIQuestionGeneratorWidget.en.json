@@ -1,0 +1,17 @@
+{
+  "title": "AI Question Generator",
+  "description": "Generate questions automatically using AI based on subject, grade level, and topic",
+  "subject": "Subject",
+  "grade_level": "Grade Level",
+  "complexity": "Complexity",
+  "language": "Generation Language",
+  "topic": "Topic",
+  "count": "Number of Questions",
+  "generate_button": "Generate Questions",
+  "generating": "Generating...",
+  "cancel_button": "Cancel",
+  "generated_title": "Generated Questions",
+  "max_questions": "Maximum 10 questions per generation",
+  "saved_to_db": "Questions have been saved to the database"
+}
+

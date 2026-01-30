@@ -1,0 +1,29 @@
+{
+  "section_hint": "Dəstəkçi Valideyn Alətləri",
+  "title": "Valideynlər üçün Konstruktiv Hesabatlar",
+  "body": "Övladınızın səyinə və inkişafına fokuslanın. Neqativ təzyiqi azaltmaq və övladınızı motivasiya etmək üçün tədris prosesinin dərin analizini təqdim edirik.",
+  "safety": {
+    "title": "Müsbət Möhkəmləndirmə",
+    "body": "Hesabatlar əldə olunan nailiyyətləri vurğulamaq və köməyə ehtiyac olan sahələri göstərmək üçün hazırlanıb.",
+    "control_label": "Valideyn İnsaytı Mərkəzi",
+    "control_value": "Proses əsaslı hesabatlar • Səy izləmə • Təhlükəsizlik monitorinqi"
+  },
+  "items": [
+    {
+      "title": "Səy-Mərkəzli Hesabatlar",
+      "body": "Təkcə balı deyil, övladınızın bir mövzu üzərində nə qədər çalışdığını görün."
+    },
+    {
+      "title": "Motivasiyaedici Xülasələr",
+      "body": "Uğurları qeyd edən və gələcək addımları göstərən həftəlik icmallar."
+    },
+    {
+      "title": "Şəffaflığa Dəstək",
+      "body": "Konstruktiv rəy vasitəsilə tələbənin zəif nəticələri gizlətmək istəyini azaldırıq."
+    },
+    {
+      "title": "İnkişaf Analitikası",
+      "body": "Övladınızın ən yaxşı necə öyrəndiyini və çətinliklərin öhdəsindən necə gəldiyini anlayın."
+    }
+  ]
+}

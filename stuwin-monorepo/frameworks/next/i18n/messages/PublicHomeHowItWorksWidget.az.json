@@ -1,0 +1,47 @@
+{
+  "badge": "stuwin.ai Elmi Yanaşması",
+  "title": "4 Addımda Daha Ağıllı Öyrənmə Yolu",
+  "body": "Biz sadəcə cavab vermirik. Mürəkkəb mövzuları kiçik bloklara bölürük və sizi düşünmə prosesinə yönləndiririk.",
+  "steps": [
+    {
+      "title": "Fokuslanmış Mikro-Öyrənmə",
+      "body": "Mövzular detalları qaçırmadan dərindən anlamaq üçün kiçik bloklara bölünür."
+    },
+    {
+      "title": "Yönləndirici AI Köməyi",
+      "body": "Süni intellektimiz birbaşa cavab vermək əvəzinə, ipucuları və aydınlaşdırıcı suallar təqdim edir."
+    },
+    {
+      "title": "Mövzunun Möhkəmləndirilməsi",
+      "body": "Çətinlik yaranarsa, yenidən izah edirik və tam mənimsəmə üçün yeni testlər veririk."
+    },
+    {
+      "title": "Canlı Repetitor Əlaqəsi",
+      "body": "Əgər tələbə hələ də çətinlik çəkirsə, canlı repetitor kömək etməyə hazırdır."
+    }
+  ],
+  "card_subtitle": "Yenilikçi Axın",
+  "card_title": "Məqsəd sadəcə bitirmək deyil, mövzuya sahib olmaqdır",
+  "card_body": "Tələsməyi yavaşladaraq, beynin doğru öyrənmə metoduna uyğunlaşırıq — fokus, səy və fərdi rəy vasitəsilə.",
+  "stats": [
+    {
+      "label": "Biliklərin qalması",
+      "value": "+40%"
+    },
+    {
+      "label": "Yönləndirmə",
+      "value": "100%"
+    },
+    {
+      "label": "Skip limit",
+      "value": "Aktiv"
+    },
+    {
+      "label": "Öyrənmə tərzi",
+      "value": "Adaptiv"
+    }
+  ],
+  "cta_primary": "stuwin.ai-a Qoşul",
+  "cta_secondary": "Tədqiqatımız",
+  "disclaimer": "Təhlükəsiz. Professional. Dil seçimi yuxarıdadır."
+}
