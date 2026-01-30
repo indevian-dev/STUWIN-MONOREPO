@@ -24,8 +24,9 @@ COPY --from=install /temp/dev/node_modules ./node_modules
 # This effectively makes /app the monorepo root inside the container
 COPY stuwin-monorepo/ .
 
-# Ensure node_modules binaries are in PATH
-ENV PATH="/app/node_modules/.bin:$PATH"
+
+# Ensure node_modules binaries are in PATH (both root and workspace)
+ENV PATH="/app/frameworks/next/node_modules/.bin:/app/node_modules/.bin:$PATH"
 
 # Set environment variables for build time
 ARG NEXT_PUBLIC_APP_URL
@@ -39,7 +40,10 @@ ENV NEXT_PUBLIC_ABLY_API_KEY=$NEXT_PUBLIC_ABLY_API_KEY
 
 # Build the Next.js app
 WORKDIR /app/frameworks/next
-RUN bun run build
+RUN echo "DEBUG: Listing binaries..." && \
+    (ls -la /app/node_modules/.bin || echo "Root bin not found") && \
+    (ls -la /app/frameworks/next/node_modules/.bin || echo "Workspace next bin not found") && \
+    bun run build
 
 # Stage 3: Release
 FROM base AS release
