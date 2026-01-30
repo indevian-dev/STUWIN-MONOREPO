@@ -24,6 +24,9 @@ COPY --from=install /temp/dev/node_modules ./node_modules
 # This effectively makes /app the monorepo root inside the container
 COPY stuwin-monorepo/ .
 
+# Ensure node_modules binaries are in PATH
+ENV PATH="/app/node_modules/.bin:$PATH"
+
 # Set environment variables for build time
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
