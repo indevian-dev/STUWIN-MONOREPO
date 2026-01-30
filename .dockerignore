@@ -15,7 +15,7 @@ LICENSE
 .env*
 !.env.example
 .bun-build
-bun.lock
+# bun.lock is now INCLUDED to ensure consistent dependency resolution
 yarn.lock
 package-lock.json
 pnpm-lock.yaml
