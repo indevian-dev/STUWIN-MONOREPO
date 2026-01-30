@@ -1,30 +1,30 @@
 # use the official Bun image
 FROM oven/bun:1 AS base
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Stage 1: Install dependencies
 FROM base AS install
 RUN mkdir -p /temp/dev
-# Copy monorepo root package.json and lockfile (using wildcard for lockfile to be flexible)
+# Copy monorepo root package.json and lockfiles
 COPY stuwin-monorepo/package.json stuwin-monorepo/bun.lock* stuwin-monorepo/yarn.lock* stuwin-monorepo/package-lock.json* /temp/dev/
 # Copy workspaces package.json files
 COPY stuwin-monorepo/frameworks/next/package.json /temp/dev/frameworks/next/
 COPY stuwin-monorepo/packages/shared/package.json /temp/dev/packages/shared/
 
-# Install dependencies
-# We don't use --frozen-lockfile here because the user's lockfile might be corrupted
-# and needs regeneration or has version mismatches.
+# Install dependencies for the monorepo
+# We run it in the /temp/dev which will be our monorepo root
 RUN cd /temp/dev && bun install
 
 # Stage 2: Prerelease (Source copy and Build)
 FROM base AS prerelease
-WORKDIR /usr/src/app
-# Copy node_modules from install stage
-COPY --from=install /temp/dev/node_modules ./stuwin-monorepo/node_modules
-# Copy all project files
-COPY . .
+WORKDIR /app
+# Copy dependencies from install stage
+COPY --from=install /temp/dev/node_modules ./node_modules
+# Copy ONLY the contents of stuwin-monorepo folder to /app root
+# This effectively makes /app the monorepo root inside the container
+COPY stuwin-monorepo/ .
 
-# Set environment variables for build time (Next.js needs these for client-side)
+# Set environment variables for build time
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -35,27 +35,25 @@ ARG NEXT_PUBLIC_ABLY_API_KEY
 ENV NEXT_PUBLIC_ABLY_API_KEY=$NEXT_PUBLIC_ABLY_API_KEY
 
 # Build the Next.js app
-WORKDIR /usr/src/app/stuwin-monorepo/frameworks/next
-ENV NODE_ENV=production
+WORKDIR /app/frameworks/next
 RUN bun run build
 
 # Stage 3: Release
 FROM base AS release
-WORKDIR /usr/src/app/stuwin-monorepo/frameworks/next
-ENV NODE_ENV=production
+# For standalone output, it's best to run from the folder where server.js will be
+WORKDIR /app/frameworks/next
 
-# Set ownership for security (matching user reference)
-RUN chown -R bun:bun /usr/src/app
+# Set ownership
+RUN chown -R bun:bun /app
 
 # Copy the standalone build and static files
-# server.js is the entry point for standalone deployments
-COPY --from=prerelease --chown=bun:bun /usr/src/app/stuwin-monorepo/frameworks/next/.next/standalone ./
-COPY --from=prerelease --chown=bun:bun /usr/src/app/stuwin-monorepo/frameworks/next/.next/static ./.next/static
-COPY --from=prerelease --chown=bun:bun /usr/src/app/stuwin-monorepo/frameworks/next/public ./public
+# Standalone build produces a 'standalone' folder which we copy into our WORKDIR
+COPY --from=prerelease --chown=bun:bun /app/frameworks/next/.next/standalone ./
+COPY --from=prerelease --chown=bun:bun /app/frameworks/next/.next/static ./.next/static
+COPY --from=prerelease --chown=bun:bun /app/frameworks/next/public ./public
 
-# export port
 EXPOSE 3000
-
-# run the app
 USER bun
+
+# Standalone mode entrypoint
 ENTRYPOINT [ "bun", "run", "server.js" ]
