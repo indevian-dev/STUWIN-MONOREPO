@@ -42,16 +42,9 @@ ENV NEXT_PUBLIC_S3_PREFIX=$NEXT_PUBLIC_S3_PREFIX
 ARG NEXT_PUBLIC_ABLY_API_KEY
 ENV NEXT_PUBLIC_ABLY_API_KEY=$NEXT_PUBLIC_ABLY_API_KEY
 
-# Build the Next.js app
+# Build the Next.js app using Bun's module resolution
 WORKDIR /app/frameworks/next
-# Debug: Find where next is actually installed
-RUN echo "DEBUG: Listing /app/node_modules..." && \
-    ls -la /app/node_modules | head -20 && \
-    echo "DEBUG: Looking for next..." && \
-    find /app -name "next" -type d | head -10 && \
-    echo "DEBUG: Checking if next exists in node_modules..." && \
-    (ls -la /app/node_modules/next || echo "next not in /app/node_modules") && \
-    echo "DEBUG: Done"
+RUN bun --bun run build
 
 # Stage 3: Release
 FROM base AS release
