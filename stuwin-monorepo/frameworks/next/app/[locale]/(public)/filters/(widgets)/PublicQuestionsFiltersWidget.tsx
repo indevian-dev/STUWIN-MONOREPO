@@ -8,7 +8,7 @@ import React, {
     useMemo
 } from 'react';
 import { GlobalSelectWidget } from '@/app/[locale]/(global)/(widgets)/GlobalSelectWidget';
-import { useGlobalSubjectsContext } from '@/app/[locale]/(global)/(context)/GlobalSubjectsContext';
+
 
 // Types
 interface CategoryStat {
@@ -68,11 +68,9 @@ export function PublicCardsFiltersWidget({
     const categoryFacets = useMemo<CategoryFacet[]>(() => [], []);
     const initialProps = useMemo<{ categoryId?: string }>(() => ({}), []);
 
-    // Get categories from context
-    const {
-        categoriesHierarchy,
-        loading: categoriesLoading
-    } = useGlobalSubjectsContext();
+    // Mocking context data as GlobalSubjectsContext is removed
+    const categoriesHierarchy: Subject[] = [];
+    const categoriesLoading = false;
 
     // Refs for stable tracking
     const isInitialized = useRef(false);
@@ -325,7 +323,7 @@ export function PublicCardsFiltersWidget({
             {cardOptions.map((cardOption: FilterOption) => {
                 const dynamicFilterValue = userFilters[cardOption.id] as { min?: number; max?: number } | undefined;
                 const selectFilterValue = userFilters[cardOption.id] as string[] | string | undefined;
-                
+
                 return (
                     <div key={cardOption.id} className="col-span-12 flex items-stretch w-full">
                         <div className="rounded space-y-2 w-full">

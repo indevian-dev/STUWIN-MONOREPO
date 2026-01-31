@@ -2,7 +2,7 @@
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { eq, and, desc } from "drizzle-orm";
 import * as schema from "@/lib/app-infrastructure/database/schema";
-import { workspaceSubscriptionTransactions, paymentSubscriptions, activeSubscriptions, workspaceSubscriptionCoupons, accounts, workspaces } from "@/lib/app-infrastructure/database/schema";
+import { workspaceSubscriptionTransactions, paymentSubscriptions, workspaceSubscriptionCoupons, accounts, workspaces } from "@/lib/app-infrastructure/database/schema";
 
 export class PaymentRepository {
     constructor(private readonly db: PostgresJsDatabase<typeof schema>) { }
@@ -44,28 +44,7 @@ export class PaymentRepository {
     }
 
 
-    async createActiveSubscription(data: typeof activeSubscriptions.$inferInsert) {
-        // Upsert logic: if exists for same scope+scopeId+accountId, update it.
-        // For simplicity, we just insert. A real production app might want to expire old ones first.
-        const result = await this.db.insert(activeSubscriptions).values(data).returning();
-        return result[0];
-    }
 
-    async getActiveSubscriptions(accountId: string) {
-        return await this.db.select().from(activeSubscriptions)
-            .where(eq(activeSubscriptions.accountId, accountId));
-    }
-
-    async getActiveSubscriptionByWorkspace(workspaceId: string) {
-        const now = new Date();
-        const subs = await this.db.select().from(activeSubscriptions)
-            .where(and(
-                eq(activeSubscriptions.workspaceId, workspaceId),
-                eq(activeSubscriptions.status, 'active')
-            ));
-
-        return subs.filter(s => !s.endsAt || new Date(s.endsAt) > now);
-    }
 
     // Legacy Support (Optional)
     async updateWorkspaceSubscription(workspaceId: string, type: string, until: Date) {

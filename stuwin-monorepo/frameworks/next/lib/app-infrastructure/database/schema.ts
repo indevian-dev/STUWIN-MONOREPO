@@ -150,24 +150,7 @@ export const workspaceSubscriptionCoupons = pgTable("workspace_subscription_coup
     isActive: boolean("is_active"),
 });
 
-export const activeSubscriptions = pgTable("active_subscriptions", {
-    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
-    accountId: varchar("account_id").references(() => accounts.id), // Owner/Payer
-    workspaceId: varchar("workspace_id").references(() => workspaces.id),
 
-    // Plan Details
-    planType: varchar("plan_type").notNull(), // e.g. 'pro', 'premium' (matches paymentSubscriptions.type)
-    planId: varchar("plan_id"), // Optional FK to paymentSubscriptions.id
-
-    // Period & Status
-    startsAt: timestamp("starts_at", { withTimezone: true }).defaultNow(),
-    endsAt: timestamp("ends_at", { withTimezone: true }),
-    status: varchar("status").default('active'), // 'active', 'cancelled', 'expired'
-
-    // Metadata
-    metadata: jsonb("metadata").default({}),
-    paymentTransactionId: varchar("payment_transaction_id"),
-});
 
 export const workspaceToWorkspace = pgTable("workspace_to_workspace", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),

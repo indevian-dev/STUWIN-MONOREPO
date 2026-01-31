@@ -4,7 +4,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
-import { useGlobalSubjectsContext } from '@/app/[locale]/(global)/(context)/GlobalSubjectsContext';
+
 import Image from 'next/image';
 
 interface PublicHeaderSubjectsMenuWidgetProps {
@@ -13,7 +13,9 @@ interface PublicHeaderSubjectsMenuWidgetProps {
 
 export function PublicHeaderSubjectsMenuWidget({ onMenuClose }: PublicHeaderSubjectsMenuWidgetProps) {
     const router = useRouter();
-    const { subjects, loading, error } = useGlobalSubjectsContext();
+    const subjects: any[] = [];
+    const loading = false;
+    const error = null;
 
     const handleSubjectClick = (subjectId: number | string, slug: string) => {
         router.push(`/subjects/${slug}-${subjectId}`);

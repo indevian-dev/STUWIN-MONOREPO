@@ -660,9 +660,6 @@ export class AuthService extends BaseService {
                 return { success: false, error: "Account not found", status: 404 };
             }
 
-            // Fetch active subscriptions from new table
-            const activeSubscriptions = await this.paymentRepo.getActiveSubscriptions(account.id);
-
             return {
                 success: true,
                 status: 200,
@@ -682,7 +679,7 @@ export class AuthService extends BaseService {
                         subscriptionType: (account as any).subscriptionType, // Legacy
                         subscribedUntil: (account as any).subscribedUntil, // Legacy
                     },
-                    subscriptions: activeSubscriptions
+                    subscriptions: []
                 }
             };
         } catch (error) {

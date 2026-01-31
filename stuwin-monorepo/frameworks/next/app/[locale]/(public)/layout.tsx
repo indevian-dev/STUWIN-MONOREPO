@@ -15,7 +15,7 @@ import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/Gl
 import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
 import { PublicFooterWidget } from '@/app/[locale]/(public)/(layout)/footer/(widgets)/PublicFooterWidget';
 import type { DomainNavConfig } from '@/types';
-import { GlobalSubjectsProvider } from '@/app/[locale]/(global)/(context)/GlobalSubjectsContext';
+
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -87,26 +87,24 @@ function PublicLayout({ children }: PublicLayoutProps) {
   return (
     <>
       <div className="min-h-screen bg-section-gradient-brand">
-        <GlobalSubjectsProvider>
-          <GlobalHeaderWidget
-            config={navConfig}
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          >
-            <GlobalFastNavigationWidget
-              config={navConfig}
-              isMenuOpen={isMenuOpen}
-              setIsMenuOpen={setIsMenuOpen}
-            />
-          </GlobalHeaderWidget>
-          <GlobalFullNavigationWidget
+        <GlobalHeaderWidget
+          config={navConfig}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+        >
+          <GlobalFastNavigationWidget
             config={navConfig}
             isMenuOpen={isMenuOpen}
             setIsMenuOpen={setIsMenuOpen}
           />
-          <main className="text-dark">{children}</main>
-          <PublicFooterWidget />
-        </GlobalSubjectsProvider>
+        </GlobalHeaderWidget>
+        <GlobalFullNavigationWidget
+          config={navConfig}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+        />
+        <main className="text-dark">{children}</main>
+        <PublicFooterWidget />
       </div>
     </>
   );

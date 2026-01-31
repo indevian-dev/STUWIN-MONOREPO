@@ -1,4 +1,4 @@
-import { GlobalSubjectsProvider } from '@/app/[locale]/(global)/(context)/GlobalSubjectsContext';
+
 import { withLayoutAuth } from '@/lib/app-access-control/interceptors';
 import type { ReactNode } from 'react';
 
@@ -20,9 +20,7 @@ async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   await params;
 
   return (
-    <GlobalSubjectsProvider>
-      {children}
-    </GlobalSubjectsProvider>
+    { children }
   );
 }
 

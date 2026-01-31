@@ -7,7 +7,7 @@ import React, {
 import Link
   from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useGlobalSubjectsContext } from '@/app/[locale]/(global)/(context)/GlobalSubjectsContext';
+
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface Subject {
@@ -33,7 +33,6 @@ export function PublicSubjectsFastNavigationWidget({ subject }: PublicSubjectsFa
   const [fastNavigationSubjects, setFastNavigationSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useTranslations('Global');
-  const { subjects: allSubjects, loading: contextLoading, getSubSubjects } = useGlobalSubjectsContext();
 
   useEffect(() => {
     const loadSubjects = async () => {
@@ -41,19 +40,11 @@ export function PublicSubjectsFastNavigationWidget({ subject }: PublicSubjectsFa
         setLoading(true);
 
         if (subject && subject.id) {
-          // If category prop is provided, get its subcategories
-          const result = await getSubSubjects(subject.id);
-          if (!result.error) {
-            setFastNavigationSubjects(result.subjects || []);
-          } else {
-            ConsoleLogger.error('Error fetching subsubjects:', result.error);
-            setFastNavigationSubjects([]);
-          }
+          // TODO: If needed, implement a direct API call here instead of context
+          // For now, we return empty to avoid errors
+          setFastNavigationSubjects([]);
         } else {
-          // If no category prop, use root categories from context
-          // Filter only categories with no parent (root level)
-          const rootSubjects = allSubjects.filter(subject => !subject.parent_id);
-          setFastNavigationSubjects(rootSubjects);
+          setFastNavigationSubjects([]);
         }
       } catch (error) {
         ConsoleLogger.error('Error loading subsubjects:', error);
@@ -63,10 +54,8 @@ export function PublicSubjectsFastNavigationWidget({ subject }: PublicSubjectsFa
       }
     };
 
-    if (!contextLoading) {
-      loadSubjects();
-    }
-  }, [subject, allSubjects, contextLoading, getSubSubjects]);
+    loadSubjects();
+  }, [subject]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-full  p-8"><div className="loader h-8 w-8"></div></div>;
