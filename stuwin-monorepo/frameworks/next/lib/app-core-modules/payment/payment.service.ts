@@ -137,17 +137,7 @@ export class PaymentService {
         const until = new Date();
         until.setDate(until.getDate() + 30);
 
-        // CREATE ACTIVE SUBSCRIPTION
-        await this.paymentRepo.createActiveSubscription({
-            accountId: transaction.accountId as string,
-            workspaceId: workspaceId,
-            planType: tierType,
-            startsAt: new Date(),
-            endsAt: until,
-            status: 'active',
-            metadata: { transactionId: transaction.id },
-            paymentTransactionId: transaction.id
-        });
+        // Legacy active_subscriptions table creation removed
 
         // Update Workspace Subscription Date
         await this.paymentRepo.updateWorkspaceSubscription(workspaceId, tierType, until);
@@ -161,11 +151,15 @@ export class PaymentService {
     }
 
     async getEffectiveSubscriptionStatus(workspaceId: string, workspaceType: string) {
-        const workspaceSubs = await this.paymentRepo.getActiveSubscriptionByWorkspace(workspaceId);
-        if (workspaceSubs && workspaceSubs.length > 0) {
+        // Refactored to check workspace table directly instead of legacy active_subscriptions
+        const workspace = await this.db.query.workspaces.findFirst({
+            where: (w, { eq }) => eq(w.id, workspaceId)
+        });
+
+        if (workspace && workspace.studentSubscribedUntill && new Date(workspace.studentSubscribedUntill) > new Date()) {
             return {
-                type: workspaceSubs[0].planType,
-                until: workspaceSubs[0].endsAt as Date,
+                type: 'pro', // Defaulting to pro as plan type isn't clearly stored on workspace yet besides potentially metadata, or simplified model
+                until: workspace.studentSubscribedUntill,
                 source: 'WORKSPACE',
                 isActive: true
             };
