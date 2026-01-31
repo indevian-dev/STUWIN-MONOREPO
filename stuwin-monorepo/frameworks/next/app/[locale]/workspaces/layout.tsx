@@ -20,7 +20,9 @@ async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   await params;
 
   return (
-    { children }
+    <>
+      {children}
+    </>
   );
 }
 
