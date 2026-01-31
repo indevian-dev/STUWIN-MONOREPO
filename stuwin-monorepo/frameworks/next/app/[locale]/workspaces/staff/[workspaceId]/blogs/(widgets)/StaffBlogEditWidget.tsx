@@ -12,7 +12,7 @@ import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 import Image
   from 'next/image';
 import Editor
-  from '@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor';
+  from '@/lib/components/Editor';
 
 interface Blog {
   id: number;

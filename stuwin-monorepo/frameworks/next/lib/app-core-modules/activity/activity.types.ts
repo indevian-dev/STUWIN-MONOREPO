@@ -52,7 +52,7 @@ export namespace Homework {
 // LEARNING SESSIONS
 // ═══════════════════════════════════════════════════════════════
 
-export namespace Session {
+export namespace ActivitySession {
     export interface Entity extends Timestamps {
         id: string;
         studentAccountId: string;

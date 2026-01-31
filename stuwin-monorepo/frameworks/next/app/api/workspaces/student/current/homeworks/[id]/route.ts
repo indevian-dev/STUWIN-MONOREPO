@@ -1,21 +1,19 @@
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/app-access-control/interceptors/ApiInterceptor";
 
-export const GET = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
+export const GET = unifiedApiHandler(
+    async (req: NextRequest, { module, params }: UnifiedContext) => {
         const homeworkId = params.id;
-        const modules = new ModuleFactory(ctx);
-        const result = await modules.activity.getHomeworkDetail(homeworkId);
+        const result = await module.activity.getHomeworkDetail(homeworkId);
 
         if (!result.success) {
-            return NextResponse.json({ success: false, error: result.error }) as any;
+            return NextResponse.json({ success: false, error: result.error });
         }
 
         return NextResponse.json({
             success: true,
             data: result.data,
-        }) as any;
+        });
     },
     {
         method: "GET",
@@ -23,12 +21,12 @@ export const GET = withApiHandler(
     },
 );
 
-export const DELETE = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
+export const DELETE = unifiedApiHandler(
+    async (req: NextRequest, { params }: UnifiedContext) => {
         const homeworkId = params.id;
         // Note: We'd implement delete in ActivityService/Repository
         // For now, returning 200 to satisfy front-end logic or implement basic delete
-        return NextResponse.json({ success: true }) as any;
+        return NextResponse.json({ success: true });
     },
     {
         method: "DELETE",

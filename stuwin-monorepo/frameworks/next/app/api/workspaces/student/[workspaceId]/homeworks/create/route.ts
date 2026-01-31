@@ -1,70 +1,46 @@
-// ═══════════════════════════════════════════════════════════════
-// CREATE HOMEWORK API
-// ═══════════════════════════════════════════════════════════════
-// Dedicated endpoint for creating new homework submissions
-// ═══════════════════════════════════════════════════════════════
-
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { studentHomeworks } from "@/lib/app-infrastructure/database/schema";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import type { ApiHandlerContext } from "@/types/next";
+import { NextRequest, NextResponse } from "next/server";
+import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 
 /**
- * POST /api/workspaces/students/homeworks/create
+ * POST /api/workspaces/student/[workspaceId]/homeworks/create
  * Create a new homework submission
  */
-export const POST = withApiHandler(
-  async (req: NextRequest, { db, authData, generateSlimId }: ApiHandlerContext) => {
-    const body = await req.json();
-
-    const { title, description, subject, topicId, quizId } = body;
-
-    if (!title) {
-      return NextResponse.json({ error: "title is required" }, { status: 400 });
-    }
-
+export const POST = unifiedApiHandler(
+  async (request: NextRequest, { module, auth, log, params }) => {
     try {
-      const [newHomework] = await db
-        .insert(studentHomeworks)
-        .values({
-          id: generateSlimId ? generateSlimId() : undefined,
-          studentAccountId: authData?.account?.id || "",
-          workspaceId: authData?.account?.workspaceId || "",
-          title,
-          description: description || null,
-          subject: subject || null,
-          topicId: topicId || null,
-          quizId: quizId || null,
-          status: "pending",
-          createdAt: new Date(),
-        })
-        .returning();
+      const body = await request.json();
+      const { title, description, topicId, media, textContent } = body;
 
-      if (!newHomework) {
-        return NextResponse.json(
-          { error: "Failed to create homework" },
-          { status: 500 },
-        );
+      if (!title) {
+        return NextResponse.json({ error: "title is required" }, { status: 400 });
+      }
+
+      log.info('Creating homework', { accountId: auth.accountId, title });
+
+      const result = await module.activity.submitHomework(auth.accountId, {
+        title,
+        workspaceId: params.workspaceId as string,
+        topicId,
+        description,
+        textContent,
+        media: media || [],
+      });
+
+      if (!result.success || !result.data) {
+        log.error("Failed to create homework", { error: result.error });
+        return NextResponse.json({ error: result.error || "Failed to create homework" }, { status: 500 });
       }
 
       return NextResponse.json(
         {
-          homework: newHomework,
+          success: true,
+          homework: result.data,
         },
         { status: 201 },
       );
     } catch (error) {
-      console.error("POST homework error:", error);
-      return NextResponse.json(
-        {
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to create homework",
-        },
-        { status: 500 },
-      );
+      log.error("POST homework error", error);
+      return NextResponse.json({ error: "Failed to create homework" }, { status: 500 });
     }
   },
 );

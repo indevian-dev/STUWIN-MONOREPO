@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
-import { Topic } from '@/types/resources/topics';
+import { Topic } from '@/types';
 import { ApiResponse } from '@/types';
 import { useRouter, useParams } from 'next/navigation';
 
@@ -106,10 +106,10 @@ export function ProviderTopicDetailWidget({
           </div>
         )}
 
-        {topic.body && (
+        {topic.description && (
           <div>
             <h3 className="font-semibold text-gray-900 mb-2">Content</h3>
-            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: topic.body }} />
+            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: topic.description }} />
           </div>
         )}
 

@@ -13,7 +13,7 @@ import { ProviderAnswersEditorWidget } from './ProviderAnswersEditorWidget';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { BaseFormProps, FormMode } from '@/types';
-import { Question as QuestionType } from '@/types/resources/questions';
+import { Question as QuestionType, QuestionComplexity } from '@/types/resources/questions';
 import { ApiResponse } from '@/types';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
@@ -38,7 +38,6 @@ interface ProviderQuestionFormErrors {
   explanationGuide?: string;
 }
 
-type QuestionComplexity = 'easy' | 'medium' | 'hard' | 'expert';
 
 interface QuestionData {
   id?: string;
@@ -172,15 +171,17 @@ export function ProviderQuestionFormWidget({
           ? `/api/workspaces/provider/${workspaceId}/questions/${initialData?.id}`
           : `/api/workspaces/provider/${workspaceId}/questions`,
         body: payload
-      }) as ApiResponse<{ question: QuestionType.PrivateAccess }>;
+      });
 
-      if ('success' in response && response.success && 'data' in response && response.data) {
+      const result = response.data as ApiResponse<{ question: QuestionType.PrivateAccess }>;
+
+      if (result && 'success' in result && result.success && result.data) {
         toast.success(mode === 'edit' ? 'Question updated successfully' : 'Question created successfully');
         if (onSuccess) {
-          onSuccess(response.data.question);
+          onSuccess(result.data.question);
         }
       } else {
-        const errorMessage = 'error' in response ? response.error.message : 'Failed to save question';
+        const errorMessage = result && 'success' in result && !result.success && result.error ? result.error.message : 'Failed to save question';
         toast.error(errorMessage);
       }
     } catch (error) {

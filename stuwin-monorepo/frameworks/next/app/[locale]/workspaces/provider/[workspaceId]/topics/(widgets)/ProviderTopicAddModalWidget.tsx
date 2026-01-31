@@ -5,13 +5,8 @@ import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { Subject } from '@/types/resources/subjects';
 import { ApiResponse } from '@/types';
 import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-
+import Editor from '@/lib/components/Editor';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
-const Editor = dynamic(() => import('@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor'), {
-  ssr: false,
-  loading: () => <div className="p-4 text-gray-500">Loading editor...</div>
-});
 
 interface ProviderTopicAddModalWidgetProps {
   isOpen: boolean;

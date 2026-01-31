@@ -169,33 +169,120 @@ export class WorkspaceService extends BaseService {
     /**
      * Student Flow: Create student workspace and enroll in a provider
      */
-    async createStudentWorkspace(ownerAccountId: string, details: { displayName: string; gradeLevel: any; providerId: string }) {
+    async createStudentWorkspace(ownerAccountId: string, details: { displayName: string; gradeLevel?: any; providerId: string }) {
         try {
             return await this.db.transaction(async (tx) => {
                 // 1. Create Student Workspace
                 const studentWorkspace = await this.repository.create({
                     title: details.displayName,
                     type: "student",
-                    metadata: { gradeLevel: details.gradeLevel },
                     ownerAccountId: ownerAccountId,
+                    metadata: { gradeLevel: details.gradeLevel },
                     isActive: true,
                 }, tx as any);
 
-                // 2. Link to Provider (Enrollment)
+                // 2. Connect to the selected Provider (School/Center)
+                // Student IS ENROLLED IN Provider
                 await this.repository.connectWorkspaces({
                     fromWorkspaceId: studentWorkspace.id,
                     toWorkspaceId: details.providerId,
-                    relationType: "enrollment",
-                    role: "student",
-                    isApproved: true, // Auto-approve for now, or false if provider needs to accept? Assuming active start.
-                    accountId: ownerAccountId, // The account creating the link
+                    relationType: "enrolled_in",
                 }, tx as any);
 
                 return { success: true, data: studentWorkspace };
             });
         } catch (error) {
             this.handleError(error, "createStudentWorkspace");
-            return { success: false, error: "Failed to create student workspace" };
+            return { success: false, error: "Student onboarding failed" };
+        }
+    }
+    /**
+     * Generate S3 Pre-signed URL for User Media
+     */
+    async getUserMediaUploadUrl(userId: string, fileName: string, fileType: string) {
+        try {
+            const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+            const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
+
+            if (!accessKeyId || !secretAccessKey) {
+                return { success: false, error: "S3 credentials not configured", code: 500 };
+            }
+
+            const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+            const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_REGION || 'global',
+                endpoint: process.env.AWS_S3_ENDPOINT,
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+            });
+
+            const extension = fileType.split('/')[1] || 'bin';
+            const s3Params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: `products/${userId}/${fileName}.${extension}`,
+                ContentType: fileType,
+            };
+
+            const command = new PutObjectCommand(s3Params);
+            const uploadURL = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+
+            return { success: true, data: { uploadURL, fileName } };
+        } catch (error) {
+            this.handleError(error, "getUserMediaUploadUrl");
+            return { success: false, error: "Failed to generate upload URL" };
+        }
+    }
+
+    /**
+     * Delete User Media from S3
+     */
+    async deleteUserMedia(fileName: string, filePath: string) {
+        try {
+            const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+            const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
+
+            if (!accessKeyId || !secretAccessKey) {
+                return { success: false, error: "S3 credentials not configured", code: 500 };
+            }
+
+            const { S3Client, DeleteObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_REGION || 'global',
+                endpoint: process.env.AWS_S3_ENDPOINT,
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+            });
+
+            const params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: `${filePath}/${fileName}`,
+            };
+
+            // 1. Delete the object
+            const deleteCommand = new DeleteObjectCommand(params);
+            await s3Client.send(deleteCommand);
+
+            // 2. Verify deletion
+            try {
+                const headCommand = new HeadObjectCommand(params);
+                await s3Client.send(headCommand);
+                return { success: false, error: "File could not be deleted", code: 500 };
+            } catch (headErr: any) {
+                if (headErr && headErr.name === "NotFound") {
+                    return { success: true, message: "File deleted successfully" };
+                }
+                throw headErr;
+            }
+        } catch (error) {
+            this.handleError(error, "deleteUserMedia");
+            return { success: false, error: "Failed to delete file" };
         }
     }
 }

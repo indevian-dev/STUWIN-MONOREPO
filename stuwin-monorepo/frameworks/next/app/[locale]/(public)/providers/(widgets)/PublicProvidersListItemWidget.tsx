@@ -31,12 +31,12 @@ export function PublicProvidersListItemWidget({ Provider }: PublicProvidersListI
   if (!Provider) return null;
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
+    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   return (
     <Link
-      href={`/Providers/${Provider.id}`}
+      href={`/providers/${Provider.id}`}
       className="block h-full bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group"
     >
       {/* Logo/Image Container */}

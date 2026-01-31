@@ -1,4 +1,4 @@
-import { PublicProvidersListWidget } from '@/app/[locale]/(public)/Providers/(widgets)/PublicProvidersListWidget';
+import { PublicProvidersListWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProvidersListWidget';
 import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitleTile';
 import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
 import { db } from '@/lib/app-infrastructure/database';
@@ -43,11 +43,11 @@ async function getProviders(page = 1, pageSize = 24) {
 
     // Map to Provider interface
     const mappedProviders = ProvidersList.map(w => ({
-      id: w.accessKey,
+      id: w.id,
       createdAt: w.createdAt || new Date(),
-      title: w.title || w.displayName || 'Untitled',
+      title: w.title || 'Untitled',
       description: (w.metadata as any)?.description || null,
-      logo: w.avatarUrl || null,
+      logo: (w.metadata as any)?.avatarUrl || null,
       isActive: w.isActive || false,
       isApproved: true,
       location: (w.metadata as any)?.location || null,
@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
       description: 'Azərbaycanda fəaliyyət göstərən təhsil təşkilatları',
       type: 'website',
       locale: locale,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/Providers`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/providers`,
     },
   };
 }
@@ -93,7 +93,7 @@ export default async function PublicProvidersPage({ searchParams }: PageParams) 
 
   const breadcrumbs = [
     { label: 'Ana səhifə', href: '/' },
-    { label: 'Təhsil təşkilatları', href: '/Providers' }
+    { label: 'Təhsil təşkilatları', href: '/providers' }
   ];
 
   return (

@@ -272,4 +272,12 @@ export class LearningRepository extends BaseRepository {
         const result = await client.insert(learningSubjectPdfs).values(data).returning();
         return result[0];
     }
+    async deleteTopic(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .delete(learningSubjectTopics)
+            .where(eq(learningSubjectTopics.id, id))
+            .returning();
+        return result[0];
+    }
 }

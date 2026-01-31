@@ -4,6 +4,7 @@ import {
   useState,
   FormEvent
 } from 'react';
+import { useParams } from 'next/navigation';
 import { ProviderSubjectSelectorWidget } from './ProviderSubjectSelectorWidget';
 import { ProviderGradeLevelSelectorWidget } from './ProviderGradeLevelSelectorWidget';
 import { ProviderComplexitySelectorWidget } from './ProviderComplexitySelectorWidget';
@@ -26,10 +27,12 @@ interface ProviderAIQuestionGeneratorWidgetProps {
   onCancel?: () => void;
 }
 
-export function ProviderAIQuestionGeneratorWidget({ 
-  onQuestionGenerated, 
-  onCancel 
+export function ProviderAIQuestionGeneratorWidget({
+  onQuestionGenerated,
+  onCancel
 }: ProviderAIQuestionGeneratorWidgetProps) {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<QuestionGeneratorFormData>({
     subjectId: null,
@@ -87,7 +90,7 @@ export function ProviderAIQuestionGeneratorWidget({
     try {
       const response = await apiCallForSpaHelper({
         method: 'POST',
-        url: '/api/workspaces/provider/questions/generate',
+        url: `/api/workspaces/provider/${workspaceId}/questions/generate`,
         body: {
           subject_id: formData.subjectId,
           grade_level: formData.gradeLevel,
@@ -96,10 +99,12 @@ export function ProviderAIQuestionGeneratorWidget({
           count: formData.count,
           language: formData.language
         }
-      }) as ApiResponse<GenerateQuestionsResponse>;
+      });
 
-      if ('success' in response && response.success && 'data' in response) {
-        const questions = response.data?.questions || [];
+      const result = response.data as ApiResponse<GenerateQuestionsResponse>;
+
+      if (result && 'success' in result && result.success && result.data) {
+        const questions = result.data.questions || [];
         setGeneratedQuestions(questions);
         toast.success(`Generated ${questions.length} question(s) successfully`);
 
@@ -107,8 +112,8 @@ export function ProviderAIQuestionGeneratorWidget({
           onQuestionGenerated(questions);
         }
       } else {
-        const errorMessage = 'error' in response
-          ? response.error.message
+        const errorMessage = result && 'success' in result && !result.success && result.error
+          ? result.error.message
           : 'Failed to generate questions';
         toast.error(errorMessage);
       }
@@ -158,9 +163,9 @@ export function ProviderAIQuestionGeneratorWidget({
           </label>
           <select
             value={formData.language}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              language: e.target.value as QuestionLanguage 
+            onChange={(e) => setFormData({
+              ...formData,
+              language: e.target.value as QuestionLanguage
             })}
             className={`w-full px-3 py-2 border ${errors.language ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
           >

@@ -4,9 +4,10 @@ import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { PiBookOpen } from "react-icons/pi";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
+import { Topic } from "@/types";
 import { ProviderPdfTopicExtractorWidget } from "./ProviderPdfTopicExtractorWidget";
 import { TestGenerationModal } from "./TestGenerationModal";
-import type { Topic, SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
+import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
 
 interface SubjectTopicsSectionProps {
   workspaceId: string;

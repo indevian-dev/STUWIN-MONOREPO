@@ -45,7 +45,7 @@ interface PublicBookmarkedQuestionsProviderProps {
 }
 
 export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarkedQuestionsProviderProps) => {
-  const { currentAccount, loading: authLoading } = useGlobalAuthProfileContext();
+  const { userId, loading: authLoading } = useGlobalAuthProfileContext();
 
   const [bookmarkIds, setBookmarkIds] = useState<Set<string>>(new Set());
   const [toggleLoadingIds, setToggleLoadingIds] = useState<Set<string>>(new Set());
@@ -119,7 +119,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
   useEffect(() => {
     if (authLoading) return;
 
-    const accountId = currentAccount?.id;
+    const accountId = userId;
 
     if (accountId) {
       if (accountIdRef.current !== accountId) {
@@ -136,7 +136,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
         setBookmarkIds(new Set());
       }
     }
-  }, [authLoading, currentAccount?.id, fetchFavorites, loadFromStorage]);
+  }, [authLoading, userId, fetchFavorites, loadFromStorage]);
 
   const isBookmarked = useCallback((questionId: string) => {
     return bookmarkIds.has(String(questionId));
@@ -148,7 +148,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
 
   const toggleBookmark = useCallback(async (questionId: string) => {
     const questionIdKey = String(questionId);
-    const accountId = currentAccount?.id;
+    const accountId = userId;
 
     setToggleLoadingIds(prev => new Set([...prev, questionIdKey]));
 
@@ -221,15 +221,15 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
         return newSet;
       });
     }
-  }, [currentAccount?.id, bookmarkIds, saveToStorage]);
+  }, [userId, bookmarkIds, saveToStorage]);
 
   const refreshBookmarks = useCallback(() => {
-    const accountId = currentAccount?.id;
+    const accountId = userId;
     if (accountId) {
       isFetchingRef.current = false;
       fetchFavorites(accountId);
     }
-  }, [currentAccount?.id, fetchFavorites]);
+  }, [userId, fetchFavorites]);
 
   const value = useMemo(() => ({
     bookmarkIds,

@@ -9,7 +9,7 @@ import { BaseModalProps } from '@/types';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface Subject {
-  id: number;
+  id: string;
   title: string;
   description: string;
   cover: string | null;
@@ -18,20 +18,20 @@ interface Subject {
 }
 
 interface StaffSubjectEditModalWidgetProps extends BaseModalProps {
-  subjectId: number;
+  subjectId: string;
   onSuccess?: () => void;
 }
 
-export function StaffSubjectEditModalWidget({ 
-  subjectId, 
-  isOpen, 
+export function StaffSubjectEditModalWidget({
+  subjectId,
+  isOpen,
   onClose,
   onSuccess
 }: StaffSubjectEditModalWidgetProps) {
-  const [subject, setSubject] = useState<Subject>({ 
-    id: subjectId, 
-    title: '', 
-    description: '', 
+  const [subject, setSubject] = useState<Subject>({
+    id: subjectId,
+    title: '',
+    description: '',
     cover: null,
     isActive: true,
     aiLabel: null
@@ -47,8 +47,8 @@ export function StaffSubjectEditModalWidget({
       setError(null);
 
       try {
-        const response = await apiCallForSpaHelper({ 
-          method: 'GET', 
+        const response = await apiCallForSpaHelper({
+          method: 'GET',
           url: `/api/workspaces/staff/subjects/${subjectId}`,
           params: {}
         });
@@ -72,10 +72,10 @@ export function StaffSubjectEditModalWidget({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
-    setSubject({ 
-      ...subject, 
-      [name]: type === 'checkbox' ? checked : value 
+
+    setSubject({
+      ...subject,
+      [name]: type === 'checkbox' ? checked : value
     });
   };
 
@@ -85,11 +85,11 @@ export function StaffSubjectEditModalWidget({
     setError(null);
 
     try {
-      const response = await apiCallForSpaHelper({ 
-        method: 'PUT', 
+      const response = await apiCallForSpaHelper({
+        method: 'PUT',
         url: `/api/workspaces/staff/subjects/update/${subjectId}`,
         params: {},
-        body: { 
+        body: {
           title: subject.title,
           description: subject.description,
           is_active: subject.isActive,
@@ -118,7 +118,7 @@ export function StaffSubjectEditModalWidget({
     <div className="fixed w-full inset-0 top-0 bg-slate-950 bg-opacity-90 z-50 flex justify-center items-start p-4 md:p-16 overflow-y-auto">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded w-full mx-4 lg:w-2/3 max-w-3xl shadow-xl my-8">
         <h2 className="text-2xl font-bold mb-4">Edit Subject</h2>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
@@ -215,8 +215,8 @@ export function StaffSubjectEditModalWidget({
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 disabled={loading}
               >

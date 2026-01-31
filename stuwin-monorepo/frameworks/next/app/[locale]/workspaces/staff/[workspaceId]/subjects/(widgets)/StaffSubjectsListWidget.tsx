@@ -14,11 +14,11 @@ interface OrganizedSubject extends Subject.PrivateAccess {
 export function StaffSubjectsListWidget() {
   const [subjectsList, setSubjectsList] = useState<OrganizedSubject[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentEditSubjectId, setCurrentEditSubjectId] = useState<number | null>(null);
+  const [currentEditSubjectId, setCurrentEditSubjectId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddSubjectModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditSubjectModalOpen] = useState<boolean>(false);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState<boolean>(false);
-  const [selectedSubjectForDeletion, setSelectedSubjectForDeletion] = useState<number | null>(null);
+  const [selectedSubjectForDeletion, setSelectedSubjectForDeletion] = useState<string | null>(null);
 
   const openAddSubjectMainModal = (): void => {
     setIsAddSubjectModalOpen(true);
@@ -28,7 +28,7 @@ export function StaffSubjectsListWidget() {
     setIsAddSubjectModalOpen(false);
   };
 
-  const openEditSubjectModal = (subjectId: number): void => {
+  const openEditSubjectModal = (subjectId: string): void => {
     setCurrentEditSubjectId(subjectId);
     setIsEditSubjectModalOpen(true);
   };
@@ -66,7 +66,7 @@ export function StaffSubjectsListWidget() {
     setLoading(false);
   };
 
-  const openDeleteConfirmationModal = (subjectId: number): void => {
+  const openDeleteConfirmationModal = (subjectId: string): void => {
     setSelectedSubjectForDeletion(subjectId);
     setShowDeleteConfirmationModal(true);
   };
@@ -109,11 +109,6 @@ export function StaffSubjectsListWidget() {
             <p className="text-sm text-gray-600 mb-2">{subject.description}</p>
             <div className="flex gap-2 text-xs text-gray-500">
               <span>ID: {subject.id}</span>
-              {subject.aiLabel && (
-                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded font-medium">
-                  AI: {subject.aiLabel}
-                </span>
-              )}
             </div>
           </div>
           <div className="flex gap-2 ml-4">
@@ -181,7 +176,7 @@ export function StaffSubjectsListWidget() {
       />
 
       <StaffSubjectEditModalWidget
-        subjectId={currentEditSubjectId ?? 0}
+        subjectId={currentEditSubjectId ?? ''}
         isOpen={isEditModalOpen}
         onClose={closeEditSubjectModal}
         onSuccess={handleSubjectSuccess}

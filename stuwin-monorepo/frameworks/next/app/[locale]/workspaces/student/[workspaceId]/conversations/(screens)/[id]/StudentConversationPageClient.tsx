@@ -41,7 +41,7 @@ export default function StudentConversationPageClient() {
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { currentAccount } = useGlobalAuthProfileContext();
+  const { userId } = useGlobalAuthProfileContext();
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ export default function StudentConversationPageClient() {
     sendMessage,
     sendTypingIndicator,
     loadMessages
-  } = useChat(conversationId, currentAccount?.id?.toString() || null);
+  } = useChat(conversationId, userId);
 
   useEffect(() => {
     loadConversation();
@@ -220,7 +220,7 @@ export default function StudentConversationPageClient() {
           </div>
         ) : (
           messages.map((message) => {
-            const currentAccountIdStr = currentAccount?.id?.toString();
+            const currentAccountIdStr = userId;
             const isOwnMessage = message.senderId === currentAccountIdStr;
 
             return (

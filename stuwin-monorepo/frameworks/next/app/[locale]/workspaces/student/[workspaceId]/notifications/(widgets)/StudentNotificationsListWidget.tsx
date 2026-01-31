@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { toast } from 'react-toastify';
-import { 
-  PiBell, 
-  PiBellRinging, 
-  PiCheck, 
+import {
+  PiBell,
+  PiBellRinging,
+  PiCheck,
   PiX,
   PiCaretLeft,
-  PiCaretRight 
+  PiCaretRight
 } from 'react-icons/pi';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
@@ -43,14 +43,14 @@ function NotificationsList() {
   const [filter, setFilter] = useState('all'); // 'all', 'unread', 'read'
   const t = useTranslations('Dashboard');
   const limit = 10;
-  const { isReady, isTokenRefreshDone } = useGlobalAuthProfileContext();
+  const { isReady } = useGlobalAuthProfileContext();
 
   useEffect(() => {
-    // Only fetch when context is ready and tokens are refreshed
-    if (isReady && isTokenRefreshDone) {
+    // Only fetch when context is ready
+    if (isReady) {
       fetchNotifications();
     }
-  }, [page, isReady, isTokenRefreshDone]);
+  }, [page, isReady]);
 
   const fetchNotifications = async () => {
     try {
@@ -85,19 +85,19 @@ function NotificationsList() {
 
       if (response.status === 200) {
         // Update local state
-        setNotifications(notifications.map(notification => 
-          notification.id === notificationId 
+        setNotifications(notifications.map(notification =>
+          notification.id === notificationId
             ? { ...notification, mark_as_read: !currentStatus }
             : notification
         ));
-        
+
         // Update unread count
         if (currentStatus) {
           setUnreadCount(unreadCount + 1);
         } else {
           setUnreadCount(Math.max(0, unreadCount - 1));
         }
-        
+
         toast.success(!currentStatus ? 'Marked as read' : 'Marked as unread');
       } else {
         toast.error('Failed to update notification');
@@ -111,7 +111,7 @@ function NotificationsList() {
   const markAllAsRead = async () => {
     try {
       const unreadNotifications = notifications.filter(n => !n.mark_as_read);
-      
+
       for (const notification of unreadNotifications) {
         await apiCallForSpaHelper({
           method: 'PATCH',
@@ -121,11 +121,11 @@ function NotificationsList() {
       }
 
       // Update local state
-      setNotifications(notifications.map(notification => 
+      setNotifications(notifications.map(notification =>
         ({ ...notification, mark_as_read: true })
       ));
       setUnreadCount(0);
-      
+
       toast.success('All notifications marked as read');
     } catch (error) {
       ConsoleLogger.error('Error:', error);
@@ -143,7 +143,7 @@ function NotificationsList() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {
@@ -177,7 +177,7 @@ function NotificationsList() {
               </p>
             </div>
           </div>
-          
+
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
@@ -199,11 +199,10 @@ function NotificationsList() {
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === key
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === key
                   ? 'bg-brand text-white'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
+                }`}
             >
               {label} ({count})
             </button>
@@ -218,11 +217,11 @@ function NotificationsList() {
             <PiBell className="mx-auto text-4xl text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
             <p className="text-gray-500">
-              {filter === 'unread' 
+              {filter === 'unread'
                 ? "You're all caught up! No unread notifications."
                 : filter === 'read'
-                ? "No read notifications yet."
-                : "You don't have any notifications yet."
+                  ? "No read notifications yet."
+                  : "You don't have any notifications yet."
               }
             </p>
           </div>
@@ -230,40 +229,36 @@ function NotificationsList() {
           filteredNotifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-6 hover:bg-gray-50 transition-colors ${
-                !notification.mark_as_read ? 'bg-blue-50 border-l-4 border-l-brand' : ''
-              }`}
+              className={`p-6 hover:bg-gray-50 transition-colors ${!notification.mark_as_read ? 'bg-blue-50 border-l-4 border-l-brand' : ''
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className={`p-2 rounded-full ${
-                    !notification.mark_as_read ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
-                  }`}>
+                  <div className={`p-2 rounded-full ${!notification.mark_as_read ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
+                    }`}>
                     {!notification.mark_as_read ? (
                       <PiBellRinging className="text-lg" />
                     ) : (
                       <PiBell className="text-lg" />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className={`font-semibold ${
-                        !notification.mark_as_read ? 'text-gray-900' : 'text-gray-700'
-                      }`}>
+                      <h3 className={`font-semibold ${!notification.mark_as_read ? 'text-gray-900' : 'text-gray-700'
+                        }`}>
                         {notification.name}
                       </h3>
                       {!notification.mark_as_read && (
                         <span className="w-2 h-2 bg-brand rounded-full"></span>
                       )}
                     </div>
-                    
-                    <p className={`text-sm mb-2 ${
-                      !notification.mark_as_read ? 'text-gray-800' : 'text-gray-600'
-                    }`}>
+
+                    <p className={`text-sm mb-2 ${!notification.mark_as_read ? 'text-gray-800' : 'text-gray-600'
+                      }`}>
                       {notification.body}
                     </p>
-                    
+
                     <p className="text-xs text-gray-500">
                       {formatDate(notification.created_at)}
                     </p>
@@ -272,11 +267,10 @@ function NotificationsList() {
 
                 <button
                   onClick={() => markAsRead(notification.id, notification.mark_as_read)}
-                  className={`p-2 rounded-md transition-colors ${
-                    !notification.mark_as_read
+                  className={`p-2 rounded-md transition-colors ${!notification.mark_as_read
                       ? 'text-brand hover:bg-brand hover:text-white'
                       : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
-                  }`}
+                    }`}
                   title={notification.mark_as_read ? 'Mark as unread' : 'Mark as read'}
                 >
                   {!notification.mark_as_read ? (
@@ -298,7 +292,7 @@ function NotificationsList() {
             <div className="text-sm text-gray-500">
               Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, pagination.total ?? 0)} of {pagination.total ?? 0} notifications
             </div>
-            
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(page - 1)}
@@ -307,11 +301,11 @@ function NotificationsList() {
               >
                 <PiCaretLeft className="text-lg" />
               </button>
-              
+
               <span className="px-3 py-1 text-sm font-medium">
                 Page {page} of {pagination.totalPages ?? 0}
               </span>
-              
+
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={!pagination.hasNext}

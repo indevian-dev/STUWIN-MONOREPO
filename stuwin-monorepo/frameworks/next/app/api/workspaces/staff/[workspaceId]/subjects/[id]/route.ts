@@ -1,32 +1,24 @@
-import type { NextRequest } from 'next/server';
-import type { ApiRouteHandler, ApiHandlerContext } from '@/types/next';
-import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import { SUBJECTS } from '@/lib/app-infrastructure/database';
-export const GET: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, params, log, db }: ApiHandlerContext) => {
+import { NextRequest, NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
+
+export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
   try {
-    if (!params) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-    }
-    const { id: subjectId } = await params;
+    const { id: subjectId } = params || {};
+
     if (!subjectId) {
       return NextResponse.json(
         { error: 'Subject ID is required' },
         { status: 400 }
       );
     }
-    const subjectRecordId = subjectId.includes(':') ? subjectId : `${SUBJECTS}:${subjectId}`;
-    const [subject] = await db.query(
-      `SELECT * FROM ${SUBJECTS} WHERE id = $subjectId LIMIT 1`,
-      { subjectId: subjectRecordId }
-    );
-    if (!subject) {
-      return NextResponse.json(
-        { error: 'Subject not found' },
-        { status: 404 }
-      );
+
+    const result = await module.learning.getSubjectById(subjectId);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 404 });
     }
-    return NextResponse.json({ subject });
+
+    return NextResponse.json({ subject: result.data });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch subject';
     return NextResponse.json({ error: errorMessage }, { status: 500 });

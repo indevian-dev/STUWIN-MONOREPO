@@ -1,7 +1,6 @@
 // Re-exporting from shared package to ensure single source of truth
 // @/lib/app-core-modules/types is aliased to packages/shared/src/modules/common/index
 export * from "../../../../packages/shared/src/modules/auth/types/authContext";
-export * from "../../../../packages/shared/src/modules/auth/types/jwt";
 export * from "../../../../packages/shared/src/modules/auth/types/resources";
 export * from "../../../../packages/shared/src/modules/auth/types/session";
 export * from "../../../../packages/shared/src/modules/common/logger";

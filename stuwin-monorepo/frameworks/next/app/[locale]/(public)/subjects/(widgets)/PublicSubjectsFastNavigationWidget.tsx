@@ -11,12 +11,12 @@ import { useGlobalSubjectsContext } from '@/app/[locale]/(global)/(context)/Glob
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface Subject {
-  id: number;
+  id: string;
   title?: string;
   title_ru?: string;
   title_en?: string;
   description?: string;
-  parent_id?: number | null;
+  parent_id?: string | null;
   is_active?: boolean;
   type?: string;
   slug?: string;

@@ -1,45 +1,33 @@
-
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
 import { NextResponse } from "next/server";
+import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 
 /**
  * PUT | DELETE /api/workspaces/staff/[workspaceId]/payments/coupons/[id]
  * Update or Delete a coupon
  */
-export const PUT = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
-        try {
-            const body = await req.json();
-            const modules = new ModuleFactory(ctx);
-            const coupon = await modules.payment.updateCoupon(params.id, body);
-            return NextResponse.json({ success: true, data: coupon }) as any;
-        } catch (error: any) {
-            log.error("Failed to update coupon", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 400 }) as any;
-        }
-    },
-    {
-        method: "PUT",
-        authRequired: true,
-        permission: "STAFF_PAYMENT_MANAGE"
-    }
-);
+export const PUT = unifiedApiHandler(async (req, { module, params, log }) => {
+    try {
+        const { id } = await params;
+        if (!id) return NextResponse.json({ success: false, error: "Missing ID" }, { status: 400 });
 
-export const DELETE = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
-        try {
-            const modules = new ModuleFactory(ctx);
-            await modules.payment.deleteCoupon(params.id);
-            return NextResponse.json({ success: true }) as any;
-        } catch (error: any) {
-            log.error("Failed to delete coupon", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 400 }) as any;
-        }
-    },
-    {
-        method: "DELETE",
-        authRequired: true,
-        permission: "STAFF_PAYMENT_MANAGE"
+        const body = await req.json();
+        const coupon = await module.payment.updateCoupon(id, body);
+        return NextResponse.json({ success: true, data: coupon });
+    } catch (error: any) {
+        if (log) log.error("Failed to update coupon", error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
-);
+});
+
+export const DELETE = unifiedApiHandler(async (req, { module, params, log }) => {
+    try {
+        const { id } = await params;
+        if (!id) return NextResponse.json({ success: false, error: "Missing ID" }, { status: 400 });
+
+        await module.payment.deleteCoupon(id);
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        if (log) log.error("Failed to delete coupon", error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+});

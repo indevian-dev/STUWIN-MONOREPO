@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
+import { Topic } from "@/types";
 import { SubjectInfoSection } from "./ProviderSubjectInfoSection";
 import { SubjectMediaLibrarySection } from "./ProviderSubjectMediaLibrarySection";
 import { SubjectTopicsSection } from "./ProviderSubjectTopicsSection";
@@ -37,29 +38,7 @@ export interface SubjectPdf {
   language: string | null;
 }
 
-export interface Topic {
-  id: string;
-  name: string;
-  description: string | null;
-  gradeLevel: number | null;
-  language: string | null;
-  subjectId: string;
-  aiSummary: string | null;
-  topicPublishedQuestionsStats: number;
-  topicGeneralQuestionsStats: number;
-  isActiveForAi: boolean;
-  topicEstimatedQuestionsCapacity: number | null;
-  topicQuestionsRemainingToGenerate: number | null;
-  pdfS3Key: string | null;
-  pdfPageStart: number | null;
-  pdfPageEnd: number | null;
-  totalPdfPages: number | null;
-  chapterNumber: string | null;
-  parentTopicId: string | null;
-  subjectPdfId?: string | null;
-  estimatedEducationStartDate: string | null;
-  createdAt: string;
-}
+// Topic is now imported from @/types
 
 export function ProviderSubjectDetailWidget({
   subjectId,

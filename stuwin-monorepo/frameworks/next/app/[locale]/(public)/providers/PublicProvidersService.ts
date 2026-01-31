@@ -191,7 +191,7 @@ export function getProviderLogoUrl(Provider?: Provider): string {
     return '/placeholder-Provider.png';
   }
 
-  return `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`;
+  return `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`;
 }
 
 /**

@@ -1,0 +1,149 @@
+﻿.next/dev/types/validator.ts(485,39): error TS2307: Cannot find module '../../../app/[locale]/workspaces/staff/[workspaceId]/ads/page.js' or its corresponding type declarations.
+.next/dev/types/validator.ts(512,39): error TS2307: Cannot find module '../../../app/[locale]/workspaces/staff/[workspaceId]/cards/(screens)/page.js' or its corresponding type declarations.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobControlWidget.tsx(10,55): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobLogsWidget.tsx(10,69): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobLogsWidget.tsx(108,84): error TS7053: Element implicitly has an 'any' type because expression of type 'LogStatus' can't be used to index type '{ completed: string; failed: string; started: string; }'.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobStatsWidget.tsx(10,39): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobStatsWidget.tsx(229,46): error TS7006: Parameter 'activity' implicitly has an 'any' type.
+app/[locale]/workspaces/staff/[workspaceId]/jobs/(widgets)/StaffJobStatsWidget.tsx(229,56): error TS7006: Parameter 'index' implicitly has an 'any' type.
+app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsListWidget.tsx(112,24): error TS2339: Property 'aiLabel' does not exist on type 'OrganizedSubject'.
+app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsListWidget.tsx(114,32): error TS2339: Property 'aiLabel' does not exist on type 'OrganizedSubject'.
+app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsListWidget.tsx(121,51): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsListWidget.tsx(128,47): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<number | null>'.
+app/[locale]/workspaces/student/[workspaceId]/conversations/(screens)/[id]/StudentConversationPageClient.tsx(44,11): error TS2339: Property 'currentAccount' does not exist on type 'GlobalAuthProfileContextType'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentAddHomeworkModalWidget.tsx(69,20): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentAddHomeworkModalWidget.tsx(75,27): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentAddHomeworkModalWidget.tsx(76,30): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentAddHomeworkModalWidget.tsx(253,13): error TS2322: Type '(event: FormEvent<HTMLFormElement>) => Promise<void>' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+  Types of parameters 'event' and 'event' are incompatible.
+    Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'FormEvent<HTMLFormElement>'.
+      Types of property 'currentTarget' are incompatible.
+        Type 'EventTarget & HTMLButtonElement' is not assignable to type 'EventTarget & HTMLFormElement'.
+          Type 'EventTarget & HTMLButtonElement' is missing the following properties from type 'HTMLFormElement': acceptCharset, action, autocomplete, elements, and 12 more.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUploadWidget.tsx(76,27): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUploadWidget.tsx(77,40): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUploadWidget.tsx(97,31): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUploadWidget.tsx(118,31): error TS2322: Type '{ title: string; }' is not assignable to type 'IntrinsicAttributes & StudentPageTitleWidgetProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & StudentPageTitleWidgetProps'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(43,21): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(44,34): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(71,21): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(72,34): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(94,21): error TS2339: Property 'success' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(95,34): error TS2339: Property 'error' does not exist on type 'AxiosResponse<any, any, {}>'.
+app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget.tsx(135,31): error TS2322: Type '{ title: string; }' is not assignable to type 'IntrinsicAttributes & StudentPageTitleWidgetProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & StudentPageTitleWidgetProps'.
+app/[locale]/workspaces/student/[workspaceId]/notifications/(widgets)/StudentNotificationsListWidget.tsx(46,20): error TS2339: Property 'isTokenRefreshDone' does not exist on type 'GlobalAuthProfileContextType'.
+app/api/(public)/cities/route.ts(6,51): error TS2339: Property 'listAllCities' does not exist on type 'SupportRepository'.
+app/api/(public)/questions/route.ts(31,5): error TS2322: Type 'number | undefined' is not assignable to type 'string | undefined'.
+  Type 'number' is not assignable to type 'string'.
+app/api/auth/reset/set/route.ts(97,9): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ id?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; password?: string | SQL<unknown> | PgColumn<...> | null | undefined; ... 4 more ...; appleId?: string | ... 3 more ... | undefined; }'.
+app/api/jobs/generate-report/route.ts(16,8): error TS2307: Cannot find module '@/types/resources/studentReports' or its corresponding type declarations.
+app/api/jobs/generate-report/route.ts(39,39): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/jobs/generate-report/route.ts(180,8): error TS7006: Parameter 'q' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(185,36): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(185,41): error TS7006: Parameter 'q' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(191,17): error TS7006: Parameter 'q' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(193,14): error TS7006: Parameter 'name' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(197,47): error TS7006: Parameter 'q' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(212,8): error TS7006: Parameter 'n' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(331,44): error TS7006: Parameter 'q' implicitly has an 'any' type.
+app/api/jobs/generate-report/route.ts(331,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+app/api/jobs/generate-topic-questions/route.ts(14,41): error TS2307: Cannot find module '@/types/resources/topicJobs' or its corresponding type declarations.
+app/api/jobs/generate-topic-questions/route.ts(28,39): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/jobs/generate-topic-questions/route.ts(145,30): error TS2304: Cannot find name 'QuestionGenerationService'.
+app/api/jobs/mass-report-scanner/route.ts(30,39): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/jobs/mass-report-scanner/route.ts(69,7): error TS2322: Type 'string' is not assignable to type 'number'.
+app/api/jobs/mass-report-scanner/route.ts(86,9): error TS2322: Type 'string' is not assignable to type 'number'.
+app/api/jobs/mass-report-scanner/route.ts(101,50): error TS7006: Parameter 'student' implicitly has an 'any' type.
+app/api/jobs/mass-report-scanner/route.ts(147,7): error TS2322: Type 'string' is not assignable to type 'number'.
+app/api/workspaces/provider/[workspaceId]/topics/create/route.ts(40,48): error TS2339: Property 'error' does not exist on type '{ success: boolean; data: { gradeLevel: number | null; language: string | null; description: string | null; id: string; name: string | null; createdAt: Date; updatedAt: Date | null; ... 16 more ...; ftsTokens: string | null; }; } | { ...; }'.
+  Property 'error' does not exist on type '{ success: boolean; data: { gradeLevel: number | null; language: string | null; description: string | null; id: string; name: string | null; createdAt: Date; updatedAt: Date | null; ... 16 more ...; ftsTokens: string | null; }; }'.
+app/api/workspaces/provider/[workspaceId]/topics/create/route.ts(44,21): error TS2339: Property 'data' does not exist on type '{ success: boolean; data: { gradeLevel: number | null; language: string | null; description: string | null; id: string; name: string | null; createdAt: Date; updatedAt: Date | null; ... 16 more ...; ftsTokens: string | null; }; } | { ...; }'.
+  Property 'data' does not exist on type '{ success: boolean; error: string; }'.
+app/api/workspaces/root/billing/route.ts(47,74): error TS2554: Expected 1 arguments, but got 4.
+app/api/workspaces/staff/[workspaceId]/blogs/[id]/route.ts(7,106): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/blogs/[id]/route.ts(30,106): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/blogs/[id]/route.ts(90,109): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/docs/route.ts(6,98): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/docs/update/route.ts(5,100): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/jobs/control/route.ts(13,8): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+app/api/workspaces/staff/[workspaceId]/jobs/stats/route.ts(17,8): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+app/api/workspaces/staff/[workspaceId]/mail/send/route.ts(15,36): error TS2339: Property 'sendEmail' does not exist on type 'MailService'.
+app/api/workspaces/staff/[workspaceId]/prompts/[id]/route.ts(6,106): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/prompts/[id]/route.ts(29,106): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/prompts/[id]/route.ts(62,109): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/prompts/route.ts(10,49): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/prompts/route.ts(54,49): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/staff/[workspaceId]/users/create/route.ts(7,44): error TS2339: Property 'db' does not exist on type 'ApiHandlerContext'.
+app/api/workspaces/student/[workspaceId]/providers/route.ts(22,36): error TS2339: Property 'isActive' does not exist on type '{ id: string; createdAt: Date; relationType: string | null; accountId: string | null; fromWorkspaceId: string | null; toWorkspaceId: string | null; isApproved: boolean | null; role: string | null; }'.
+app/api/workspaces/student/[workspaceId]/quizzes/[id]/route.ts(25,11): error TS18048: 'quiz' is possibly 'undefined'.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(3,30): error TS2724: '"@/types"' has no exported member named 'OAuthTokenData'. Did you mean 'OAuthTokens'?
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(3,46): error TS2305: Module '"@/types"' has no exported member 'OAuthUserInfo'.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(111,63): error TS2304: Cannot find name 'users'.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(151,36): error TS2349: This expression is not callable.
+  Type '{ readonly users: RelationalQueryBuilder<ExtractTablesWithRelations<typeof import("C:/Users/indev/OneDrive/Desktop/DEVELOPMENT/PROJECTS/STUWIN-MONOREPO/stuwin-monorepo/frameworks/next/lib/app-infrastructure/database/schema")>, { ...; }>; ... 26 more ...; readonly accountBookmarks: RelationalQueryBuilder<...>; }' has no call signatures.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(170,40): error TS2349: This expression is not callable.
+  Type '{ readonly users: RelationalQueryBuilder<ExtractTablesWithRelations<typeof import("C:/Users/indev/OneDrive/Desktop/DEVELOPMENT/PROJECTS/STUWIN-MONOREPO/stuwin-monorepo/frameworks/next/lib/app-infrastructure/database/schema")>, { ...; }>; ... 26 more ...; readonly accountBookmarks: RelationalQueryBuilder<...>; }' has no call signatures.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(175,40): error TS2349: This expression is not callable.
+  Type '{ readonly users: RelationalQueryBuilder<ExtractTablesWithRelations<typeof import("C:/Users/indev/OneDrive/Desktop/DEVELOPMENT/PROJECTS/STUWIN-MONOREPO/stuwin-monorepo/frameworks/next/lib/app-infrastructure/database/schema")>, { ...; }>; ... 26 more ...; readonly accountBookmarks: RelationalQueryBuilder<...>; }' has no call signatures.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(180,40): error TS2349: This expression is not callable.
+  Type '{ readonly users: RelationalQueryBuilder<ExtractTablesWithRelations<typeof import("C:/Users/indev/OneDrive/Desktop/DEVELOPMENT/PROJECTS/STUWIN-MONOREPO/stuwin-monorepo/frameworks/next/lib/app-infrastructure/database/schema")>, { ...; }>; ... 26 more ...; readonly accountBookmarks: RelationalQueryBuilder<...>; }' has no call signatures.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(196,40): error TS2304: Cannot find name 'users'.
+lib/app-access-control/authenticators/OAuthAuthenticator.ts(208,14): error TS2349: This expression is not callable.
+  Type '{ readonly users: RelationalQueryBuilder<ExtractTablesWithRelations<typeof import("C:/Users/indev/OneDrive/Desktop/DEVELOPMENT/PROJECTS/STUWIN-MONOREPO/stuwin-monorepo/frameworks/next/lib/app-infrastructure/database/schema")>, { ...; }>; ... 26 more ...; readonly accountBookmarks: RelationalQueryBuilder<...>; }' has no call signatures.
+lib/app-core-modules/auth/auth.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/app-core-modules/auth/auth.types.ts(3,30): error TS2307: Cannot find module '../../../types/auth' or its corresponding type declarations.
+lib/app-core-modules/content/content.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/app-core-modules/index.ts(19,1): error TS2308: Module './learning' has already exported a member named 'Quiz'. Consider explicitly re-exporting to resolve the ambiguity.
+lib/app-core-modules/index.ts(19,1): error TS2308: Module './learning' has already exported a member named 'QuizStatus'. Consider explicitly re-exporting to resolve the ambiguity.
+lib/app-core-modules/learning/learning.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/app-core-modules/types.ts(4,15): error TS2307: Cannot find module '../../../../packages/shared/src/modules/auth/types/jwt' or its corresponding type declarations.
+lib/app-core-modules/workspace/workspace.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/app-infrastructure/loggers/ActionLogger.ts(196,40): error TS2339: Property 'workspaceAccessKey' does not exist on type '{ id: string; suspended?: boolean | undefined; }'.
+lib/app-infrastructure/loggers/ActionLogger.ts(197,41): error TS2339: Property 'workspaceType' does not exist on type '{ id: string; suspended?: boolean | undefined; }'.
+lib/app-infrastructure/loggers/ActionLogger.ts(274,44): error TS2339: Property 'workspaceAccessKey' does not exist on type '{ id: string; suspended?: boolean | undefined; }'.
+lib/app-infrastructure/loggers/ActionLogger.ts(275,45): error TS2339: Property 'workspaceType' does not exist on type '{ id: string; suspended?: boolean | undefined; }'.
+lib/utils/qstashScheduleHelper.ts(7,61): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+lib/utils/staffJobsApiHelper.ts(17,8): error TS2307: Cannot find module '@/types/resources/backgroundJobs' or its corresponding type declarations.
+lib/utils/staffJobsApiHelper.ts(70,31): error TS7006: Parameter 'log' implicitly has an 'any' type.
+lib/utils/staffJobsApiHelper.ts(105,51): error TS7006: Parameter 'activity' implicitly has an 'any' type.
+lib/utils/unifiedApiHandler.ts(249,5): error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type '{ total?: number | undefined; page?: number | undefined; limit?: number | undefined; }'.
+scripts/fix-broken-accounts.ts(41,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 9 more ...; isBlocked?: boolean | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'workspaceAccessKey' does not exist in type '{ title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 9 more ...; isBlocked?: boolean | ... 3 more ... | undefined; }'.
+  Overload 2 of 2, '(values: { title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 9 more ...; isBlocked?: boolean | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 9 more ...; isBlocked?: boolean | ... 3 more ... | undefined; }[]'.
+scripts/validate-layout-security.ts(35,10): error TS7006: Parameter 'text' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(36,10): error TS7006: Parameter 'text' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(42,26): error TS7006: Parameter 'dir' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(61,20): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+scripts/validate-layout-security.ts(71,31): error TS7006: Parameter 'filePath' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(101,28): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(108,29): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(119,35): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(126,32): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(134,39): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(142,28): error TS7006: Parameter 'layoutPath' implicitly has an 'any' type.
+scripts/validate-layout-security.ts(189,28): error TS7006: Parameter 'layoutPath' implicitly has an 'any' type.
+scripts/validate-page-security.ts(35,10): error TS7006: Parameter 'text' implicitly has an 'any' type.
+scripts/validate-page-security.ts(36,10): error TS7006: Parameter 'text' implicitly has an 'any' type.
+scripts/validate-page-security.ts(70,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+scripts/validate-page-security.ts(77,77): error TS18046: 'err' is of type 'unknown'.
+scripts/validate-page-security.ts(87,24): error TS7006: Parameter 'dir' implicitly has an 'any' type.
+scripts/validate-page-security.ts(102,18): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+scripts/validate-page-security.ts(112,29): error TS7006: Parameter 'filePath' implicitly has an 'any' type.
+scripts/validate-page-security.ts(135,28): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-page-security.ts(142,27): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-page-security.ts(149,30): error TS7006: Parameter 'content' implicitly has an 'any' type.
+scripts/validate-page-security.ts(159,22): error TS7006: Parameter 'pagePath' implicitly has an 'any' type.
+scripts/validate-page-security.ts(159,32): error TS7006: Parameter 'permission' implicitly has an 'any' type.
+scripts/validate-page-security.ts(190,29): error TS18046: 'config' is of type 'unknown'.
+scripts/validate-page-security.ts(191,39): error TS2698: Spread types may only be created from object types.
+scripts/validateQuerySecurity.ts(12,30): error TS2307: Cannot find module '../src/lib/endpoints' or its corresponding type declarations.
+scripts/validateQuerySecurity.ts(130,62): error TS18046: 'error' is of type 'unknown'.
+scripts/validateQuerySecurity.ts(441,4): error TS2304: Cannot find name 'VariableOrigin'.
+scripts/validateQuerySecurity.ts(508,17): error TS2339: Property 'main' does not exist on type 'ImportMeta'.
+scripts/validateQuerySecurity.ts(515,33): error TS1205: Re-exporting a type when 'isolatedModules' is enabled requires using 'export type'.
+../../packages/shared/src/api/index.ts(7,1): error TS2308: Module './ApiResponseTypes' has already exported a member named 'ApiValidationResult'. Consider explicitly re-exporting to resolve the ambiguity.

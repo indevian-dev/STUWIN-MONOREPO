@@ -7,8 +7,7 @@ import { ProviderTopicsFiltersWidget } from "@/app/[locale]/workspaces/provider/
 import { ProviderBulkTopicUploadWidget } from "@/app/[locale]/workspaces/provider/[workspaceId]/topics/(widgets)/ProviderBulkTopicUploadWidget";
 import { ProviderManualGenerateQuestionsModal } from "@/app/[locale]/workspaces/provider/[workspaceId]/topics/(widgets)/ProviderManualGenerateQuestionsModal";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
-import { Topic, TopicFilters } from "@/types/resources/topics";
-import { ApiResponse, SuccessApiResponse } from "@/types";
+import { Topic, TopicFilters } from "@/types";
 import { useRouter, useParams } from "next/navigation";
 
 export function ProviderTopicsListWidget() {
@@ -18,7 +17,7 @@ export function ProviderTopicsListWidget() {
   const [topicsList, setTopicsList] = useState<Topic[]>([]);
   const [filteredTopicsList, setFilteredTopicsList] = useState<Topic[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentEditTopicId, setCurrentEditTopicId] = useState<number | null>(
+  const [currentEditTopicId, setCurrentEditTopicId] = useState<string | null>(
     null,
   );
   const [isAddModalOpen, setIsAddTopicModalOpen] = useState<boolean>(false);
@@ -26,7 +25,7 @@ export function ProviderTopicsListWidget() {
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
   const [selectedTopicForDeletion, setSelectedTopicForDeletion] = useState<
-    number | null
+    string | null
   >(null);
   const [activeFilters, setActiveFilters] = useState<TopicFilters>({});
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] =
@@ -34,7 +33,7 @@ export function ProviderTopicsListWidget() {
   const [isManualGenerateModalOpen, setIsManualGenerateModalOpen] =
     useState<boolean>(false);
   const [selectedTopicIdForGeneration, setSelectedTopicIdForGeneration] =
-    useState<number | null>(null);
+    useState<string | null>(null);
 
   const openAddTopicMainModal = (): void => {
     setIsAddTopicModalOpen(true);
@@ -52,7 +51,7 @@ export function ProviderTopicsListWidget() {
     setIsBulkUploadModalOpen(false);
   };
 
-  const openEditTopicModal = (topicId: number): void => {
+  const openEditTopicModal = (topicId: string): void => {
     setCurrentEditTopicId(topicId);
     setIsEditTopicModalOpen(true);
   };
@@ -125,7 +124,7 @@ export function ProviderTopicsListWidget() {
     applyFiltersToTopics(topicsList, filters);
   };
 
-  const openDeleteConfirmationModal = (topicId: number): void => {
+  const openDeleteConfirmationModal = (topicId: string): void => {
     setSelectedTopicForDeletion(topicId);
     setShowDeleteConfirmationModal(true);
   };
@@ -135,7 +134,7 @@ export function ProviderTopicsListWidget() {
     setSelectedTopicForDeletion(null);
   };
 
-  const openManualGenerateModal = (topicId: number): void => {
+  const openManualGenerateModal = (topicId: string): void => {
     setSelectedTopicIdForGeneration(topicId);
     setIsManualGenerateModalOpen(true);
   };
@@ -160,7 +159,7 @@ export function ProviderTopicsListWidget() {
     }
   };
 
-  const viewTopicDetail = (topicId: number): void => {
+  const viewTopicDetail = (topicId: string): void => {
     router.push(`/workspaces/provider/${workspaceId}/topics/${topicId}`);
   };
 
@@ -174,7 +173,7 @@ export function ProviderTopicsListWidget() {
   };
 
   const toggleActiveForAi = async (
-    topicId: number,
+    topicId: string,
     currentState: boolean | null,
   ): Promise<void> => {
     const newState = !currentState;
@@ -400,7 +399,7 @@ export function ProviderTopicsListWidget() {
       />
 
       <ProviderTopicEditModalWidget
-        topicId={currentEditTopicId ?? 0}
+        topicId={currentEditTopicId ?? ""}
         isOpen={isEditModalOpen}
         onClose={closeEditTopicModal}
         onSuccess={handleTopicSuccess}

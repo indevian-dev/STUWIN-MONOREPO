@@ -4,8 +4,8 @@ import {
   useState,
   useEffect
 } from 'react';
-import { ProviderQuestionFormWidget } from '@/app/[locale]/workspaces/provider/[workspaceDAK]/questions/(widgets)/ProviderQuestionFormWidget';
-import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/(tiles)/StaffPageTitleTile';
+import { ProviderQuestionFormWidget } from '@/app/[locale]/workspaces/provider/[workspaceId]/questions/(widgets)/ProviderQuestionFormWidget';
+import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitleTile';
 import {
   useRouter,
   useParams

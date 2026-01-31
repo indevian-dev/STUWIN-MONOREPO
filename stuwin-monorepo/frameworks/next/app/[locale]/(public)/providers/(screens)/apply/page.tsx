@@ -1,4 +1,4 @@
-import { PublicProviderApplicationFormWidget } from '@/app/[locale]/(public)/Providers/(widgets)/PublicProviderApplicationFormWidget';
+import { PublicProviderApplicationFormWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProviderApplicationFormWidget';
 import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitleTile';
 import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
 import type { Metadata } from 'next';
@@ -11,7 +11,7 @@ interface PageParams {
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
-  
+
   return {
     title: 'Təhsil Təşkilatı Müraciəti',
     description: 'Təhsil təşkilatınızı platformamıza əlavə edin',
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
       description: 'Təhsil təşkilatınızı platformamıza əlavə edin',
       type: 'website',
       locale: locale,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/Providers/apply`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/providers/apply`,
     },
   };
 }
@@ -29,7 +29,7 @@ export default function PublicProviderApplicationPage() {
   const breadcrumbs = [
     { label: 'Ana səhifə', href: '/' },
     { label: 'Təhsil təşkilatları', href: '/Providers' },
-    { label: 'Müraciət', href: '/Providers/apply' }
+    { label: 'Müraciət', href: '/providers/apply' }
   ];
 
   return (
@@ -40,7 +40,7 @@ export default function PublicProviderApplicationPage() {
 
         {/* Page Title */}
         <div className="my-6">
-          <PublicScreenTitleTile 
+          <PublicScreenTitleTile
             screenTitle="Təhsil Təşkilatı Müraciəti"
           />
           <p className="text-center text-gray-600 mt-4">

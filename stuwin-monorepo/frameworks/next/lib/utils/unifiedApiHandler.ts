@@ -42,7 +42,7 @@ export function createErrorResponse(
 export function createSuccessResponse(
   data: any,
   status: number = 200,
-  meta?: { total?: number; page?: number; limit?: number }
+  meta?: { total?: number; page?: number; limit?: number; totalPages?: number }
 ) {
   return NextResponse.json(
     {
@@ -125,7 +125,7 @@ export async function validatePartialUpdate(
 ): Promise<{ valid: boolean; data?: any; error?: string }> {
   try {
     const data = await request.json();
-    
+
     // Check if at least one field is provided
     if (Object.keys(data).length === 0) {
       return {
@@ -241,7 +241,7 @@ export function createPaginatedResponse(
   limit: number
 ) {
   const totalPages = Math.ceil(total / limit);
-  
+
   return createSuccessResponse(data, 200, {
     total,
     page,

@@ -1,46 +1,44 @@
-import type { NextRequest } from 'next/server';
-import type { ApiRouteHandler, ApiHandlerContext } from '@/types/next';
-import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import { BLOGS } from '@/lib/app-infrastructure/database';
+import { NextRequest, NextResponse } from "next/server";
+import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 import slugify from 'slugify';
-export const GET: ApiRouteHandler = withApiHandler(async (request: NextRequest, { params, authData, log, db }: ApiHandlerContext) => {
+
+export const GET = unifiedApiHandler(async (request: NextRequest, { params, module, log }) => {
   if (!params) {
     return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
   }
   const { id } = await params;
-  if (!id || typeof id !== 'string') {
+  if (!id) {
     return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
   }
-  const blogRecordId = id.includes(':') ? id : `${BLOGS}:${id}`;
+
   try {
-    const [blog] = await db.query(
-      `SELECT * FROM ${BLOGS} WHERE id = $blogId LIMIT 1`,
-      { blogId: blogRecordId }
-    );
+    const blog = await module.content.contentRepo.findBlogById(id);
+
     if (!blog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
     return NextResponse.json({ blog }, { status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch blog';
+    if (log) log.error("Failed to fetch blog", error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
-export const PUT: ApiRouteHandler = withApiHandler(async (request: NextRequest, { params, authData, log, db }: ApiHandlerContext) => {
+
+export const PUT = unifiedApiHandler(async (request: NextRequest, { params, authData, module, log }) => {
   if (!params) {
     return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
   }
   const { id } = await params;
-  if (!id || typeof id !== 'string') {
+  if (!id) {
     return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
   }
-  const blogRecordId = id.includes(':') ? id : `${BLOGS}:${id}`;
+
   try {
     if (!authData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const accountId = authData.account.id;
+
     const body = await request.json();
     const {
       titleAz,
@@ -55,9 +53,8 @@ export const PUT: ApiRouteHandler = withApiHandler(async (request: NextRequest, 
       isActive,
       isFeatured
     } = body;
-    const updateData: any = {
-      updatedAt: new Date(),
-    };
+
+    const updateData: any = {};
     if (titleAz !== undefined) updateData.titleAz = titleAz;
     if (titleEn !== undefined) updateData.titleEn = titleEn;
     if (metaTitleAz !== undefined) updateData.metaTitleAz = metaTitleAz;
@@ -69,49 +66,53 @@ export const PUT: ApiRouteHandler = withApiHandler(async (request: NextRequest, 
     if (cover !== undefined) updateData.cover = cover;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
-    // Update slug if title changed
+
+    // Update slug if title changed (prioritize ID, then EN)
+    // Legacy logic used Az OR En. I'll stick to that.
     if (titleAz || titleEn) {
       updateData.slug = slugify(titleAz || titleEn, { lower: true, strict: true });
     }
-    const updated = await db.query(
-      'UPDATE $record SET $data RETURN AFTER',
-      { record: blogRecordId, data: updateData }
-    );
-    const updatedBlog = updated[0];
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
+
+    const updatedBlog = await module.content.contentRepo.updateBlog(id, updateData);
+
     if (!updatedBlog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
     return NextResponse.json({ blog: updatedBlog }, { status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update blog';
+    if (log) log.error("Failed to update blog", error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
-export const DELETE: ApiRouteHandler = withApiHandler(async (request: NextRequest, { params, authData, log, db }: ApiHandlerContext) => {
+
+export const DELETE = unifiedApiHandler(async (request: NextRequest, { params, authData, module, log }) => {
   if (!params) {
     return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
   }
   const { id } = await params;
-  if (!id || typeof id !== 'string') {
+  if (!id) {
     return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
   }
-  const blogRecordId = id.includes(':') ? id : `${BLOGS}:${id}`;
+
   try {
     if (!authData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const accountId = authData.account.id;
-    const deleted = await db.query(
-      'DELETE $record RETURN BEFORE',
-      { record: blogRecordId }
-    );
-    const deletedBlog = deleted[0];
+
+    const deletedBlog = await module.content.contentRepo.deleteBlog(id);
+
     if (!deletedBlog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
     return NextResponse.json({ message: 'Blog deleted successfully' }, { status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to delete blog';
+    if (log) log.error("Failed to delete blog", error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });

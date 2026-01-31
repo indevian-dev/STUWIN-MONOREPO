@@ -1,36 +1,27 @@
-
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
 import { NextResponse } from "next/server";
+import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 
 /**
  * POST /api/workspaces/root/billing/coupon
  * Validate and apply a coupon
  */
-export const POST = withApiHandler(
-    async (req: any, { ctx, log }) => {
-        try {
-            const body = await req.json();
-            const { code } = body;
+export const POST = unifiedApiHandler(async (req, { module, log }) => {
+    try {
+        const body = await req.json();
+        const { code } = body;
 
-            if (!code) {
-                return NextResponse.json({ success: false, error: "Coupon code is required" }, { status: 400 }) as any;
-            }
-
-            const modules = new ModuleFactory(ctx);
-            const coupon = await modules.payment.applyCoupon(code);
-
-            return NextResponse.json({
-                success: true,
-                data: coupon,
-            }) as any;
-        } catch (error: any) {
-            log.error("Coupon application error", error);
-            return NextResponse.json({ success: false, error: error.message || "Invalid coupon" }, { status: 400 }) as any;
+        if (!code) {
+            return NextResponse.json({ success: false, error: "Coupon code is required" }, { status: 400 });
         }
-    },
-    {
-        method: "POST",
-        authRequired: true,
+
+        const coupon = await module.payment.applyCoupon(code);
+
+        return NextResponse.json({
+            success: true,
+            data: coupon,
+        });
+    } catch (error: any) {
+        if (log) log.error("Coupon application error", error);
+        return NextResponse.json({ success: false, error: error.message || "Invalid coupon" }, { status: 400 });
     }
-);
+});

@@ -8,22 +8,12 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
 
   const subjectIdParam = searchParams.get('subjectId');
-  const subjectId = subjectIdParam ? parseInt(subjectIdParam, 10) : undefined;
+  const subjectId = subjectIdParam || undefined;
 
   const complexity = searchParams.get('complexity') || undefined;
   const gradeLevelParam = searchParams.get('gradeLevel');
   const gradeLevel = gradeLevelParam ? parseInt(gradeLevelParam, 10) : undefined;
 
-  // Safety check for ID types (since migration from string to number)
-  if (subjectIdParam && isNaN(subjectId!)) {
-    return NextResponse.json({
-      questions: [],
-      page,
-      pageSize,
-      total: 0,
-      totalPages: 0
-    }, { status: 200 });
-  }
 
   const result = await module.learning.listQuestions({
     page,

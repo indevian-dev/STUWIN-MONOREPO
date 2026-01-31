@@ -1,9 +1,11 @@
-import { PublicSingleProviderWidget } from '@/app/[locale]/(public)/Providers/(widgets)/PublicSingleProviderWidget';
-import { PublicRelatedProvidersWidget } from '@/app/[locale]/(public)/Providers/(widgets)/PublicRelatedProvidersWidget';
+import { PublicSingleProviderWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicSingleProviderWidget';
+import { PublicRelatedProvidersWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicRelatedProvidersWidget';
 import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
 import { db, ORGANIZATIONS } from '@/lib/app-infrastructure/database';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+
+import { sql } from 'drizzle-orm';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface PageParams {
@@ -35,14 +37,13 @@ interface ProviderData {
 // Server-side data fetching
 async function getProviderData(id: string): Promise<ProviderData | null> {
   try {
-    const database = await db();
+    const database = db;
     const orgRecordId = id.includes(':') ? id : `${ORGANIZATIONS}:${id}`;
-    const [Provider] = await database.query(
-      `SELECT * FROM ${ORGANIZATIONS}
-       WHERE id = $orgId AND isActive = true AND isApproved = true AND isPlatform = false
-       LIMIT 1`,
-      { orgId: orgRecordId }
-    );
+
+    // Using sql template tag for raw query as it was before, but via Drizzle execute
+    const query = sql.raw(`SELECT * FROM ${ORGANIZATIONS} WHERE id = '${orgRecordId}' AND isActive = true AND isApproved = true AND isPlatform = false LIMIT 1`);
+    const result = await database.execute(query);
+    const Provider = result[0];
 
     if (!Provider) return null;
 
@@ -83,10 +84,10 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
       description: Provider.description || `${Provider.title || 'Təhsil təşkilatı'} haqqında məlumat`,
       type: 'website',
       locale: locale,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/Providers/${id}`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/providers/${id}`,
       ...(Provider.logo && {
         images: [{
-          url: `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
+          url: `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
         }]
       })
     },
@@ -103,8 +104,8 @@ export default async function PublicSingleProviderPage({ params }: PageParams) {
 
   const breadcrumbs = [
     { label: 'Ana səhifə', href: '/' },
-    { label: 'Təhsil təşkilatları', href: '/Providers' },
-    { label: Provider.title || 'Təhsil təşkilatı', href: `/Providers/${id}` }
+    { label: 'Təhsil təşkilatları', href: '/providers' },
+    { label: Provider.title || 'Təhsil təşkilatı', href: `/providers/${id}` }
   ];
 
   return (

@@ -9,7 +9,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, extname, resolve } from 'path';
-import { allEndpoints } from '../src/lib/endpoints';
+import { allEndpoints } from '@/lib/app-route-configs';
 
 interface ValidationResult {
   file: string;
@@ -18,6 +18,13 @@ interface ValidationResult {
   variable: string;
   error: string;
   severity: 'error' | 'warning';
+}
+
+interface VariableOrigin {
+  name: string;
+  origin: string;
+  line: number;
+  source: string;
 }
 
 /**
@@ -126,7 +133,7 @@ function findApiRouteFiles(dir: string): string[] {
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(`Error scanning directory ${currentDir}:`, error.message);
     }
   }
@@ -222,7 +229,7 @@ function analyzeApiFile(filePath: string, endpointPath: string): ValidationResul
 
     // Check database operations for additional patterns
     if (line.includes('db.query(') || line.includes('db.create(') ||
-        line.includes('db.update(') || line.includes('db.delete(')) {
+      line.includes('db.update(') || line.includes('db.delete(')) {
 
       const violations = analyzeDatabaseLine(line, lineIndex, filePath, endpointPath, lines);
       results.push(...violations);
@@ -311,7 +318,7 @@ function analyzeLine(line: string, allLines: string[], lineIndex: number, filePa
 
   // Check if this is a db.query, db.create, db.update, or db.delete call
   if (!line.includes('db.query(') && !line.includes('db.create(') &&
-      !line.includes('db.update(') && !line.includes('db.delete(')) {
+    !line.includes('db.update(') && !line.includes('db.delete(')) {
     return results;
   }
 
@@ -502,14 +509,20 @@ function traceVariableOrigin(
     }
   }
 
+  return {
+    name: variableName,
+    origin: 'unknown',
+    line: 0,
+    source: 'not found'
+  };
 }
 
 // Run validation if called directly
-if (import.meta.main) {
-  validateQuerySecurity().catch(error => {
+if ((import.meta as any).main) {
+  validateQuerySecurity().catch((error: any) => {
     console.error('❌ Validation script failed:', error);
     process.exit(1);
   });
 }
 
-export { validateQuerySecurity, ValidationResult };
+export { validateQuerySecurity, type ValidationResult };

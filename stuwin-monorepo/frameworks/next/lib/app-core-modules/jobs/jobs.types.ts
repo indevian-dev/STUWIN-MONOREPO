@@ -130,3 +130,24 @@ export interface QStashSchedule {
     paused?: boolean;
     createdAt?: number;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// WORKER TYPES
+// ═══════════════════════════════════════════════════════════════
+
+export interface StudentReportData {
+    score: number;
+    summary: string;
+    recommendations: string[];
+}
+
+export interface WorkerRequest {
+    studentId: string;
+    correlationId: string;
+}
+
+export interface TopicWorkerRequest {
+    topicId: string;
+    correlationId: string;
+    questionsToGenerate: number;
+}

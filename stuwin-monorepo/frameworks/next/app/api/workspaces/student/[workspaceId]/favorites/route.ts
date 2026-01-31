@@ -1,34 +1,27 @@
-import type { NextRequest } from 'next/server';
-import type { ApiRouteHandler, ApiHandlerContext } from '@/types/next';
 import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import { accountBookmarks } from '@/lib/app-infrastructure/database/schema';
-import { eq } from 'drizzle-orm';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 
-// GET - Fetch all bookmarked question ids for current account
-export const GET: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, log, db }: ApiHandlerContext) => {
+export const GET = unifiedApiHandler(async (_request, { module, authData, params, log }) => {
   try {
-    if (!authData) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const accountId = authData.account.id;
+    const { workspaceId } = params as { workspaceId: string };
+
+    const result = await module.support.listBookmarks(accountId, workspaceId);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    const accountId = authData.account.id;
-
-    const bookmarksResult = await db
-      .select({ questionId: accountBookmarks.questionId })
-      .from(accountBookmarks)
-      .where(eq(accountBookmarks.accountId, accountId));
-
-    const questionIds = bookmarksResult.map((f: { questionId: string | null }) => String(f.questionId));
+    const questionIds = (result.data || []).map((f: any) => String(f.questionId));
 
     log.info('Bookmarked questions fetched', { count: questionIds.length });
 
     return NextResponse.json({ bookmarks: questionIds }, { status: 200 });
-
   } catch (error) {
-    log.error('Error retrieving bookmarked questions', error instanceof Error ? error : new Error(String(error)));
-    return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Failed to retrieve bookmarks'
-    }, { status: 500 });
+    log.error('Error retrieving bookmarked questions', error as Error);
+    return NextResponse.json(
+      { error: 'Failed to retrieve bookmarks' },
+      { status: 500 }
+    );
   }
 });

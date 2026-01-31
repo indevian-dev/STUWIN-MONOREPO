@@ -23,7 +23,7 @@ interface Question {
 }
 
 interface Subject {
-    id?: number;
+    id?: string;
     title?: string;
     description?: string;
     image?: string;

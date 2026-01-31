@@ -1,11 +1,9 @@
-import type { NextRequest } from 'next/server';
-import type { ApiRouteHandler, ApiHandlerContext } from '@/types/next';
-import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
+import { NextRequest, NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 import s3 from '@/lib/integrations/awsClient';
 import { DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 
-export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, log }: ApiHandlerContext) => {
+export const POST = unifiedApiHandler(async (request: NextRequest, { log }) => {
   const { filename, filePath } = await request.json();
 
   if (!filename || !filePath) {
@@ -29,7 +27,7 @@ export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest,
       log.error('File still exists after deletion');
       return NextResponse.json({ error: 'File could not be deleted' }, { status: 500 });
     } catch (headErr) {
-      if (headErr instanceof Error && 'name' in headErr && headErr.name === 'NotFound') {
+      if (headErr instanceof Error && headErr.name === 'NotFound') {
         log.info('File deleted successfully', { filename });
         return NextResponse.json({ message: 'File deleted successfully' }, { status: 200 });
       }

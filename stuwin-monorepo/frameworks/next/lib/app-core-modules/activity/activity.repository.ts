@@ -1,5 +1,5 @@
 
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { studentQuizzes, studentHomeworks, studentLearningSessions, studentQuizReports } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
@@ -27,6 +27,36 @@ export class ActivityRepository extends BaseRepository {
             .orderBy(desc(studentQuizzes.createdAt));
     }
 
+    async listQuizzes(params: { accountId: string; status?: string; subjectId?: string; workspaceId?: string; limit: number; offset: number }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const conditions = [eq(studentQuizzes.studentAccountId, params.accountId)];
+        if (params.status) conditions.push(eq(studentQuizzes.status, params.status));
+        if (params.subjectId) conditions.push(eq(studentQuizzes.learningSubjectId, params.subjectId));
+        if (params.workspaceId) conditions.push(eq(studentQuizzes.workspaceId, params.workspaceId));
+
+        return await client
+            .select()
+            .from(studentQuizzes)
+            .where(and(...conditions))
+            .orderBy(desc(studentQuizzes.createdAt))
+            .limit(params.limit)
+            .offset(params.offset);
+    }
+
+    async countQuizzes(params: { accountId: string; status?: string; subjectId?: string; workspaceId?: string }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const conditions = [eq(studentQuizzes.studentAccountId, params.accountId)];
+        if (params.status) conditions.push(eq(studentQuizzes.status, params.status));
+        if (params.subjectId) conditions.push(eq(studentQuizzes.learningSubjectId, params.subjectId));
+        if (params.workspaceId) conditions.push(eq(studentQuizzes.workspaceId, params.workspaceId));
+
+        const result = await client
+            .select({ count: sql<number>`count(*)` })
+            .from(studentQuizzes)
+            .where(and(...conditions));
+        return Number(result[0]?.count || 0);
+    }
+
     async createQuiz(data: typeof studentQuizzes.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client.insert(studentQuizzes).values(data).returning();
@@ -37,6 +67,14 @@ export class ActivityRepository extends BaseRepository {
         const client = tx ?? this.db;
         const result = await client.update(studentQuizzes).set(data).where(eq(studentQuizzes.id, id)).returning();
         return result[0];
+    }
+
+    async deleteQuiz(id: string, accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.delete(studentQuizzes)
+            .where(and(eq(studentQuizzes.id, id), eq(studentQuizzes.studentAccountId, accountId)))
+            .returning();
+        return result.length > 0;
     }
 
     // ═══════════════════════════════════════════════════════════════

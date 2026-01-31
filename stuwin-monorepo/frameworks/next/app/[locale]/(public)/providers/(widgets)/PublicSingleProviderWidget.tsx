@@ -50,7 +50,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
   }
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
+    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   return (
@@ -145,8 +145,8 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
             <button
               onClick={() => setActiveTab('about')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'about'
-                  ? 'border-brand text-brand'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-brand text-brand'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
             >
               Haqqında
@@ -155,8 +155,8 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
               <button
                 onClick={() => setActiveTab('location')}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'location'
-                    ? 'border-brand text-brand'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Ünvan

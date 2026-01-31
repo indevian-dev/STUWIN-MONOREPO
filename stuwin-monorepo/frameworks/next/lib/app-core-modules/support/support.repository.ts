@@ -1,6 +1,6 @@
 
-import { eq, and, desc } from "drizzle-orm";
-import { accountNotifications, accountBookmarks, cities, countries } from "@/lib/app-infrastructure/database/schema";
+import { eq, and, desc, sql, count } from "drizzle-orm";
+import { accountNotifications, accountBookmarks, cities, countries, questions as questionsTable } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -19,6 +19,40 @@ export class SupportRepository extends BaseRepository {
             .from(accountNotifications)
             .where(eq(accountNotifications.accountId, accountId))
             .orderBy(desc(accountNotifications.createdAt));
+    }
+
+    async listNotificationsPaginated(accountId: string, options: { limit: number; offset: number }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select()
+            .from(accountNotifications)
+            .where(eq(accountNotifications.accountId, accountId))
+            .orderBy(desc(accountNotifications.createdAt))
+            .limit(options.limit)
+            .offset(options.offset);
+    }
+
+    async countNotifications(accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select({ count: count() })
+            .from(accountNotifications)
+            .where(eq(accountNotifications.accountId, accountId));
+        return Number(result[0]?.count || 0);
+    }
+
+    async countUnreadNotifications(accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select({ count: count() })
+            .from(accountNotifications)
+            .where(
+                and(
+                    eq(accountNotifications.accountId, accountId),
+                    eq(accountNotifications.markAsRead, false)
+                )
+            );
+        return Number(result[0]?.count || 0);
     }
 
     async markNotificationRead(id: string, tx?: DbClient) {
@@ -53,6 +87,68 @@ export class SupportRepository extends BaseRepository {
             );
     }
 
+    async listBookmarksWithQuestions(accountId: string, workspaceId: string, options: { limit: number; offset: number }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select({
+                bookmark: accountBookmarks,
+                question: questionsTable
+            })
+            .from(accountBookmarks)
+            .leftJoin(questionsTable, eq(accountBookmarks.questionId, questionsTable.id))
+            .where(
+                and(
+                    eq(accountBookmarks.accountId, accountId),
+                    eq(accountBookmarks.workspaceId, workspaceId)
+                )
+            )
+            .orderBy(desc(accountBookmarks.createdAt))
+            .limit(options.limit)
+            .offset(options.offset);
+    }
+
+    async countBookmarks(accountId: string, workspaceId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select({ count: sql<number>`count(*)` })
+            .from(accountBookmarks)
+            .where(
+                and(
+                    eq(accountBookmarks.accountId, accountId),
+                    eq(accountBookmarks.workspaceId, workspaceId)
+                )
+            );
+        return Number(result[0]?.count || 0);
+    }
+
+    async findBookmark(accountId: string, questionId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select()
+            .from(accountBookmarks)
+            .where(
+                and(
+                    eq(accountBookmarks.accountId, accountId),
+                    eq(accountBookmarks.questionId, questionId)
+                )
+            )
+            .limit(1);
+        return result[0];
+    }
+
+    async deleteBookmark(accountId: string, questionId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .delete(accountBookmarks)
+            .where(
+                and(
+                    eq(accountBookmarks.accountId, accountId),
+                    eq(accountBookmarks.questionId, questionId)
+                )
+            )
+            .returning();
+    }
+
     async addBookmark(data: typeof accountBookmarks.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
         return await client.insert(accountBookmarks).values(data).returning();
@@ -74,5 +170,49 @@ export class SupportRepository extends BaseRepository {
             .from(cities)
             .where(eq(cities.countryId, countryId))
             .orderBy(cities.title);
+    }
+
+    async listAllCities(tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client.select().from(cities).orderBy(cities.title);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // WORKSPACE STATS
+    // ═══════════════════════════════════════════════════════════════
+
+    async countActiveProviders(tx?: DbClient) {
+        const client = tx ?? this.db;
+        const { workspaces } = require("@/lib/app-infrastructure/database/schema");
+        const { and, eq, count } = require("drizzle-orm");
+
+        const result = await client
+            .select({ value: count() })
+            .from(workspaces)
+            .where(
+                and(
+                    eq(workspaces.type, 'provider'),
+                    eq(workspaces.isActive, true)
+                )
+            );
+        return result[0]?.value || 0;
+    }
+
+    async countActiveProvidersWithLocation(tx?: DbClient) {
+        const client = tx ?? this.db;
+        const { workspaces } = require("@/lib/app-infrastructure/database/schema");
+        const { and, eq, count, isNotNull } = require("drizzle-orm");
+
+        const result = await client
+            .select({ value: count() })
+            .from(workspaces)
+            .where(
+                and(
+                    eq(workspaces.type, 'provider'),
+                    eq(workspaces.isActive, true),
+                    isNotNull(workspaces.cityId)
+                )
+            );
+        return result[0]?.value || 0;
     }
 }

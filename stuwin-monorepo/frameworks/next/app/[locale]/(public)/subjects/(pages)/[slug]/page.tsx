@@ -12,6 +12,7 @@ interface SubjectData {
   title?: string;
   description?: string;
   image?: string;
+  type?: string;
 }
 
 interface PageProps {

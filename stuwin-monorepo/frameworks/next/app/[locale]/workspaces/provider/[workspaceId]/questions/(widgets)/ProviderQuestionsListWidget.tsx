@@ -67,7 +67,7 @@ export function ProviderQuestionsListWidget() {
 
     const result = response.data as ApiResponse<QuestionType.ListQuestionsResponse>;
 
-    if (result && result.success && result.data) {
+    if (result && 'success' in result && result.success && result.data) {
       setQuestions(result.data.questions);
       setPagination({
         total: result.data.total,
@@ -75,7 +75,7 @@ export function ProviderQuestionsListWidget() {
         pageSize: result.data.pageSize
       });
     } else {
-      const errorMessage = result && 'error' in result && result.error ? result.error : 'Error fetching questions';
+      const errorMessage = result && 'success' in result && !result.success && result.error ? result.error.message : 'Error fetching questions';
       ConsoleLogger.error('Error fetching questions:', errorMessage);
       toast.error('Error fetching questions');
     }

@@ -1,13 +1,11 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import type { ApiHandlerContext, ApiRouteHandler } from '@/types/next';
-import { workspaceRoles } from '@/lib/app-infrastructure/database/schema';
 
-export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, log, db, generateSlimId }: ApiHandlerContext) => {
+import { NextRequest, NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
+
+export const POST = unifiedApiHandler(async (request: NextRequest, { module, log }) => {
   try {
     const body = await request.json();
-    const { name, description, permissions } = body;
+    const { name, permissions } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -18,17 +16,27 @@ export const POST: ApiRouteHandler = withApiHandler(async (request: NextRequest,
 
     log.info('Creating role', { name });
 
-    const [role] = await db
-      .insert(workspaceRoles)
-      .values({
-        id: generateSlimId ? generateSlimId() : undefined,
-        name,
-        permissions: Array.isArray(permissions) ? permissions : [],
-      })
-      .returning();
+    const result = await module.roles.createRole({
+      name,
+      permissions: Array.isArray(permissions) ? permissions : [],
+    });
 
-    log.info('Role created', { id: role.id, name });
-    return NextResponse.json({ role }, { status: 201 });
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Failed to create role' },
+        { status: 500 }
+      );
+    }
+
+    if (result.role) {
+      log.info('Role created', { id: result.role.id, name });
+      return NextResponse.json({ role: result.role }, { status: 201 });
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to retrieve created role' },
+      { status: 500 }
+    );
   } catch (error) {
     log.error('Error in roles create', error as Error);
     return NextResponse.json(

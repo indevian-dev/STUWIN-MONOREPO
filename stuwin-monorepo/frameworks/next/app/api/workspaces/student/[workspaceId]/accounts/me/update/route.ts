@@ -1,16 +1,9 @@
-import type { NextRequest } from 'next/server';
-import type { ApiRouteHandler, ApiHandlerContext } from '@/types/next';
-import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
+import { NextRequest, NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 
-export const PATCH: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, log, db }: ApiHandlerContext) => {
+export const PATCH = unifiedApiHandler(async (request: NextRequest, { module, auth, log }) => {
   try {
-    if (!authData) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const accountId = authData.account.id;
-    const userId = authData.user.id;
+    const userId = auth.userId;
 
     const requestBody = await request.json();
     const { user } = requestBody;
@@ -22,50 +15,29 @@ export const PATCH: ApiRouteHandler = withApiHandler(async (request: NextRequest
       );
     }
 
-    log.info('Updating account', { accountId, userId });
+    log.info('Updating account', { userId });
 
-    // Update user data
-    const updateResult = await db.query(
-      'UPDATE users SET name = $name, lastName = $lastName, phone = $phone, avatarBase64 = $avatarBase64, updatedAt = $updatedAt WHERE id = $userId RETURN AFTER',
-      {
-        name: user.name,
-        lastName: user.last_name,
-        phone: user.phone,
-        avatarBase64: user.avatar_base64,
-        updatedAt: new Date().toISOString(),
-        userId
-      }
-    );
-    const updatedUser = updateResult[0];
+    // Update user profile via AuthService
+    const result = await module.auth.updateProfile(userId, {
+      firstName: user.name || user.firstName,
+      lastName: user.last_name || user.lastName,
+      phone: user.phone,
+      avatarBase64: user.avatar_base64 || user.avatarBase64
+    });
 
-    if (!updatedUser) {
-      log.error('Error updating user - not found');
+    if (!result.success || !result.data) {
+      log.error('Error updating user', { error: result.error });
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: result.error || 'Failed to update user' },
+        { status: result.status || 500 }
       );
     }
 
-    // Fetch updated account
-    const accountResult = await db.query(
-      'SELECT * FROM accounts WHERE id = $accountId LIMIT 1',
-      { accountId }
-    );
-    const account = accountResult[0];
-
-    log.info('Account updated', { accountId });
+    log.info('Account updated', { userId });
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        last_name: updatedUser.lastName,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        avatar_base64: updatedUser.avatarBase64
-      },
-      account
+      user: result.data.user
     });
   } catch (error) {
     log.error('Error in account update', error instanceof Error ? error : new Error(String(error)));

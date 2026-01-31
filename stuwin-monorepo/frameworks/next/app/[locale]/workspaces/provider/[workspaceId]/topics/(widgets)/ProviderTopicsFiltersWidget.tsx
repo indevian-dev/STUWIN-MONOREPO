@@ -6,9 +6,7 @@ import {
 } from 'react';
 import { useParams } from 'next/navigation';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
-import { TopicFilters } from '@/types/resources/topics';
-import { Subject } from '@/types/resources/subjects';
-import { ApiResponse } from '@/types';
+import { TopicFilters, Subject, ApiResponse } from '@/types';
 
 interface ProviderTopicsFiltersState {
   topicId: string;
@@ -44,10 +42,12 @@ export function ProviderTopicsFiltersWidget({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/subjects`,
         params: {}
-      }) as ApiResponse<{ subjects: Subject.PrivateAccess[] }>;
+      });
 
-      if ('success' in response && response.success && response.data) {
-        setSubjects(response.data.subjects || []);
+      const responseData = response.data as any;
+
+      if (responseData && responseData.success && responseData.data) {
+        setSubjects(responseData.data.subjects || []);
       }
     }
     fetchSubjects();

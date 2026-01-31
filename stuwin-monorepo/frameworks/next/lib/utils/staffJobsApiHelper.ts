@@ -7,14 +7,14 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { apiCallForSpaHelper } from './apiCallForSpaHelper';
-import type { 
-  JobLogsResponse, 
-  JobStatsResponse, 
+import type {
+  JobLogsResponse,
+  JobStatsResponse,
   JobControlRequest,
   BackgroundJob,
   LogJobType,
   LogStatus
-} from '@/types/resources/backgroundJobs';
+} from '@/lib/app-core-modules/jobs/jobs.types';
 
 // ═══════════════════════════════════════════════════════════════
 // JOB LOGS API
@@ -35,7 +35,7 @@ export interface FetchLogsParams {
  */
 export async function fetchJobLogs(params: FetchLogsParams): Promise<JobLogsResponse> {
   const queryParams: Record<string, string> = {};
-  
+
   if (params.jobType && params.jobType.length > 0) {
     queryParams.jobType = params.jobType.join(',');
   }
@@ -91,7 +91,7 @@ export async function fetchJobStats(): Promise<JobStatsResponse> {
 
   // Parse date strings back to Date objects
   const data = response.data as JobStatsResponse;
-  
+
   // Parse overview stats dates
   if (data.overview?.reportGeneration?.lastRun) {
     data.overview.reportGeneration.lastRun = new Date(data.overview.reportGeneration.lastRun);
@@ -99,7 +99,7 @@ export async function fetchJobStats(): Promise<JobStatsResponse> {
   if (data.overview?.questionGeneration?.lastRun) {
     data.overview.questionGeneration.lastRun = new Date(data.overview.questionGeneration.lastRun);
   }
-  
+
   // Parse recent activity timestamps
   if (data.recentActivity) {
     data.recentActivity = data.recentActivity.map(activity => ({

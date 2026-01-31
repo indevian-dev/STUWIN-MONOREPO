@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 
-import Editor from '@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor';
+import Editor from '@/lib/components/Editor';
 
 export function StaffPageEditWidget({ title }: { title: string }) {
     return (

@@ -10,7 +10,7 @@ import type {
   JobControlRequest,
   JobControlResponse,
   JobListResponse,
-} from '@/types/resources/backgroundJobs';
+} from '@/lib/app-core-modules/jobs/jobs.types';
 
 /**
  * GET /api/workspaces/staff/jobs/control
@@ -19,8 +19,8 @@ import type {
 export const GET = unifiedApiHandler(async (request, { module }) => {
   const result = await module.jobs.listJobs();
 
-  if (!result.data) {
-    return NextResponse.json({ error: 'Failed to list jobs' }, { status: 500 });
+  if (!result.success) {
+    return NextResponse.json({ error: result.error || 'Failed to list jobs' }, { status: 500 });
   }
 
   const response: JobListResponse = {
@@ -71,7 +71,7 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
 
   // Fetch updated job info
   const updatedJobsResult = await module.jobs.listJobs();
-  const updatedJob = updatedJobsResult.data?.find(j => j.id === jobId);
+  const updatedJob = updatedJobsResult.success ? updatedJobsResult.data.find(j => j.id === jobId) : undefined;
 
   const response: JobControlResponse = {
     success: true,

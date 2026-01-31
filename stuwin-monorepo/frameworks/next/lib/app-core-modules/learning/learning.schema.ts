@@ -10,7 +10,7 @@ import { z } from "zod";
 // ═══════════════════════════════════════════════════════════════
 
 export const subjectSchema = z.object({
-    id: z.number().optional(),
+    id: z.string().optional(),
     title: z.string().min(2).max(255),
     description: z.string().optional(),
     cover: z.string().url().optional().or(z.literal('')),
@@ -27,8 +27,8 @@ export const updateSubjectSchema = subjectSchema.partial();
 // ═══════════════════════════════════════════════════════════════
 
 export const topicSchema = z.object({
-    id: z.number().optional(),
-    learningSubjectId: z.number(),
+    id: z.string().optional(),
+    learningSubjectId: z.string(),
     name: z.string().min(2).max(255),
     body: z.string(),
     gradeLevel: z.number().int().min(1).max(12).optional(),
@@ -48,11 +48,11 @@ export const updateTopicSchema = topicSchema.partial();
 // ═══════════════════════════════════════════════════════════════
 
 export const questionSchema = z.object({
-    id: z.number().optional(),
+    id: z.string().optional(),
     question: z.string().min(5),
     answers: z.array(z.string()).min(2),
     correctAnswer: z.string(),
-    learningSubjectId: z.number(),
+    learningSubjectId: z.string(),
     complexity: z.enum(['easy', 'medium', 'hard', 'expert']),
     gradeLevel: z.number().int().min(1).max(12),
     explanationGuide: z.object({

@@ -1,15 +1,11 @@
-import type { NextRequest } from 'next/server';
+
 import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import type { ApiHandlerContext, ApiRouteHandler } from '@/types/next';
-import { workspaceRoles } from '@/lib/app-infrastructure/database/schema';
-import { eq } from 'drizzle-orm';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 
-export const GET: ApiRouteHandler = withApiHandler(async (request: NextRequest, { authData, db, params, log, isValidSlimId }: ApiHandlerContext) => {
-  const resolvedParams = await params;
-  const { id } = resolvedParams as { id: string };
+export const GET = unifiedApiHandler(async (_request, { module, params, log, isValidSlimId }) => {
+  const { id } = params as { id: string };
 
-  if (!id || !isValidSlimId || !isValidSlimId(id)) {
+  if (!id || !isValidSlimId(id)) {
     return NextResponse.json(
       { error: 'Valid role ID is required' },
       { status: 400 }
@@ -18,29 +14,15 @@ export const GET: ApiRouteHandler = withApiHandler(async (request: NextRequest, 
 
   log.debug('Fetching role', { id });
 
-  try {
-    const roleResult = await db
-      .select()
-      .from(workspaceRoles)
-      .where(eq(workspaceRoles.id, id))
-      .limit(1);
+  const result = await module.roles.getRole(id);
 
-    const role = roleResult[0];
-
-    if (!role) {
-      return NextResponse.json(
-        { error: 'Role not found' },
-        { status: 404 }
-      );
-    }
-
-    log.info('Role fetched', { id });
-    return NextResponse.json({ role });
-  } catch (error) {
-    log.error('Error fetching role', error as Error);
+  if (!result.success) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'An error occurred' },
-      { status: 500 }
+      { error: result.error || 'Failed to fetch role' },
+      { status: result.status || 500 }
     );
   }
+
+  log.info('Role fetched', { id });
+  return NextResponse.json({ role: result.role });
 });

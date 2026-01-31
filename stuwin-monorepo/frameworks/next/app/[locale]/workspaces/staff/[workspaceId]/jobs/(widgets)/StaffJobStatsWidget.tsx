@@ -7,9 +7,9 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
-import type { JobStatsResponse } from '@/types/resources/backgroundJobs';
+import type { JobStatsResponse } from '@/lib/app-core-modules/jobs/jobs.types';
 import { FiActivity, FiCheckCircle, FiClock, FiLayers } from 'react-icons/fi';
-import { fetchJobStats } from '@/lib/helpers/staffJobsApiHelper';
+import { fetchJobStats } from '@/lib/utils/staffJobsApiHelper';
 
 export function StaffJobStatsWidget() {
   const [stats, setStats] = useState<JobStatsResponse | null>(null);
@@ -234,13 +234,12 @@ export function StaffJobStatsWidget() {
                       <td className="px-4 py-3 text-sm text-gray-600">{activity.jobType}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            activity.status === 'completed'
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${activity.status === 'completed'
                               ? 'bg-green-100 text-green-800'
                               : activity.status === 'failed'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}
                         >
                           {activity.status}
                         </span>

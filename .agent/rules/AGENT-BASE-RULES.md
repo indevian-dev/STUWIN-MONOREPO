@@ -11,3 +11,6 @@ ALL AI GENERATED FILES must be stored in the stuwin-next-js/.ai-files folder.
 
 
 I use BUN js engine so commands in temrinal mostly must use BUN
+
+
+ALways use Scripting with JAvaScript to handle massive similar changes accross codebase 

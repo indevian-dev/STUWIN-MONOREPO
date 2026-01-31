@@ -7,9 +7,9 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
-import type { JobLog, LogJobType, LogStatus, JobLogsResponse } from '@/types/resources/backgroundJobs';
+import type { JobLog, LogJobType, LogStatus, JobLogsResponse } from '@/lib/app-core-modules/jobs/jobs.types';
 import { FiFilter, FiSearch, FiChevronDown, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
-import { fetchJobLogs } from '@/lib/helpers/staffJobsApiHelper';
+import { fetchJobLogs } from '@/lib/utils/staffJobsApiHelper';
 
 export function StaffJobLogsWidget() {
   const [logs, setLogs] = useState<JobLog[]>([]);
@@ -34,7 +34,7 @@ export function StaffJobLogsWidget() {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      
+
       // Calculate time range
       const endTime = new Date();
       const startTime = new Date();

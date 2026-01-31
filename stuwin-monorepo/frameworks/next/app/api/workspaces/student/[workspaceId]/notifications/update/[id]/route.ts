@@ -1,70 +1,37 @@
-import type { NextRequest } from "next/server";
-import type { ApiRouteHandler, ApiHandlerContext } from "@/types/next";
-import { NextResponse } from "next/server";
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { eq, and } from "drizzle-orm";
-import { accountNotifications } from "@/lib/app-infrastructure/database/schema";
-export const PATCH: ApiRouteHandler = withApiHandler(
-  async (
-    request: NextRequest,
-    { authData, params, log, db, isValidSlimId }: ApiHandlerContext,
-  ) => {
-    if (!authData) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+import { NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
+
+export const PATCH = unifiedApiHandler(async (request, { module, params, log, isValidSlimId }) => {
+  const { id } = params as { id: string };
+
+  if (!id || !isValidSlimId(id)) {
+    return NextResponse.json(
+      { error: 'Valid notification ID is required' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { mark_as_read } = await request.json();
+
+    // The service currently only marks as read, doesn't take the boolean value to toggle.
+    // If we need to support toggling, we might need to update the service.
+    // But usually notifications are only marked as read.
+    const result = await module.support.markAsRead(id);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
-    try {
-      const resolvedParams = await params;
-      const id = (resolvedParams as Record<string, string>)?.id;
-      if (!id || !isValidSlimId(id)) {
-        return NextResponse.json(
-          { error: "Valid notification ID is required" },
-          { status: 400 },
-        );
-      }
-      const { mark_as_read } = await request.json();
-      const accountId = authData.account.id;
-      // Check if notification exists and belongs to account
-      const [notification] = await db
-        .select({
-          id: accountsNotifications.id,
-          accountId: accountsNotifications.accountId,
-        })
-        .from(accountsNotifications)
-        .where(
-          and(
-            eq(accountsNotifications.id, id),
-            eq(accountsNotifications.accountId, accountId),
-          ),
-        )
-        .limit(1);
-      if (!notification) {
-        return NextResponse.json(
-          { error: "Notification not found or access denied" },
-          { status: 404 },
-        );
-      }
-      // Update notification
-      const [updatedNotification] = await db
-        .update(accountsNotifications)
-        .set({
-          markAsRead: mark_as_read,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(accountsNotifications.id, id),
-            eq(accountsNotifications.accountId, accountId),
-          ),
-        )
-        .returning();
-      return NextResponse.json({
-        success: true,
-        notification: updatedNotification,
-      });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Internal server error";
-      return NextResponse.json({ error: errorMessage }, { status: 500 });
-    }
-  },
-);
+
+    return NextResponse.json({
+      success: true,
+      notification: result.data?.[0]
+    });
+  } catch (error) {
+    log.error('Failed to update student notification', error as Error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+});

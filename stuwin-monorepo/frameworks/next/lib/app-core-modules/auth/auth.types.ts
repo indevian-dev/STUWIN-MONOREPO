@@ -1,6 +1,19 @@
+export interface Timestamps {
+    createdAt: Date;
+    updatedAt: Date;
+}
 
-import type { Timestamps } from '../../../types/base';
-import type { Session } from '../../../types/auth';
+export interface Session {
+    id: string;
+    sessionsGroupId: string;
+    accountId: string;
+    expireAt: Date;
+    ip?: string;
+    device?: string;
+    browser?: string;
+    os?: string;
+    metadata?: any;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // AUTH MODULE TYPES

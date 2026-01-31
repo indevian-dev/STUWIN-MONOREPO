@@ -37,7 +37,7 @@ export function PublicProvidersMapWidget({ Providers = [] }: PublicProvidersMapW
 
     // Initialize map
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-    
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -81,7 +81,7 @@ export function PublicProvidersMapWidget({ Providers = [] }: PublicProvidersMapW
           <h3 class="font-semibold text-sm mb-1">${Provider.title}</h3>
           ${Provider.location!.address ? `<p class="text-xs text-gray-600 mb-2">${Provider.location!.address}</p>` : ''}
           <a 
-            href="/Providers/${Provider.id}" 
+            href="/providers/${Provider.id}" 
             class="text-xs text-brand hover:underline"
           >
             Ətraflı bax
@@ -110,7 +110,7 @@ export function PublicProvidersMapWidget({ Providers = [] }: PublicProvidersMapW
     // Fit map to markers bounds
     if (ProvidersWithLocation.length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
-      
+
       ProvidersWithLocation.forEach(Provider => {
         bounds.extend([
           Provider.location!.longitude,

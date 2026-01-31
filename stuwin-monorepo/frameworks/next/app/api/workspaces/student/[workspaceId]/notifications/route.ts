@@ -1,57 +1,32 @@
-import type { ApiRouteHandler } from '@/types/next';
 import { NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/app-access-control/interceptors';
-import { db } from '@/lib/app-infrastructure/database';
-import { accountNotifications } from '@/lib/app-infrastructure/database/schema';
-import { eq, desc, count, and } from 'drizzle-orm';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 
-// GET - Fetch user's notifications with pagination
-export const GET: ApiRouteHandler = withApiHandler(async (request: any, context: any) => {
-  const { authData, log } = context;
+export const GET = unifiedApiHandler(async (request, { module, authData, log }) => {
+  const accountId = authData.account.id;
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '20', 10);
+  const offset = (page - 1) * limit;
 
-  if (!authData) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  log.debug('Fetching student notifications', { accountId, page, limit });
 
   try {
-    const accountId = authData.account.id;
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = (page - 1) * limit;
+    const result = await module.support.getNotifications(accountId);
 
-    // Get notifications with pagination
-    const notifications = await db.select({
-      id: accountNotifications.id,
-      name: accountNotifications.name,
-      body: accountNotifications.body,
-      markAsRead: accountNotifications.markAsRead,
-      createdAt: accountNotifications.createdAt,
-      updatedAt: accountNotifications.updatedAt
-    })
-      .from(accountNotifications)
-      .where(eq(accountNotifications.accountId, accountId))
-      .orderBy(desc(accountNotifications.createdAt))
-      .limit(limit)
-      .offset(offset);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
 
-    // Get total count
-    const totalResult = await db.select({ count: count() })
-      .from(accountNotifications)
-      .where(eq(accountNotifications.accountId, accountId));
-    const total = Number(totalResult[0]?.count || 0);
+    const notifications = result.data || [];
+    const total = notifications.length; // Basic pagination logic for now as service doesn't support it yet
 
-    // Get unread count
-    const unreadResult = await db.select({ count: count() })
-      .from(accountNotifications)
-      .where(and(
-        eq(accountNotifications.accountId, accountId),
-        eq(accountNotifications.markAsRead, false)
-      ));
-    const unreadCount = Number(unreadResult[0]?.count || 0);
+    // Manual pagination from the full list for now
+    const paginatedNotifications = notifications.slice(offset, offset + limit);
+
+    const unreadCount = notifications.filter((n: any) => !n.markAsRead).length;
 
     return NextResponse.json({
-      notifications,
+      notifications: paginatedNotifications,
       pagination: {
         page,
         limit,
@@ -63,7 +38,7 @@ export const GET: ApiRouteHandler = withApiHandler(async (request: any, context:
       unread_count: unreadCount
     });
   } catch (error) {
-    if (log) log.error('Failed to fetch student notifications:', error);
+    log.error('Failed to fetch student notifications', error as Error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

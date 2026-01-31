@@ -4,7 +4,7 @@
 // Helper functions for managing QStash schedules via API
 // ═══════════════════════════════════════════════════════════════
 
-import type { QStashSchedule, BackgroundJob, JobType } from '@/types/resources/backgroundJobs';
+import type { QStashSchedule, BackgroundJob, JobType } from '@/lib/app-core-modules/jobs/jobs.types';
 import { qstashClient } from '@/lib/integrations/qstashClient';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
@@ -15,12 +15,12 @@ const QSTASH_TOKEN = process.env.QSTASH_TOKEN;
 function getBaseUrl(): string {
   // Priority: NGROK_URL (for local dev) -> NEXT_PUBLIC_APP_URL (for prod) -> localhost (fallback)
   const domain = process.env.NGROK_URL || process.env.NEXT_PUBLIC_APP_URL || 'localhost:3033';
-  
+
   // Check if domain already has a scheme
   if (domain.startsWith('http://') || domain.startsWith('https://')) {
     return domain;
   }
-  
+
   // Add https:// for production domains, http:// for localhost
   return domain.includes('localhost') ? `http://${domain}` : `https://${domain}`;
 }
@@ -151,9 +151,9 @@ export async function triggerJob(endpoint: string): Promise<any> {
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = url.includes('localhost') ? `http://${url}` : `https://${url}`;
   }
-  
+
   ConsoleLogger.log('Triggering job with URL:', url);
-  
+
   try {
     // Use QStash client library instead of raw API call
     const result = await qstashClient.publishJSON({
@@ -181,12 +181,12 @@ export async function getAllJobs(): Promise<BackgroundJob[]> {
 
   for (const [jobType, definition] of Object.entries(JOB_DEFINITIONS)) {
     ConsoleLogger.log(`Job ${jobType} endpoint:`, definition.endpoint);
-    
+
     const schedule = schedules.find(s => s.destination === definition.endpoint);
-    
+
     let status: BackgroundJob['status'] = 'unknown';
     let scheduleId = '';
-    
+
     if (schedule) {
       status = schedule.paused ? 'paused' : 'active';
       scheduleId = schedule.scheduleId;
@@ -208,7 +208,7 @@ export async function getAllJobs(): Promise<BackgroundJob[]> {
  */
 function calculateNextRun(cronExpression: string): Date {
   const now = new Date();
-  
+
   // Simple cron parsing for our specific cases
   if (cronExpression === '0 0 * * 0') {
     // Weekly on Sunday at midnight
@@ -225,7 +225,7 @@ function calculateNextRun(cronExpression: string): Date {
     }
     return nextHour;
   }
-  
+
   // Default: next hour
   const nextRun = new Date(now);
   nextRun.setHours(nextRun.getHours() + 1);

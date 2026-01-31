@@ -7,12 +7,7 @@ import html2canvas from 'html2canvas';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-
-const Editor = dynamic(() => import('@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor'), {
-  ssr: false,
-  loading: () => <div className="p-4 text-gray-500">Loading editor...</div>
-});
+import Editor from '@/lib/components/Editor';
 
 interface ProviderHtmlToPdfModalWidgetProps {
   isOpen: boolean;
@@ -43,133 +38,129 @@ export function ProviderHtmlToPdfModalWidget({
   };
 
   const convertHtmlToPdf = async (): Promise<Blob> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (!previewRef.current) {
-          reject(new Error('Preview element not found'));
-          return;
-        }
+    if (!previewRef.current) {
+      throw new Error('Preview element not found');
+    }
 
-        setProgress(10);
+    setProgress(10);
 
-        // Create a temporary container for rendering
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '210mm'; // A4 width
-        tempContainer.style.padding = '20mm';
-        tempContainer.style.backgroundColor = 'white';
-        tempContainer.style.fontFamily = 'Arial, sans-serif';
-        tempContainer.style.fontSize = '12pt';
-        tempContainer.style.lineHeight = '1.6';
-        tempContainer.style.color = '#000000';
+    // Create a temporary container for rendering
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.width = '210mm'; // A4 width
+    tempContainer.style.padding = '20mm';
+    tempContainer.style.backgroundColor = 'white';
+    tempContainer.style.fontFamily = 'Arial, sans-serif';
+    tempContainer.style.fontSize = '12pt';
+    tempContainer.style.lineHeight = '1.6';
+    tempContainer.style.color = '#000000';
 
-        // Add title if provided
-        if (title) {
-          const titleElement = document.createElement('h1');
-          titleElement.textContent = title;
-          titleElement.style.fontSize = '24pt';
-          titleElement.style.fontWeight = 'bold';
-          titleElement.style.marginBottom = '20px';
-          titleElement.style.color = '#000000';
-          tempContainer.appendChild(titleElement);
-        }
+    try {
+      // Add title if provided
+      if (title) {
+        const titleElement = document.createElement('h1');
+        titleElement.textContent = title;
+        titleElement.style.fontSize = '24pt';
+        titleElement.style.fontWeight = 'bold';
+        titleElement.style.marginBottom = '20px';
+        titleElement.style.color = '#000000';
+        tempContainer.appendChild(titleElement);
+      }
 
-        // Add content
-        const contentDiv = document.createElement('div');
-        contentDiv.innerHTML = content;
+      // Add content
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = content;
 
-        // Style content elements
-        contentDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
-          (heading as HTMLElement).style.color = '#000000';
-          (heading as HTMLElement).style.marginTop = '16px';
-          (heading as HTMLElement).style.marginBottom = '8px';
-        });
+      // Style content elements
+      contentDiv.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+        (heading as HTMLElement).style.color = '#000000';
+        (heading as HTMLElement).style.marginTop = '16px';
+        (heading as HTMLElement).style.marginBottom = '8px';
+      });
 
-        contentDiv.querySelectorAll('p').forEach((p) => {
-          (p as HTMLElement).style.marginBottom = '12px';
-          (p as HTMLElement).style.color = '#000000';
-        });
+      contentDiv.querySelectorAll('p').forEach((p) => {
+        (p as HTMLElement).style.marginBottom = '12px';
+        (p as HTMLElement).style.color = '#000000';
+      });
 
-        contentDiv.querySelectorAll('ul, ol').forEach((list) => {
-          (list as HTMLElement).style.marginLeft = '20px';
-          (list as HTMLElement).style.marginBottom = '12px';
-        });
+      contentDiv.querySelectorAll('ul, ol').forEach((list) => {
+        (list as HTMLElement).style.marginLeft = '20px';
+        (list as HTMLElement).style.marginBottom = '12px';
+      });
 
-        contentDiv.querySelectorAll('img').forEach((img) => {
-          (img as HTMLElement).style.maxWidth = '100%';
-          (img as HTMLElement).style.height = 'auto';
-          (img as HTMLElement).style.display = 'block';
-          (img as HTMLElement).style.margin = '12px 0';
-        });
+      contentDiv.querySelectorAll('img').forEach((img) => {
+        (img as HTMLElement).style.maxWidth = '100%';
+        (img as HTMLElement).style.height = 'auto';
+        (img as HTMLElement).style.display = 'block';
+        (img as HTMLElement).style.margin = '12px 0';
+      });
 
-        contentDiv.querySelectorAll('pre, code').forEach((code) => {
-          (code as HTMLElement).style.backgroundColor = '#f5f5f5';
-          (code as HTMLElement).style.padding = '8px';
-          (code as HTMLElement).style.borderRadius = '4px';
-          (code as HTMLElement).style.fontFamily = 'monospace';
-        });
+      contentDiv.querySelectorAll('pre, code').forEach((code) => {
+        (code as HTMLElement).style.backgroundColor = '#f5f5f5';
+        (code as HTMLElement).style.padding = '8px';
+        (code as HTMLElement).style.borderRadius = '4px';
+        (code as HTMLElement).style.fontFamily = 'monospace';
+      });
 
-        tempContainer.appendChild(contentDiv);
-        document.body.appendChild(tempContainer);
+      tempContainer.appendChild(contentDiv);
+      document.body.appendChild(tempContainer);
 
-        setProgress(30);
+      setProgress(30);
 
-        // Convert to canvas
-        const canvas = await html2canvas(tempContainer, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
+      // Convert to canvas
+      const canvas = await html2canvas(tempContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
 
-        setProgress(60);
+      setProgress(60);
 
-        // Remove temporary container
-        document.body.removeChild(tempContainer);
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / canvasHeight;
 
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
+      let imgWidth = pdfWidth;
+      let imgHeight = imgWidth / ratio;
 
-        let imgWidth = pdfWidth;
-        let imgHeight = imgWidth / ratio;
+      // Handle multiple pages if content is too long
+      let heightLeft = imgHeight;
+      let position = 0;
 
-        // Handle multiple pages if content is too long
-        let heightLeft = imgHeight;
-        let position = 0;
+      // First page
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
 
-        // First page
+      // Add additional pages if needed
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
         pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pdfHeight;
-
-        // Add additional pages if needed
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-
-        setProgress(80);
-
-        const pdfBlob = pdf.output('blob');
-        resolve(pdfBlob);
-      } catch (error) {
-        reject(error);
       }
-    });
+
+      setProgress(80);
+
+      return pdf.output('blob');
+    } finally {
+      // Always remove temporary container
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
+      }
+    }
   };
 
   const handleDownload = async (): Promise<void> => {

@@ -114,7 +114,7 @@ export function PublicProviderApplicationFormWidget() {
     try {
       const response = await apiCallForSpaHelper({
         method: 'POST',
-        url: '/api/Providers/applications/create',
+        url: '/api/providers/applications/create',
         body: formData
       });
 

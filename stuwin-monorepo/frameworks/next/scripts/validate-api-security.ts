@@ -351,7 +351,7 @@ async function validateApiRoutes() {
 }
 
 // Run validation
-validateApiRoutes().catch((err) => {
+validateApiRoutes().catch((err: any) => {
   console.error("Validation script error:", err);
   process.exit(1);
 });

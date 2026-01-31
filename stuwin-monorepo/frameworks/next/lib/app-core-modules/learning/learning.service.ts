@@ -3,6 +3,10 @@ import { LearningRepository } from "./learning.repository";
 import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
+import slugify from 'slugify';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * LearningService - Coordinates educational content delivery
@@ -14,6 +18,20 @@ export class LearningService extends BaseService {
         private readonly db: Database
     ) {
         super();
+    }
+
+    /**
+     * Get a single subject by ID
+     */
+    async getSubjectById(subjectId: string) {
+        try {
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+            return { success: true, data: subject };
+        } catch (error) {
+            this.handleError(error, "getSubjectById");
+            return { success: false, error: "Failed to load subject" };
+        }
     }
 
     /**
@@ -113,10 +131,25 @@ export class LearningService extends BaseService {
     /**
      * Create a new subject
      */
-    async createSubject(data: any) {
+    async createSubject(data: {
+        title: string;
+        description: string;
+        cover?: string;
+        aiLabel?: string;
+        isGlobal?: boolean;
+        organizationId?: string;
+        workspaceId?: string;
+    }) {
         try {
+            const slug = slugify(data.title, { lower: true, strict: true });
+
             const newSubject = await this.repository.createSubject({
-                ...data,
+                name: data.title,
+                description: data.description,
+                slug,
+                cover: data.cover,
+                aiLabel: data.aiLabel,
+                workspaceId: data.workspaceId,
                 createdAt: new Date(),
                 isActive: true
             });
@@ -131,14 +164,49 @@ export class LearningService extends BaseService {
     /**
      * Update an existing subject
      */
-    async updateSubject(id: string, data: any) {
+    async updateSubject(id: string, data: {
+        title?: string;
+        description?: string;
+        isActive?: boolean;
+        is_active?: boolean; // For backward compatibility with legacy payloads
+        cover?: string;
+        aiLabel?: string;
+    }) {
         try {
-            const updated = await this.repository.updateSubject(id, data);
+            const updateData: any = { ...data };
+
+            if (data.title) {
+                updateData.name = data.title;
+                updateData.slug = slugify(data.title, { lower: true, strict: true });
+                delete updateData.title;
+            }
+
+            // Handle legacy is_active
+            if (data.is_active !== undefined) {
+                updateData.isActive = data.is_active;
+                delete updateData.is_active;
+            }
+
+            const updated = await this.repository.updateSubject(id, updateData);
             if (!updated) return { success: false, error: "Subject not found" };
             return { success: true, data: updated };
         } catch (error) {
             this.handleError(error, "updateSubject");
             return { success: false, error: "Failed to update subject" };
+        }
+    }
+
+    /**
+     * Delete an existing subject
+     */
+    async deleteSubject(id: string) {
+        try {
+            const deleted = await this.repository.deleteSubject(id);
+            if (!deleted) return { success: false, error: "Subject not found" };
+            return { success: true, data: deleted };
+        } catch (error) {
+            this.handleError(error, "deleteSubject");
+            return { success: false, error: "Failed to delete subject" };
         }
     }
 
@@ -236,11 +304,11 @@ export class LearningService extends BaseService {
                     isActiveForAi: false
                 }, tx as any);
 
-                return { success: true, data: topic };
+                return { success: true as const, data: topic };
             });
         } catch (error) {
             this.handleError(error, "createTopicWithContent");
-            return { success: false, error: "Failed to create topic" };
+            return { success: false as const, error: "Failed to create topic" };
         }
     }
 
@@ -407,6 +475,493 @@ export class LearningService extends BaseService {
         } catch (error) {
             this.handleError(error, "bulkCreateTopics");
             return { success: false, error: "Failed to create topics" };
+        }
+    }
+
+    /**
+     * List topics with filters
+     */
+    async getTopics(params: { subjectId?: string; gradeLevel?: number }) {
+        try {
+            if (params.subjectId) {
+                const topics = await this.repository.listTopicsBySubject(params.subjectId);
+                const filteredTopics = params.gradeLevel
+                    ? topics.filter(t => t.gradeLevel === params.gradeLevel)
+                    : topics;
+                return { success: true, data: filteredTopics };
+            }
+            return { success: true, data: [] };
+        } catch (error) {
+            this.handleError(error, "getTopics");
+            return { success: false, error: "Failed to load topics" };
+        }
+    }
+
+    /**
+     * Get a topic detail by ID
+     */
+    async getTopicById(topicId: string) {
+        try {
+            const topic = await this.repository.findTopicById(topicId);
+            if (!topic) return { success: false, error: "Topic not found" };
+            return { success: true, data: topic };
+        } catch (error) {
+            this.handleError(error, "getTopicById");
+            return { success: false, error: "Failed to load topic" };
+        }
+    }
+
+    /**
+     * Delete a topic
+     */
+    async deleteTopic(topicId: string) {
+        try {
+            const deleted = await this.repository.deleteTopic(topicId);
+            if (!deleted) return { success: false, error: "Topic not found" };
+            return { success: true, data: deleted };
+        } catch (error) {
+            this.handleError(error, "deleteTopic");
+            return { success: false, error: "Failed to delete topic" };
+        }
+    }
+
+    /**
+     * Get a PDF by ID
+     */
+    async getPdfById(pdfId: string) {
+        try {
+            const pdf = await this.repository.getPdfById(pdfId);
+            if (!pdf) return { success: false, error: "PDF not found" };
+            return { success: true, data: pdf };
+        } catch (error) {
+            this.handleError(error, "getPdfById");
+            return { success: false, error: "Failed to load PDF" };
+        }
+    }
+
+    /**
+     * Reorder topics within a PDF
+     */
+    /**
+     * Reorder topics within a PDF
+     */
+    async reorderTopics(pdfId: string, orderedTopicIds: string[]) {
+        try {
+            const result = await this.repository.updatePdfOrder(pdfId, orderedTopicIds);
+            if (!result) return { success: false, error: "Failed to update order" };
+            return { success: true, data: result };
+        } catch (error) {
+            this.handleError(error, "reorderTopics");
+            return { success: false, error: "Failed to reorder topics" };
+        }
+    }
+
+    /**
+     * Generate S3 Upload URL for Subject Cover
+     */
+    async getSubjectCoverUploadUrlLegacy(subjectId: string) {
+        try {
+            // Verify subject exists
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+
+            const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+            const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
+
+            if (!accessKeyId || !secretAccessKey) {
+                return { success: false, error: "S3 credentials not configured" };
+            }
+
+            const fileName = uuidv4();
+            const s3Client = new S3Client({
+                region: process.env.AWS_REGION || 'global',
+                endpoint: process.env.AWS_S3_ENDPOINT,
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+            });
+
+            const s3Params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: `categories/${subjectId}/${fileName}.webp`,
+            };
+
+            const command = new PutObjectCommand(s3Params);
+            const uploadURL = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+
+            return {
+                success: true,
+                data: {
+                    uploadURL,
+                    fileName: `${fileName}.webp`,
+                    categoryId: subjectId
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "getSubjectCoverUploadUrl");
+            return { success: false, error: "Error generating presigned URL" };
+        }
+    }
+
+    /**
+     * Delete Subject Media from S3
+     */
+    async deleteSubjectMedia(subjectId: string, fileName: string) {
+        try {
+            // Verify subject exists
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+
+            const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+            const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
+
+            if (!accessKeyId || !secretAccessKey) {
+                return { success: false, error: "S3 credentials not configured" };
+            }
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_REGION || 'global',
+                endpoint: process.env.AWS_S3_ENDPOINT,
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+            });
+
+            const deleteParams = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: `categories/${subjectId}/${fileName}`,
+            };
+
+            const deleteCommand = new DeleteObjectCommand(deleteParams);
+            await s3Client.send(deleteCommand);
+
+            return { success: true };
+        } catch (error) {
+            this.handleError(error, "deleteSubjectMedia");
+            return { success: false, error: "Error deleting media" };
+        }
+    }
+
+    /**
+     * Get questions by subject slug for public display
+     */
+    async getQuestionsBySubject(params: {
+        slug: string;
+        page?: number;
+        pageSize?: number;
+        complexity?: string;
+        gradeLevel?: number;
+    }) {
+        try {
+            // 1. Find subject by slug
+            const subject = await this.repository.findSubjectBySlug(params.slug);
+            if (!subject) return { success: false, error: "Subject not found", code: 404 };
+
+            // 2. Map name to title for compatibility if needed
+            const subjectWithTitle = {
+                ...subject,
+                title: (subject as any).name
+            };
+
+            // 3. List questions with filters
+            const page = params.page || 1;
+            const pageSize = params.pageSize || 20;
+
+            const result = await this.listQuestions({
+                page,
+                pageSize,
+                subjectId: subject.id,
+                complexity: params.complexity,
+                gradeLevel: params.gradeLevel,
+                onlyPublished: true
+            });
+
+            if (!result.success) return result;
+
+            return {
+                success: true,
+                data: {
+                    subject: subjectWithTitle,
+                    questions: (result.data as any).questions,
+                    page,
+                    pageSize,
+                    total: (result.data as any).pagination.total,
+                    totalPages: (result.data as any).pagination.totalPages
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "getQuestionsBySubject");
+            return { success: false, error: "Failed to load questions by subject" };
+        }
+    }
+
+    async getSubjectCoverUploadUrl(subjectId: string, fileName: string, fileType: string) {
+        try {
+            if (!fileType.startsWith("image/")) {
+                return { success: false, error: "Only image files are allowed", code: 400 };
+            }
+
+            const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+            const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_S3_REGION || "global",
+                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                credentials: {
+                    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+                },
+            });
+
+            const timestamp = Date.now();
+            const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+            const coverKey = `subjects/covers/${subjectId}/${timestamp}-${sanitizedFileName}`;
+
+            const s3Params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: coverKey,
+                ContentType: fileType,
+            };
+
+            const command = new PutObjectCommand(s3Params);
+            const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+            const publicUrl = `${process.env.NEXT_PUBLIC_S3_PREFIX || ""}${coverKey}`;
+
+            return {
+                success: true,
+                data: { presignedUrl, coverKey, publicUrl, fileName: sanitizedFileName }
+            };
+        } catch (error) {
+            this.handleError(error, "getSubjectCoverUploadUrl");
+            return { success: false, error: "Failed to generate cover upload URL" };
+        }
+    }
+
+    async getSubjectPdfUploadUrl(subjectId: string, fileName: string, fileType: string) {
+        try {
+            if (fileType !== "application/pdf") {
+                return { success: false, error: "Only PDF files are allowed", code: 400 };
+            }
+
+            const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+            const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_S3_REGION || "global",
+                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                credentials: {
+                    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+                },
+            });
+
+            const timestamp = Date.now();
+            const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+            const pdfKey = `subjects/pdfs/${subjectId}/${timestamp}-${sanitizedFileName}`;
+
+            const s3Params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: pdfKey,
+                ContentType: fileType,
+            };
+
+            const command = new PutObjectCommand(s3Params);
+            const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+
+            return {
+                success: true,
+                data: { presignedUrl, pdfKey, fileName: sanitizedFileName }
+            };
+        } catch (error) {
+            this.handleError(error, "getSubjectPdfUploadUrl");
+            return { success: false, error: "Failed to generate PDF upload URL" };
+        }
+    }
+
+    async getTopicMediaUploadUrl(topicId: string, fileName: string, fileType: string) {
+        try {
+            if (fileType !== "application/pdf") {
+                return { success: false, error: "Only PDF files are allowed", code: 400 };
+            }
+
+            const topicResult = await this.getTopicById(topicId);
+            if (!topicResult.success) return topicResult;
+
+            const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+            const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_S3_REGION || "global",
+                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                credentials: {
+                    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+                },
+            });
+
+            const timestamp = Date.now();
+            const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+            const s3Key = `topics/pdfs/${topicId}/${timestamp}-${sanitizedFileName}`;
+
+            const s3Params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: s3Key,
+                ContentType: fileType,
+            };
+
+            const command = new PutObjectCommand(s3Params);
+            const uploadURL = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+
+            return {
+                success: true,
+                data: { uploadURL, s3Key, fileName: sanitizedFileName }
+            };
+        } catch (error) {
+            this.handleError(error, "getTopicMediaUploadUrl");
+            return { success: false, error: "Failed to generate topic upload URL" };
+        }
+    }
+
+    async saveTopicPdfMetadata(topicId: string, data: { s3Key: string, pdfPageStart?: number, pdfPageEnd?: number, chapterNumber?: string }) {
+        try {
+            if (data.pdfPageStart && data.pdfPageEnd && data.pdfPageStart > data.pdfPageEnd) {
+                return { success: false, error: "pdfPageStart must be less than or equal to pdfPageEnd", code: 400 };
+            }
+
+            let totalPages: number | null = null;
+            try {
+                const { getTotalPages } = require("@/lib/utilities/pdfUtility");
+                const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
+                const pdfUrl = `${s3Prefix}${data.s3Key}`;
+
+                const response = await fetch(pdfUrl);
+                if (response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    const pdfBuffer = Buffer.from(arrayBuffer);
+                    totalPages = await getTotalPages(pdfBuffer);
+                }
+            } catch (pdfError) {
+                // Ignore page count error
+            }
+
+            const updateData: any = {
+                pdfS3Key: data.s3Key,
+                pdfPageStart: data.pdfPageStart || null,
+                pdfPageEnd: data.pdfPageEnd || null,
+                totalPdfPages: totalPages,
+                chapterNumber: data.chapterNumber || null,
+            };
+
+            const result = await this.updateTopic(topicId, updateData);
+            if (!result.success) return result;
+
+            return {
+                success: true,
+                data: result.data,
+                message: "PDF uploaded successfully"
+            };
+        } catch (error) {
+            this.handleError(error, "saveTopicPdfMetadata");
+            return { success: false, error: "Failed to save PDF metadata" };
+        }
+    }
+
+    async analyzeBookTopic(params: { pdfKey: string, subjectId: string, gradeLevel: number }) {
+        try {
+            const { pdfKey, subjectId, gradeLevel } = params;
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            const { GoogleAIFileManager, FileState } = require("@google/generative-ai/server");
+            const { GetObjectCommand } = require("@aws-sdk/client-s3");
+            const { default: s3Client } = require("@/lib/integrations/awsClient");
+
+            if (!process.env.GEMINI_API_KEY) {
+                return { success: false, error: "AI service not configured", code: 500 };
+            }
+
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+
+            const bucketName = process.env.AWS_S3_BUCKET_NAME;
+            if (!bucketName) throw new Error("AWS S3 bucket name not configured");
+
+            let s3Key = pdfKey;
+            const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
+            if (s3Prefix && pdfKey.startsWith(s3Prefix)) {
+                s3Key = pdfKey.replace(s3Prefix, "");
+            } else if (pdfKey.startsWith("http")) {
+                const url = new URL(pdfKey);
+                s3Key = url.pathname.substring(1);
+            }
+
+            const command = new GetObjectCommand({ Bucket: bucketName, Key: s3Key });
+            const s3Response = await s3Client.send(command);
+            if (!s3Response.Body) throw new Error("No body returned from S3");
+
+            const reader = s3Response.Body.transformToByteArray();
+            const buffer = await reader;
+            const pdfBuffer = Buffer.from(buffer);
+
+            const uploadResult = await fileManager.uploadFile(pdfBuffer, {
+                mimeType: "application/pdf",
+                displayName: pdfKey,
+            });
+
+            let file = await fileManager.getFile(uploadResult.file.name);
+            while (file.state === FileState.PROCESSING) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                file = await fileManager.getFile(uploadResult.file.name);
+            }
+
+            if (file.state === FileState.FAILED) throw new Error("PDF processing failed in Gemini");
+
+            const model = genAI.getGenerativeModel({
+                model: "gemini-3-flash-preview",
+                systemInstruction: "You are a precise educational content extractor. You must scan the entire document. Accuracy of page numbers is your top priority.",
+            });
+
+            const prompt = `Analyze this textbook (Grade ${gradeLevel}, Subject ${subjectId}) and extract ALL topics with their page numbers.
+
+**Response Format (JSON only):**
+{
+  "topics": [
+    {
+      "name": "Topic Title",
+      "pageStart": 1,
+      "pageEnd": 10
+    }
+  ]
+}`;
+
+            const result = await model.generateContent([
+                { fileData: { mimeType: file.mimeType, fileUri: file.uri } },
+                { text: prompt },
+            ]);
+
+            const responseText = result.response.text();
+
+            try { await fileManager.deleteFile(file.name); } catch (e) { }
+
+            const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+            const parsedResponse = JSON.parse(jsonMatch ? jsonMatch[1] : responseText);
+
+            const validTopics = parsedResponse.topics
+                .filter((t: any) => t.name && typeof t.pageStart === "number" && typeof t.pageEnd === "number")
+                .map((t: any) => ({
+                    name: t.name.trim(),
+                    pageStart: t.pageStart,
+                    pageEnd: t.pageEnd,
+                }));
+
+            return {
+                success: true,
+                topics: validTopics,
+                totalTopics: validTopics.length
+            };
+        } catch (error) {
+            this.handleError(error, "analyzeBookTopic");
+            return { success: false, error: error instanceof Error ? error.message : "Failed to analyze PDF" };
         }
     }
 }

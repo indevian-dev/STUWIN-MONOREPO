@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { StudentPageTitleWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget";
@@ -22,6 +22,8 @@ interface LearningSession {
 
 export function StudentLearningSessionsListWidget() {
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [sessions, setSessions] = useState<LearningSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,15 +38,15 @@ export function StudentLearningSessionsListWidget() {
       setError(null);
 
       const response = await apiCallForSpaHelper({
-        url: "/api/workspaces/students/learning-conversations",
+        url: `/api/workspaces/student/${workspaceId}/learning-conversations`,
         method: "GET",
       });
 
-      if (!response.success) {
-        throw new Error(response.error || "Failed to fetch sessions");
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || "Failed to fetch sessions");
       }
 
-      setSessions(response.data || []);
+      setSessions(response.data?.data || []);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch sessions";
@@ -64,12 +66,12 @@ export function StudentLearningSessionsListWidget() {
 
     try {
       const response = await apiCallForSpaHelper({
-        url: `/api/workspaces/students/learning-conversations/${sessionId}/archive`,
+        url: `/api/workspaces/student/${workspaceId}/learning-conversations/${sessionId}/archive`,
         method: "PATCH",
       });
 
-      if (!response.success) {
-        throw new Error(response.error || "Failed to delete session");
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || "Failed to delete session");
       }
 
       setSessions(sessions.filter((s) => s.id !== sessionId));
@@ -84,15 +86,15 @@ export function StudentLearningSessionsListWidget() {
   const handleCreateSession = async () => {
     try {
       const response = await apiCallForSpaHelper({
-        url: "/api/workspaces/students/learning-conversations/create",
+        url: `/api/workspaces/student/${workspaceId}/learning-conversations`,
         method: "POST",
         body: {
           topic: "New Learning Session",
         },
       });
 
-      if (!response.success) {
-        throw new Error(response.error || "Failed to create session");
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || "Failed to create session");
       }
 
       toast.success("Learning session created");
@@ -132,7 +134,7 @@ export function StudentLearningSessionsListWidget() {
 
   return (
     <div className="space-y-6">
-      <StudentPageTitleWidget title="learning_sessions" />
+      <StudentPageTitleWidget pageTitle="learning_sessions" />
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">

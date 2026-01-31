@@ -233,6 +233,7 @@ export type UnifiedContext = ApiHandlerContext & {
     auth: AuthContext;
     db: typeof db;
     isValidSlimId: typeof isValidSlimId;
+    log: any;
 };
 
 // Handler type using UnifiedContext

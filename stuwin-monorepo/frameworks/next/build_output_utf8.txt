@@ -1,0 +1,45 @@
+﻿bun.exe : $ next build
+At C:\Users\indev\AppData\Roaming\npm\bun.p
+s1:14 char:3
++   & 
+"$basedir/node_modules/bun/bin/bun.exe"   
+$args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo          : NotSpecified 
+   : ($ next build:String) [], RemoteExce  
+  ption
+    + FullyQualifiedErrorId : NativeComman 
+   dError
+ 
+Γû▓ Next.js 16.1.4 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 33.8s
+  Running TypeScript ...
+Failed to compile.
+
+./app/[locale]/workspaces/student/[workspac
+eId]/homeworks/(widgets)/StudentAddHomework
+ModalWidget.tsx:69:20
+Type error: Property 'success' does not 
+exist on type 'AxiosResponse<any, any, 
+{}>'.
+
+[0m [90m 67 |[39m       })[33m;[39m
+ [90m 68 |[39m
+[31m[1m>[22m[39m[90m 69 |[39m       
+[36mif[39m (response[33m.[39msuccess) {
+ [90m    |[39m                    
+[31m[1m^[22m[39m
+ [90m 70 |[39m         
+toast[33m.[39msuccess([32m"Homework 
+created successfully"[39m)[33m;[39m
+ [90m 71 |[39m         
+resetForm()[33m;[39m
+ [90m 72 |[39m         onSuccess[33m?[3
+9m[33m.[39m()[33m;[39m[0m
+Next.js build worker exited with code: 1 
+and signal: null
+error: script "build" exited with code 1

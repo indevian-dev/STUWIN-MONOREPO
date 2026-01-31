@@ -3,6 +3,8 @@ import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
 import { genAI, GEMINI_MODELS } from "@/lib/integrations/geminiClient";
+import { questions as questionsTable, studentQuizzes, studentLearningSessions, learningSubjects } from "@/lib/app-infrastructure/database/schema";
+import { inArray, eq, and, sql, desc } from "drizzle-orm";
 
 /**
  * ActivityService - Logic for managing quizzes, homework, and sessions
@@ -16,43 +18,290 @@ export class ActivityService extends BaseService {
         super();
     }
 
-    async startQuiz(accountId: string, data: { subjectId: string; workspaceId: string; questions: any[] }) {
+    async startQuiz(accountId: string, workspaceId: string, params: {
+        subjectId?: string | null;
+        gradeLevel?: string | number | null;
+        complexity?: string | null;
+        language?: string | null;
+        questionCount?: number | string;
+    }) {
         try {
-            return await this.db.transaction(async (tx) => {
-                const quiz = await this.repository.createQuiz({
-                    studentAccountId: accountId,
-                    learningSubjectId: data.subjectId,
-                    workspaceId: data.workspaceId,
-                    questions: data.questions,
-                    status: "in_progress",
-                    startedAt: new Date(),
-                    totalQuestions: data.questions.length,
-                }, tx as any);
+            const {
+                subjectId = null,
+                gradeLevel = null,
+                complexity = null,
+                language = null,
+                questionCount = 25,
+            } = params;
 
-                return { success: true, data: quiz };
+            const validQuestionCount = Math.min(
+                Math.max(Number(questionCount) || 25, 1),
+                25,
+            );
+
+            // Prepare filters
+            const conditions = [eq(questionsTable.isPublished, true)];
+
+            if (subjectId) {
+                conditions.push(eq(questionsTable.learningSubjectId, subjectId));
+            }
+            if (gradeLevel) {
+                conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
+            }
+            if (complexity) {
+                conditions.push(eq(questionsTable.complexity, complexity));
+            }
+            if (language) {
+                conditions.push(eq(questionsTable.language, language));
+            }
+
+            // Fetch random questions
+            const selectedQuestions = await this.db.select()
+                .from(questionsTable)
+                .where(and(...conditions))
+                .orderBy(sql`RANDOM()`)
+                .limit(validQuestionCount);
+
+            if (selectedQuestions.length === 0) {
+                return { success: false, error: "No questions found matching criteria" };
+            }
+
+            // Create quiz
+            const newQuiz = await this.repository.createQuiz({
+                studentAccountId: accountId,
+                workspaceId: workspaceId,
+                learningSubjectId: subjectId,
+                gradeLevel: gradeLevel ? Number(gradeLevel) : null,
+                language: language,
+                totalQuestions: selectedQuestions.length,
+                status: "in_progress",
+                startedAt: new Date(),
+                questions: selectedQuestions,
             });
+
+            // Prepare questions for user (hide correct answers)
+            const questionsForUser = selectedQuestions.map((q: any) => ({
+                id: q.id,
+                body: q.question,
+                answers: q.answers,
+                complexity: q.complexity,
+                grade_level: q.gradeLevel,
+            }));
+
+            return {
+                success: true as const,
+                data: {
+                    id: newQuiz.id,
+                    subject_id: newQuiz.learningSubjectId,
+                    grade_level: newQuiz.gradeLevel,
+                    language: newQuiz.language,
+                    total_questions: selectedQuestions.length,
+                    questions: questionsForUser,
+                }
+            };
         } catch (error) {
             this.handleError(error, "startQuiz");
-            return { success: false, error: "Failed to start quiz" };
+            return { success: false as const, error: "Failed to start quiz" };
         }
     }
 
-    async submitQuiz(quizId: string, results: { userAnswers: any; score: number; correctAnswers: number }) {
+    async getQuizDetail(quizId: string) {
         try {
-            return await this.db.transaction(async (tx) => {
-                const quiz = await this.repository.updateQuiz(quizId, {
-                    userAnswers: results.userAnswers,
-                    score: results.score,
-                    correctAnswers: results.correctAnswers,
-                    status: "completed",
-                    completedAt: new Date(),
-                }, tx as any);
+            const quiz = await this.repository.findQuizById(quizId);
+            if (!quiz) return { success: false as const, error: "Quiz not found" };
+            return { success: true as const, data: quiz };
+        } catch (error) {
+            this.handleError(error, "getQuizDetail");
+            return { success: false as const, error: "Failed to get quiz detail" };
+        }
+    }
 
-                return { success: true, data: quiz };
+    async listQuizzes(accountId: string, params: { page?: number; pageSize?: number; status?: string; subjectId?: string; workspaceId?: string }) {
+        try {
+            const page = params.page || 1;
+            const pageSize = params.pageSize || 20;
+            const offset = (page - 1) * pageSize;
+
+            const [quizzes, total] = await Promise.all([
+                this.repository.listQuizzes({
+                    accountId,
+                    status: params.status,
+                    subjectId: params.subjectId,
+                    workspaceId: params.workspaceId,
+                    limit: pageSize,
+                    offset
+                }),
+                this.repository.countQuizzes({
+                    accountId,
+                    status: params.status,
+                    subjectId: params.subjectId,
+                    workspaceId: params.workspaceId
+                })
+            ]);
+
+            // Enrich with subject details
+            const subjectIds = Array.from(new Set(quizzes.map(q => q.learningSubjectId).filter(id => id))) as string[];
+            let subjectsMap = new Map();
+
+            if (subjectIds.length > 0) {
+                const subjects = await this.db
+                    .select({ id: learningSubjects.id, name: learningSubjects.name, slug: learningSubjects.slug })
+                    .from(learningSubjects)
+                    .where(inArray(learningSubjects.id, subjectIds));
+                subjectsMap = new Map(subjects.map(s => [s.id, s]));
+            }
+
+            const enrichedQuizzes = quizzes.map(quiz => ({
+                ...quiz,
+                subjectTitle: quiz.learningSubjectId ? subjectsMap.get(quiz.learningSubjectId)?.name : null,
+                subjectSlug: quiz.learningSubjectId ? subjectsMap.get(quiz.learningSubjectId)?.slug : null,
+            }));
+
+            return {
+                success: true,
+                data: {
+                    quizzes: enrichedQuizzes,
+                    pagination: {
+                        page,
+                        pageSize,
+                        total,
+                        totalPages: Math.ceil(total / pageSize)
+                    }
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "listQuizzes");
+            return { success: false, error: "Failed to list quizzes" };
+        }
+    }
+
+    async submitQuiz(quizId: string, accountId: string, answers: any[]) {
+        try {
+            const quiz = await this.repository.findQuizById(quizId);
+            if (!quiz) return { success: false, error: "Quiz not found" };
+            if (quiz.studentAccountId !== accountId) return { success: false, error: "Access denied" };
+            if (quiz.status === "completed") return { success: false, error: "Quiz already completed" };
+
+            const questions = (quiz.questions as any[]) || [];
+            const questionIds = questions.map((q) => String(q.id));
+            if (questionIds.length === 0) return { success: false, error: "No questions found in quiz" };
+
+            const questionsFromDb = await this.db
+                .select({
+                    id: questionsTable.id,
+                    question: questionsTable.question,
+                    correctAnswer: questionsTable.correctAnswer,
+                    complexity: questionsTable.complexity,
+                    answers: questionsTable.answers,
+                    explanationGuide: questionsTable.explanationGuide
+                })
+                .from(questionsTable)
+                .where(inArray(questionsTable.id, questionIds));
+
+            const correctAnswerMap = new Map(
+                questionsFromDb.map((q: any) => [
+                    String(q.id),
+                    {
+                        correctAnswer: q.correctAnswer || "",
+                        question: q.question || "",
+                        complexity: q.complexity || "",
+                        answers: q.answers || [],
+                        explanationGuide: q.explanationGuide,
+                    },
+                ])
+            );
+
+            let correctAnswersCount = 0;
+            let totalAnswered = 0;
+            const detailedResults: any[] = [];
+            const answerMap = new Map(answers.map((a: any) => [String(a.questionId), a]));
+
+            const convertLetterToAnswer = (letter: string, answersArray: any): string => {
+                if (!letter || !answersArray || !Array.isArray(answersArray)) return letter;
+                const index = letter.charCodeAt(0) - "A".charCodeAt(0);
+                if (index < 0 || index >= answersArray.length) return letter;
+                return answersArray[index] || letter;
+            };
+
+            questions.forEach((question: any) => {
+                const questionKey = String(question.id);
+                const dbQuestion = correctAnswerMap.get(questionKey);
+                const correctAnswer = dbQuestion?.correctAnswer || "";
+                const questionBody = question.body || dbQuestion?.question || "";
+                const answersArray = (dbQuestion?.answers as string[]) || [];
+                const userAnswer = answerMap.get(questionKey);
+
+                if (userAnswer) {
+                    totalAnswered++;
+                    const userAnswerText = convertLetterToAnswer(userAnswer.selectedAnswer, answersArray);
+                    const isCorrect = userAnswerText === correctAnswer;
+                    if (isCorrect) correctAnswersCount++;
+                    detailedResults.push({
+                        question_id: question.id,
+                        question_body: questionBody,
+                        user_answer: userAnswerText,
+                        user_answer_letter: userAnswer.selectedAnswer,
+                        correct_answer: correctAnswer,
+                        is_correct: isCorrect,
+                        time_spent: userAnswer.timeSpent || 0,
+                        complexity: question.complexity || dbQuestion?.complexity,
+                        explanation: (dbQuestion?.explanationGuide as any)?.body ?? (dbQuestion?.explanationGuide as any) ?? "",
+                    });
+                } else {
+                    detailedResults.push({
+                        question_id: question.id,
+                        question_body: questionBody,
+                        user_answer: null,
+                        user_answer_letter: null,
+                        correct_answer: correctAnswer,
+                        is_correct: false,
+                        time_spent: 0,
+                        complexity: question.complexity || dbQuestion?.complexity,
+                        explanation: (dbQuestion?.explanationGuide as any)?.body ?? (dbQuestion?.explanationGuide as any) ?? "",
+                    });
+                }
             });
+
+            const totalQuestions = Number(quiz.totalQuestions) || questions.length;
+            const score = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
+            const totalTimeSpent = answers.reduce((sum, a) => sum + (a.timeSpent || 0), 0);
+
+            const resultData = {
+                score,
+                correct_answers: correctAnswersCount,
+                total_questions: totalQuestions,
+                total_answered: totalAnswered,
+                unanswered: totalQuestions - totalAnswered,
+                total_time_spent: totalTimeSpent,
+                average_time_per_question: totalAnswered > 0 ? totalTimeSpent / totalAnswered : 0,
+                completed_at: new Date().toISOString(),
+                details: detailedResults,
+            };
+
+            const result = await this.repository.updateQuiz(quizId, {
+                status: "completed",
+                completedAt: new Date(),
+                score: score,
+                correctAnswers: correctAnswersCount,
+                userAnswers: answers,
+                result: resultData,
+            });
+
+            return { success: true, data: result };
         } catch (error) {
             this.handleError(error, "submitQuiz");
             return { success: false, error: "Failed to submit quiz" };
+        }
+    }
+
+    async deleteQuiz(quizId: string, accountId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+        try {
+            const success = await this.repository.deleteQuiz(quizId, accountId);
+            if (!success) return { success: false, error: "Quiz not found or access denied" };
+            return { success: true };
+        } catch (error) {
+            this.handleError(error, "deleteQuiz");
+            return { success: false, error: "Failed to delete quiz" };
         }
     }
 
@@ -214,7 +463,7 @@ export class ActivityService extends BaseService {
                 score: quiz.score,
                 totalQuestions: quiz.totalQuestions,
                 correctAnswers: quiz.correctAnswers,
-                questions: quiz.questions, // Array of {question, correctAnswer, userAnswers, etc}
+                questions: quiz.questions,
                 userAnswers: quiz.userAnswers,
             };
 
@@ -287,6 +536,34 @@ export class ActivityService extends BaseService {
         } catch (error) {
             this.handleError(error, "getSession");
             return { success: false, error: "Failed to get session" };
+        }
+    }
+
+    async listSessions(accountId: string, status: string = 'active') {
+        try {
+            const sessions = await this.db
+                .select()
+                .from(studentLearningSessions)
+                .where(and(
+                    eq(studentLearningSessions.studentAccountId, accountId),
+                    eq(studentLearningSessions.status, status)
+                ))
+                .orderBy(desc(studentLearningSessions.createdAt));
+            return { success: true, data: sessions };
+        } catch (error) {
+            this.handleError(error, "listSessions");
+            return { success: false, error: "Failed to list sessions" };
+        }
+    }
+
+    async getSessionById(sessionId: string) {
+        try {
+            const session = await this.repository.findSessionById(sessionId);
+            if (!session) return { success: false, error: "Session not found" };
+            return { success: true, data: session };
+        } catch (error) {
+            this.handleError(error, "getSessionById");
+            return { success: false, error: "Failed to get session by ID" };
         }
     }
 

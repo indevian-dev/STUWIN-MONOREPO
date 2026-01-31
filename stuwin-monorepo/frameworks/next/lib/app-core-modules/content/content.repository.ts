@@ -106,4 +106,81 @@ export class ContentRepository extends BaseRepository {
         const client = tx ?? this.db;
         return await client.select().from(systemPrompts);
     }
+
+    async listPromptsPaginated(options: { limit: number; offset: number; search?: string }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        let whereClause = undefined;
+        if (options.search) {
+            whereClause = or(
+                ilike(systemPrompts.title, `%${options.search}%`),
+                ilike(systemPrompts.body, `%${options.search}%`)
+            );
+        }
+
+        return await client
+            .select()
+            .from(systemPrompts)
+            .where(whereClause)
+            .orderBy(desc(systemPrompts.createdAt))
+            .limit(options.limit)
+            .offset(options.offset);
+    }
+
+    async countPrompts(options: { search?: string }, tx?: DbClient) {
+        const client = tx ?? this.db;
+        let whereClause = undefined;
+        if (options.search) {
+            whereClause = or(
+                ilike(systemPrompts.title, `%${options.search}%`),
+                ilike(systemPrompts.body, `%${options.search}%`)
+            );
+        }
+
+        const result = await client
+            .select({ val: count() })
+            .from(systemPrompts)
+            .where(whereClause);
+        return Number(result[0]?.val || 0);
+    }
+
+    async createPrompt(data: typeof systemPrompts.$inferInsert, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(systemPrompts).values(data).returning();
+        return result[0];
+    }
+
+    async updatePrompt(id: string, data: Partial<typeof systemPrompts.$inferInsert>, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .update(systemPrompts)
+            .set(data)
+            .where(eq(systemPrompts.id, id))
+            .returning();
+        return result[0];
+    }
+
+    async deletePrompt(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.delete(systemPrompts).where(eq(systemPrompts.id, id)).returning();
+        return result[0];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PAGES (Continued)
+    // ═══════════════════════════════════════════════════════════════
+
+    async findPageById(id: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.select().from(pages).where(eq(pages.id, id)).limit(1);
+        return result[0] || null;
+    }
+
+    async updatePage(id: string, data: Partial<typeof pages.$inferInsert>, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .update(pages)
+            .set({ ...data, updateAt: new Date() })
+            .where(eq(pages.id, id))
+            .returning();
+    }
 }

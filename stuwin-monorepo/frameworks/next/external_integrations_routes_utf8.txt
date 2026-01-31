@@ -1,0 +1,15 @@
+﻿C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\jobs\generate-report\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\jobs\generate-topic-questions\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\jobs\mass-report-scanner\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\subjects\[id]\cover\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\subjects\[id]\pdfs\upload\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\topics\analyze-book\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\topics\media\save-pdf\[id]\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\topics\media\upload-url\[id]\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\provider\[workspaceId]\topics\upload-pdf\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\jobs\stats\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\mail\config\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\mail\status\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\mail\test\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\users\media\delete\[id]\route.ts
+C:\Users\indev\OneDrive\Desktop\DEVELOPMENT\PROJECTS\STUWIN-MONOREPO\stuwin-monorepo\frameworks\next\app\api\workspaces\staff\[workspaceId]\users\media\upload\[id]\route.ts

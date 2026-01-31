@@ -21,6 +21,7 @@ interface ProviderStudentDetailPageClientProps {
 export default function ProviderStudentDetailPageClient({
   studentId
 }: ProviderStudentDetailPageClientProps) {
+  const [student, setStudent] = useState<User.PrivateAccess | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
@@ -89,7 +90,7 @@ export default function ProviderStudentDetailPageClient({
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-dark">
-              {student.name || t('unnamed_student')}
+              {student.fullName || t('unnamed_student')}
             </h1>
             <p className="text-neutral-600 mt-1">
               {t('student_details')}

@@ -1,15 +1,14 @@
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 
 /**
  * GET /api/workspaces/student/[workspaceId]/learning/session
  * Fetch active learning session for a specific context
  */
-export const GET = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
+export const GET = unifiedApiHandler(
+    async (request: NextRequest, { module, auth, log }) => {
         try {
-            const { searchParams } = new URL(req.url);
+            const { searchParams } = new URL(request.url);
             const contextType = searchParams.get('contextType') as 'quiz' | 'homework' | 'topic';
             const contextId = searchParams.get('contextId');
 
@@ -17,33 +16,28 @@ export const GET = withApiHandler(
                 return NextResponse.json({
                     success: false,
                     error: "contextType and contextId are required"
-                }, { status: 400 }) as any;
+                }, { status: 400 });
             }
 
-            const modules = new ModuleFactory(ctx);
-            const result = await modules.activity.getSession(
-                ctx.accountId,
+            const result = await module.activity.getSession(
+                auth.accountId,
                 contextId,
                 contextType
             );
 
             if (!result.success) {
                 log.error("Failed to fetch learning session", { contextType, contextId, error: result.error });
-                return NextResponse.json({ success: false, error: result.error }) as any;
+                return NextResponse.json({ success: false, error: result.error });
             }
 
             return NextResponse.json({
                 success: true,
                 data: result.data,
-            }) as any;
+            });
 
         } catch (error) {
             log.error("Learning session fetch error", error);
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 }) as any;
+            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
         }
-    },
-    {
-        method: "GET",
-        authRequired: true,
     }
 );

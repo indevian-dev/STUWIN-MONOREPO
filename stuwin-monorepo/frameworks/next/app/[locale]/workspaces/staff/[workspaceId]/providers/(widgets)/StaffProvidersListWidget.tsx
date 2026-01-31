@@ -244,7 +244,7 @@ export function StaffProvidersListWidget() {
                                     <div className="flex items-start gap-4">
                                         {Provider.logo && (
                                             <Image
-                                                src={process.env.NEXT_PUBLIC_S3_PREFIX + '/Providers/' + Provider.id + '/' + Provider.logo}
+                                                src={process.env.NEXT_PUBLIC_S3_PREFIX + '/providers/' + Provider.id + '/' + Provider.logo}
                                                 alt={Provider.title}
                                                 className="w-16 h-16 rounded-lg object-cover"
                                                 width={64}

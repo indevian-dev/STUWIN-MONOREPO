@@ -1,5 +1,5 @@
 
-import type { Timestamps } from '../../../types/base';
+import type { Timestamps } from '@/lib/app-core-modules/types';
 
 // ═══════════════════════════════════════════════════════════════
 // LEARNING MODULE TYPES
@@ -141,9 +141,9 @@ export namespace Question {
 // QUIZZES
 // ═══════════════════════════════════════════════════════════════
 
-export type QuizStatus = 'in_progress' | 'completed' | 'abandoned';
+export type LearningQuizStatus = 'in_progress' | 'completed' | 'abandoned';
 
-export namespace Quiz {
+export namespace LearningQuiz {
     export interface StudentView extends Timestamps {
         id: string;
         studentAccountId: string;
@@ -151,7 +151,7 @@ export namespace Quiz {
         questions?: string[];
         subjectId?: string;
         gradeLevel?: number;
-        status?: QuizStatus;
+        status?: LearningQuizStatus;
         startedAt?: string;
         completedAt?: string;
     }

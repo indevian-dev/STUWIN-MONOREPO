@@ -7,9 +7,9 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
-import type { BackgroundJob, JobControlRequest } from '@/types/resources/backgroundJobs';
+import type { BackgroundJob, JobControlRequest } from '@/lib/app-core-modules/jobs/jobs.types';
 import { FiPlay, FiPause, FiZap, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import { fetchJobs, controlJob } from '@/lib/helpers/staffJobsApiHelper';
+import { fetchJobs, controlJob } from '@/lib/utils/staffJobsApiHelper';
 
 export function StaffJobControlWidget() {
   const [jobs, setJobs] = useState<BackgroundJob[]>([]);
@@ -38,7 +38,7 @@ export function StaffJobControlWidget() {
   const handleJobAction = async (jobId: string, action: JobControlRequest['action']) => {
     try {
       setActionLoading(`${jobId}-${action}`);
-      
+
       await controlJob({ jobId, action });
 
       // Refresh jobs list
@@ -85,7 +85,7 @@ export function StaffJobControlWidget() {
 
   const formatNextRun = (nextRun: Date | null) => {
     if (!nextRun) return 'Not scheduled';
-    
+
     const date = new Date(nextRun);
     return date.toLocaleString('en-US', {
       month: 'short',

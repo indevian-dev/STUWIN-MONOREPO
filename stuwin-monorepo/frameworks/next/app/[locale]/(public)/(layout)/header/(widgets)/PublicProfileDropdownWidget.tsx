@@ -37,11 +37,12 @@ function PublicProfileDropdownWidget() {
         userId,
         firstName,
         lastName,
-        workspaces,
         isAuthenticated,
         loading: contextLoading,
         getInitials
     } = useGlobalAuthProfileContext();
+
+    const workspaces: any[] = [];
 
     const router = useRouter();
     const params = useParams() as { tenantKey?: string };

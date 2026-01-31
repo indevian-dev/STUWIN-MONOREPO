@@ -6,7 +6,7 @@ import React, {
 import { PublicSubjectQuestionsWidget } from '@/app/[locale]/(public)/subjects/(widgets)/PublicSubjectQuestionsWidget';
 
 interface Subject {
-    id?: number;
+    id?: string;
     title?: string;
     description?: string;
     image?: string;

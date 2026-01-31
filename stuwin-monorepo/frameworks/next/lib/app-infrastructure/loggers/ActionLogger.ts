@@ -42,7 +42,7 @@ function sanitizeRequestBody(body: any): any {
   }
 
   const sanitized: any = {};
-  
+
   for (const [key, value] of Object.entries(body)) {
     const lowerKey = key.toLowerCase();
     const isSensitive = SENSITIVE_FIELDS.some(
@@ -72,7 +72,7 @@ function sanitizeRequestBody(body: any): any {
 function deriveActionName(url: string, method: string): string {
   const urlObj = new URL(url);
   const pathParts = urlObj.pathname.split('/').filter(Boolean);
-  
+
   // Remove locale if present (first segment like 'en', 'az')
   if (pathParts[0]?.length === 2) {
     pathParts.shift();
@@ -99,8 +99,8 @@ function deriveActionName(url: string, method: string): string {
   };
 
   const actionVerb = methodActionMap[method] || method.toLowerCase();
-  const resourceSingular = resource?.endsWith('s') 
-    ? resource.slice(0, -1) 
+  const resourceSingular = resource?.endsWith('s')
+    ? resource.slice(0, -1)
     : resource || 'resource';
 
   return `${actionVerb}_${resourceSingular}`;
@@ -193,8 +193,8 @@ export async function logAccountAction(
       userId: authData.user.id,
       userName: getUserName(authData.user),
       userEmail: authData.user.email,
-      accessScopeKey: authData.account.workspaceAccessKey || '',
-      accessScopeType: authData.account.workspaceType || '',
+      accessScopeKey: authData.workspace.id || '',
+      accessScopeType: authData.workspace.type || '',
       requestUrl: request.url,
       requestMethod: request.method,
       responseData,
@@ -271,8 +271,8 @@ export async function logAccountActionBatch(
           userId: authData.user.id,
           userName: getUserName(authData.user),
           userEmail: authData.user.email,
-          accessScopeKey: authData.account.workspaceAccessKey || '',
-          accessScopeType: authData.account.workspaceType || '',
+          accessScopeKey: authData.workspace.id || '',
+          accessScopeType: authData.workspace.type || '',
           requestUrl: request.url,
           requestMethod: request.method,
           responseData,

@@ -4,12 +4,7 @@ import { useState, useRef } from 'react';
 import { PiX, PiFilePdf, PiDownload, PiFileText } from 'react-icons/pi';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import dynamic from 'next/dynamic';
-
-const Editor = dynamic(() => import('@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor'), {
-  ssr: false,
-  loading: () => <div className="p-4 text-gray-500">Loading editor...</div>
-});
+import Editor from '@/lib/components/Editor';
 
 interface PdfToolHtmlToPdfModalWidgetProps {
   isOpen: boolean;

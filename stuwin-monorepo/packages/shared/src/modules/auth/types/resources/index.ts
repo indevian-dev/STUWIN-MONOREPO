@@ -30,6 +30,7 @@ export namespace User {
         avatarUrl?: string;
         phone?: string;
         lastSeenAt?: string;
+        createdAt?: string;
     }
 
     export interface CreateInput {
@@ -68,4 +69,6 @@ export namespace Account {
 export * from './questions';
 export * from './subjects';
 export * from './learningConversations';
+export * from './provider';
 export * from './organizations/organizations';
+export * from './topics';

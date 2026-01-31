@@ -25,3 +25,23 @@ export interface OAuthTokens {
   scope?: string;
 }
 
+export interface OAuthTokenData {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  id_token?: string;
+}
+
+export interface OAuthUserInfo {
+  id: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+  verified_email?: boolean;
+  providerId?: string;
+  provider?: OAuthProvider;
+  [key: string]: any;
+}
+

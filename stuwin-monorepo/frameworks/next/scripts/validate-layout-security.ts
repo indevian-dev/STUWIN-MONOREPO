@@ -32,106 +32,106 @@ const colors = {
   yellow: (text: string) => `\x1b[33m${text}\x1b[0m`,
   blue: (text: string) => `\x1b[34m${text}\x1b[0m`,
   cyan: (text: string) => `\x1b[36m${text}\x1b[0m`,
-  gray: (text) => `\x1b[90m${text}\x1b[0m`,
-  bold: (text) => `\x1b[1m${text}\x1b[0m`,
+  gray: (text: string) => `\x1b[90m${text}\x1b[0m`,
+  bold: (text: string) => `\x1b[1m${text}\x1b[0m`,
 };
 
 /**
  * Find all layout.js/jsx/tsx files in app directory
  */
-function findLayoutFiles(dir, layouts = []) {
+function findLayoutFiles(dir: string, layouts: string[] = []) {
   if (!fs.existsSync(dir)) return layouts;
-  
+
   const items = fs.readdirSync(dir);
-  
+
   for (const item of items) {
     const fullPath = path.join(dir, item);
     const stat = fs.statSync(fullPath);
-    
+
     if (stat.isDirectory()) {
       // Skip node_modules and hidden directories
       if (!item.startsWith('.') && item !== 'node_modules') {
         findLayoutFiles(fullPath, layouts);
       }
     } else if (
-      item === 'layout.js' || 
-      item === 'layout.tsx' || 
+      item === 'layout.js' ||
+      item === 'layout.tsx' ||
       item === 'layout.jsx'
     ) {
       layouts.push(fullPath);
     }
   }
-  
+
   return layouts;
 }
 
 /**
  * Convert file path to layout endpoint path
  */
-function filePathToLayoutPath(filePath) {
+function filePathToLayoutPath(filePath: string) {
   const appDir = path.join(projectRoot, 'src', 'app');
   let relativePath = path.relative(appDir, path.dirname(filePath));
-  
+
   // Convert Windows path separators
   relativePath = relativePath.replace(/\\/g, '/');
-  
+
   // Handle root layout
   if (relativePath === '' || relativePath === '.') {
     return '/root';
   }
-  
+
   // Remove [locale] prefix
   if (relativePath === '[locale]') {
     return '/locale';
   }
   relativePath = relativePath.replace(/^\[locale\]\//, '');
-  
+
   // Handle route groups
   relativePath = relativePath.replace(/\(([^)]+)\)/g, '$1');
-  
+
   // Convert [param] to :param
   relativePath = relativePath.replace(/\[([^\]]+)\]/g, ':$1');
-  
+
   return `/${relativePath}` || '/';
 }
 
 /**
  * Check if file is a client component
  */
-function isClientComponent(content) {
+function isClientComponent(content: string) {
   return content.includes("'use client'") || content.includes('"use client"');
 }
 
 /**
  * Check if file uses withLayoutAuth wrapper (actual import/usage, not just comments)
  */
-function usesWithLayoutAuth(content) {
+function usesWithLayoutAuth(content: string) {
   // Check for actual import of withLayoutAuth
   return content.includes("import { withLayoutAuth }") ||
-         content.includes("import {withLayoutAuth}") ||
-         content.includes("from '@/lib/auth/AccessValidatorForLayouts'") ||
-         content.includes('from "@/lib/auth/AccessValidatorForLayouts"');
+    content.includes("import {withLayoutAuth}") ||
+    content.includes("from '@/lib/auth/AccessValidatorForLayouts'") ||
+    content.includes('from "@/lib/auth/AccessValidatorForLayouts"');
 }
 
 /**
  * Check if file has the protected layout marker
  */
-function hasProtectedLayoutMarker(content) {
+function hasProtectedLayoutMarker(content: string) {
   return content.includes('__isProtectedLayout');
 }
 
 /**
  * Check if file imports withLayoutAuth
  */
-function importsWithLayoutAuth(content) {
+function importsWithLayoutAuth(content: string) {
   return content.includes("from '@/lib/auth/AccessValidatorForLayouts'") ||
-         content.includes('from "@/lib/auth/AccessValidatorForLayouts"');
+    content.includes('from "@/lib/auth/AccessValidatorForLayouts"');
 }
 
 /**
  * Extract layout path from JSDoc comment if present
  */
-function extractLayoutPathFromComment(content) {
+function extractLayoutPathFromComment(content: string) {
   const match = content.match(/@withLayoutAuth\s*{\s*layoutPath:\s*['"]([^'"]+)['"]/);
   return match ? match[1] : null;
 }
@@ -139,7 +139,7 @@ function extractLayoutPathFromComment(content) {
 /**
  * Generate fix suggestion for server component
  */
-function generateServerFix(layoutPath, isPublic = false) {
+function generateServerFix(layoutPath: string, isPublic: boolean = false) {
   if (isPublic) {
     return `
 // Add this wrapper to your layout:
@@ -161,7 +161,7 @@ export default withLayoutAuth(YourLayout, {
 });
 `;
   }
-  
+
   return `
 // Add this wrapper to your layout:
 
@@ -186,7 +186,7 @@ export default withLayoutAuth(YourLayout, {
 /**
  * Generate fix suggestion for client component
  */
-function generateClientFix(layoutPath) {
+function generateClientFix(layoutPath: string) {
   return `
 // For client components, add metadata markers at the end of the file:
 
@@ -210,36 +210,36 @@ export default YourLayout;
 async function validateLayouts() {
   console.log(colors.bold('\n🔍 Validating Layout Security\n'));
   console.log(colors.gray('─'.repeat(60)));
-  
+
   // Find all layout files
   const appDir = path.join(projectRoot, 'src', 'app');
   const layoutFiles = findLayoutFiles(appDir);
-  
+
   console.log((`Found ${layoutFiles.length} layout files to check\n`));
-  
+
   const valid = [];
   const missing = [];
   const warnings = [];
-  
+
   for (const layoutFile of layoutFiles) {
     const layoutPath = filePathToLayoutPath(layoutFile);
     const content = fs.readFileSync(layoutFile, 'utf-8');
-    
+
     const hasWithLayoutAuth = usesWithLayoutAuth(content);
     const hasMarker = hasProtectedLayoutMarker(content);
     const hasJsdocMarker = extractLayoutPathFromComment(content);
     const isClient = isClientComponent(content);
-    
+
     const isProtected = hasWithLayoutAuth || hasMarker || hasJsdocMarker;
-    
+
     if (isProtected) {
-      valid.push({ 
-        file: layoutFile, 
+      valid.push({
+        file: layoutFile,
         layoutPath,
         isClient,
-        method: hasWithLayoutAuth ? 'withLayoutAuth' : 
-                hasMarker ? '__isProtectedLayout marker' : 
-                'JSDoc comment'
+        method: hasWithLayoutAuth ? 'withLayoutAuth' :
+          hasMarker ? '__isProtectedLayout marker' :
+            'JSDoc comment'
       });
     } else {
       missing.push({
@@ -250,7 +250,7 @@ async function validateLayouts() {
       });
     }
   }
-  
+
   // Report results
   if (valid.length > 0 && verbose) {
     console.log(colors.green(colors.bold('\n✓ Valid layouts:\n')));
@@ -260,14 +260,14 @@ async function validateLayouts() {
       console.log(colors.gray(`    Method: ${item.method}`));
     }
   }
-  
+
   if (missing.length > 0) {
     console.log((colors.bold('\n❌ Missing layout auth wrapper:\n')));
     for (const item of missing) {
       const clientTag = item.isClient ? colors.yellow(' [client]') : '';
       console.log((`  ✗ ${item.layoutPath}${clientTag}`));
       console.log(colors.gray(`    File: ${path.relative(projectRoot, item.file)}`));
-      
+
       if (showFix) {
         console.log(('\n  Fix:'));
         if (item.isClient) {
@@ -279,17 +279,17 @@ async function validateLayouts() {
       console.log();
     }
   }
-  
+
   // Summary
   console.log(colors.gray('─'.repeat(60)));
   console.log(colors.bold('\n📊 Summary:\n'));
   console.log(colors.green(`  ✓ Valid: ${valid.length}`));
   console.log((`  ✗ Missing wrapper: ${missing.length}`));
   console.log();
-  
+
   // Count errors that should fail the build
   const errors = missing.length;
-  
+
   if (errors > 0) {
     console.log((
       `❌ Layout security validation failed. Fix ${errors} error(s) before building.\n`
@@ -299,7 +299,7 @@ async function validateLayouts() {
     }
     process.exit(1);
   }
-  
+
   console.log(colors.green('✅ Layout security validation passed.\n'));
   process.exit(0);
 }

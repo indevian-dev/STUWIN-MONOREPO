@@ -1,8 +1,11 @@
 import { headers } from 'next/headers';
 import { db } from '@/lib/app-infrastructure/database';
-import type { OAuthProvider, OAuthTokenData, OAuthUserInfo } from '@/types';
-
+import { OAuthProvider } from '@/types';
+import type { OAuthTokenData, OAuthUserInfo } from '@/types';
+import { eq } from 'drizzle-orm';
+import { users, userCredentials } from '@/lib/app-infrastructure/database/schema';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+
 interface OAuthConfig {
   tokenUrl: string;
   userInfoUrl: string | null;
@@ -12,19 +15,19 @@ interface OAuthConfig {
 }
 
 export const OAUTH_CONFIGS: Record<OAuthProvider, Omit<OAuthConfig, 'provider'>> = {
-  google: {
+  [OAuthProvider.GOOGLE]: {
     tokenUrl: 'https://oauth2.googleapis.com/token',
     userInfoUrl: 'https://www.googleapis.com/oauth2/v2/userinfo',
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   },
-  facebook: {
+  [OAuthProvider.FACEBOOK]: {
     tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
     userInfoUrl: 'https://graph.facebook.com/me',
     clientId: process.env.FACEBOOK_CLIENT_ID!,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
   },
-  apple: {
+  [OAuthProvider.APPLE]: {
     tokenUrl: 'https://appleid.apple.com/auth/token',
     userInfoUrl: null,
     clientId: process.env.APPLE_CLIENT_ID!,
@@ -52,7 +55,7 @@ export async function getOAuthAccessToken({
     grant_type: 'authorization_code',
   };
 
-  if (config.provider === 'apple') {
+  if (config.provider === OAuthProvider.APPLE) {
     // Add additional Apple-specific parameters if needed
   }
 
@@ -84,11 +87,11 @@ export async function getOAuthUserData({
   provider: OAuthProvider;
   config: OAuthConfig;
 }): Promise<OAuthUserInfo> {
-  if (provider === 'apple') {
+  if (provider === OAuthProvider.APPLE) {
     return decodeAppleIdToken(accessToken);
   }
 
-  const userInfoParams = provider === 'facebook' ?
+  const userInfoParams = provider === OAuthProvider.FACEBOOK ?
     '?fields=id,email,name&' : '';
 
   const response = await fetch(`${config.userInfoUrl}${userInfoParams}`, {
@@ -108,10 +111,10 @@ export const getOAuthBaseUrl = async (): Promise<string> => {
   return `${protocol}://${host}`;
 };
 
-const PROVIDER_COLUMN_MAP: Record<OAuthProvider, keyof typeof users.$inferSelect> = {
-  google: 'googleId',
-  facebook: 'facebookId',
-  apple: 'appleId'
+const PROVIDER_COLUMN_MAP: Record<OAuthProvider, "googleId" | "facebookId" | "appleId"> = {
+  [OAuthProvider.GOOGLE]: 'googleId',
+  [OAuthProvider.FACEBOOK]: 'facebookId',
+  [OAuthProvider.APPLE]: 'appleId'
 };
 
 interface ProviderData {
@@ -147,79 +150,75 @@ export async function linkOAuthProvider({
       return { success: false, error: 'Unsupported provider' };
     }
 
-    // Check if current user already has this provider linked
-    const existingUsers = await db.query(
-      'SELECT googleId, facebookId, appleId FROM users WHERE id = $userId LIMIT 1',
-      { userId }
-    );
-    const existingUser = existingUsers[0];
-
-    if (existingUser) {
-      const currentProviderValue = existingUser[providerColumn as 'googleId' | 'facebookId' | 'appleId'];
-      if (currentProviderValue) {
-        return {
-          success: false,
-          error: `User already has ${provider} account linked`
-        };
+    // 1. Check if ANY user already has this provider account linked
+    // (Ensure uniqueness of OAuth ID across system)
+    const existingProviderUser = await db.query.userCredentials.findFirst({
+      where: eq(userCredentials[providerColumn], providerId),
+      columns: {
+        userId: true
       }
-    }
+    });
 
-    // Check if this provider account is already linked to another user
-    let existingProviderUsers;
-    if (provider === 'google') {
-      existingProviderUsers = await db.query(
-        'SELECT id, email FROM users WHERE googleId = $providerId LIMIT 1',
-        { providerId }
-      );
-    } else if (provider === 'facebook') {
-      existingProviderUsers = await db.query(
-        'SELECT id, email FROM users WHERE facebookId = $providerId LIMIT 1',
-        { providerId }
-      );
-    } else if (provider === 'apple') {
-      existingProviderUsers = await db.query(
-        'SELECT id, email FROM users WHERE appleId = $providerId LIMIT 1',
-        { providerId }
-      );
-    }
-
-    const existingProviderUser = existingProviderUsers?.[0];
-
-    if (existingProviderUser && existingProviderUser.id !== userId) {
+    if (existingProviderUser && existingProviderUser.userId !== userId) {
       return {
         success: false,
         error: 'Provider account already linked to another user'
       };
     }
 
-    // Build update object with proper typing
-    const updateFields: Partial<typeof users.$inferInsert> = {
-      emailIsVerified: true
-    };
-    
-    if (provider === 'google') updateFields.googleId = providerId;
-    else if (provider === 'facebook') updateFields.facebookId = providerId;
-    else if (provider === 'apple') updateFields.appleId = providerId;
-    
-    if (providerData.name) updateFields.name = providerData.name;
-    if (providerData.last_name) updateFields.lastName = providerData.last_name;
-    if (providerData.avatar_url) updateFields.avatarUrl = providerData.avatar_url;
+    // 2. Check/Get current user's credentials record
+    let userCreds = await db.query.userCredentials.findFirst({
+      where: eq(userCredentials.userId, userId),
+    });
 
-    await db.query(
-      'UPDATE users SET googleId = $googleId, facebookId = $facebookId, appleId = $appleId, name = $name, lastName = $lastName, avatarUrl = $avatarUrl, updatedAt = $updatedAt WHERE id = $userId',
-      {
-        googleId: updateFields.googleId,
-        facebookId: updateFields.facebookId,
-        appleId: updateFields.appleId,
-        name: updateFields.name,
-        lastName: updateFields.lastName,
-        avatarUrl: updateFields.avatarUrl,
-        updatedAt: new Date().toISOString(),
-        userId
+    // 3. Prevent overwriting if already linked to SAME provider (optional safeguard)
+    if (userCreds) {
+      const currentVal = userCreds[providerColumn];
+      if (currentVal && currentVal !== providerId) {
+        // Already linked to A DIFFERENT account of same provider? 
+        // Or same? If same, we can just proceed (idempotent) or return success.
+        if (currentVal === providerId) {
+          // Already linked correctly.
+        } else {
+          return { success: false, error: `User already linked to a different ${provider} account` };
+        }
       }
-    );
+    }
 
-    ConsoleLogger.log((`OAuth provider ${provider} linked to user ${userId}`));
+    // 4. Update Profile (users table)
+    const userUpdates: Partial<typeof users.$inferInsert> = {
+      emailIsVerified: true,
+      updatedAt: new Date()
+    };
+    if (providerData.name) userUpdates.firstName = providerData.name;
+    if (providerData.last_name) userUpdates.lastName = providerData.last_name;
+    if (providerData.avatar_url) userUpdates.avatarUrl = providerData.avatar_url;
+
+    await db.update(users)
+      .set(userUpdates)
+      .where(eq(users.id, userId));
+
+    // 5. Update Credentials (user_credentials table)
+    const credUpdates: Partial<typeof userCredentials.$inferInsert> = {};
+    if (provider === OAuthProvider.GOOGLE) credUpdates.googleId = providerId;
+    if (provider === OAuthProvider.FACEBOOK) credUpdates.facebookId = providerId;
+    if (provider === OAuthProvider.APPLE) credUpdates.appleId = providerId;
+
+    if (userCreds) {
+      await db.update(userCredentials)
+        .set(credUpdates)
+        .where(eq(userCredentials.id, userCreds.id));
+    } else {
+      // Create credentials if missing
+      await db.insert(userCredentials).values({
+        id: userId, // Assuming 1:1 map as per schema FK on ID
+        userId: userId,
+        createdAt: new Date(),
+        ...credUpdates
+      });
+    }
+
+    ConsoleLogger.log(`OAuth provider ${provider} linked to user ${userId}`);
 
     return {
       success: true,
@@ -228,7 +227,8 @@ export async function linkOAuthProvider({
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    ConsoleLogger.log((`linkOAuthProvider error:`), errorMessage);
+    ConsoleLogger.error(`linkOAuthProvider error:`, error);
+    ConsoleLogger.error(errorMessage);
     return {
       success: false,
       error: errorMessage
@@ -243,7 +243,6 @@ function decodeAppleIdToken(token: string): OAuthUserInfo {
     id: '',
     providerId: '',
     email: '',
-    provider: 'apple'
+    provider: OAuthProvider.APPLE
   };
 }
-

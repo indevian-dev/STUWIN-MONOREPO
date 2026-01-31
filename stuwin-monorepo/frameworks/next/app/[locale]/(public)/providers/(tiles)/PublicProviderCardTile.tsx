@@ -32,13 +32,13 @@ export function PublicProviderCardTile({ Provider, compact = false }: PublicProv
   if (!Provider) return null;
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/Providers/${Provider.id}/${Provider.logo}`
+    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
     : '/placeholder-Provider.png';
 
   if (compact) {
     return (
       <Link
-        href={`/Providers/${Provider.id}`}
+        href={`/providers/${Provider.id}`}
         className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all group"
       >
         <div className="relative w-16 h-16 flex-shrink-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg overflow-hidden">
@@ -67,7 +67,7 @@ export function PublicProviderCardTile({ Provider, compact = false }: PublicProv
 
   return (
     <Link
-      href={`/Providers/${Provider.id}`}
+      href={`/providers/${Provider.id}`}
       className="block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all group"
     >
       <div className="relative w-full h-32 bg-gradient-to-br from-blue-50 to-indigo-50">

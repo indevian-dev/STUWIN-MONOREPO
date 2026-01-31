@@ -31,7 +31,7 @@ export function PublicProvidersStatsWidget() {
       try {
         const response = await apiCallForSpaHelper({
           method: 'GET',
-          url: '/api/Providers/stats'
+          url: '/api/providers/stats'
         });
 
         if (response.status === 200) {

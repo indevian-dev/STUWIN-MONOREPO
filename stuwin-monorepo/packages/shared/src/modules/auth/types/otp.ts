@@ -4,7 +4,7 @@
 // Domain types for OTP entity with different access levels
 // ═══════════════════════════════════════════════════════════════
 
-import type { Timestamps } from '../base';
+import type { Timestamps } from '../../common/base';
 
 // ═══════════════════════════════════════════════════════════════
 // OTP ENTITY - ADMIN VIEW

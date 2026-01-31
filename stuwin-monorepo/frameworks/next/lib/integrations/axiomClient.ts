@@ -48,7 +48,7 @@ export const logJobEvent = async (data: JobEventData): Promise<void> => {
 export const logScannerBatch = async (data: {
   correlationId: string;
   status: 'started' | 'completed' | 'failed';
-  lastId: number;
+  lastId: string | number;
   batchSize: number;
   hasMore: boolean;
   error?: string;
@@ -71,11 +71,11 @@ export const logScannerBatch = async (data: {
  */
 export const logWorkerProcessing = async (data: {
   correlationId: string;
-  studentId: number;
+  studentId: string | number;
   status: 'started' | 'completed' | 'failed';
   processingTimeMs?: number;
   geminiResponseTimeMs?: number;
-  reportId?: number;
+  reportId?: string | number;
   error?: string;
 }): Promise<void> => {
   return logJobEvent({
@@ -102,7 +102,7 @@ export const logWorkerProcessing = async (data: {
 export const logTopicScanner = async (data: {
   correlationId: string;
   status: 'started' | 'completed' | 'failed';
-  lastId: number;
+  lastId: string | number;
   batchSize: number;
   hasMore: boolean;
   topicsWithCapacity?: number;
@@ -127,7 +127,7 @@ export const logTopicScanner = async (data: {
  */
 export const logTopicWorker = async (data: {
   correlationId: string;
-  topicId: number;
+  topicId: string | number;
   status: 'started' | 'completed' | 'failed';
   questionsGenerated?: number;
   processingTimeMs?: number;

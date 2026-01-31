@@ -1,61 +1,54 @@
 
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
 
-/**
- * GET /api/workspaces/student/[workspaceId]/billing
- * Get current subscription status
- */
-export const GET = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
-        try {
-            const modules = new ModuleFactory(ctx);
-            const status = await modules.payment.getSubscriptionStatus();
+export const GET = unifiedApiHandler(async (_request, { module, log }) => {
+    try {
+        const status = await module.payment.getSubscriptionStatus();
 
-            return NextResponse.json({
-                success: true,
-                data: status,
-            }) as any;
-        } catch (error) {
-            log.error("Billing status fetch error", error);
-            return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 }) as any;
-        }
-    },
-    {
-        method: "GET",
-        authRequired: true,
+        return NextResponse.json({
+            success: true,
+            data: status,
+        });
+    } catch (error) {
+        log.error('Billing status fetch error', error as Error);
+        return NextResponse.json(
+            { success: false, error: 'Internal server error' },
+            { status: 500 }
+        );
     }
-);
+});
 
-/**
- * POST /api/workspaces/student/[workspaceId]/billing/pay
- * Initiate a payment (simulated)
- */
-export const POST = withApiHandler(
-    async (req: any, { ctx, log, params }) => {
-        try {
-            const body = await req.json();
-            const { tierId, couponCode, language } = body;
+export const POST = unifiedApiHandler(async (request, { module, params, log }) => {
+    try {
+        const body = await request.json();
+        const { tierId, couponCode, language } = body;
 
-            if (!tierId) {
-                return NextResponse.json({ success: false, error: "tierId is required" }, { status: 400 }) as any;
-            }
-
-            const modules = new ModuleFactory(ctx);
-            const result = await modules.payment.initiatePayment(tierId, params.workspaceId, couponCode, language || 'az');
-
-            return NextResponse.json({
-                success: true,
-                data: result,
-            }) as any;
-        } catch (error: any) {
-            log.error("Payment initiation error", error);
-            return NextResponse.json({ success: false, error: error.message || "Payment failed" }, { status: 400 }) as any;
+        if (!tierId) {
+            return NextResponse.json(
+                { success: false, error: 'tierId is required' },
+                { status: 400 }
+            );
         }
-    },
-    {
-        method: "POST",
-        authRequired: true,
+
+        const { workspaceId } = params as { workspaceId: string };
+        const result = await module.payment.initiatePayment({
+            tierId,
+            scope: 'WORKSPACE',
+            scopeId: workspaceId,
+            couponCode,
+            language: language || 'az'
+        });
+
+        return NextResponse.json({
+            success: true,
+            data: result,
+        });
+    } catch (error: any) {
+        log.error('Payment initiation error', error as Error);
+        return NextResponse.json(
+            { success: false, error: error.message || 'Payment failed' },
+            { status: 400 }
+        );
     }
-);
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { StudentPageTitleWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget";
@@ -9,6 +9,8 @@ import { PiUpload, PiX } from "react-icons/pi";
 
 export function StudentHomeworkUploadWidget() {
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [textContent, setTextContent] = useState("");
@@ -64,7 +66,7 @@ export function StudentHomeworkUploadWidget() {
 
       // First create the homework
       const createResponse = await apiCallForSpaHelper({
-        url: "/api/workspaces/students/homeworks/create",
+        url: `/api/workspaces/student/${workspaceId}/homeworks`,
         method: "POST",
         body: {
           title: title.trim(),
@@ -73,11 +75,11 @@ export function StudentHomeworkUploadWidget() {
         },
       });
 
-      if (!createResponse.success) {
-        throw new Error(createResponse.error || "Failed to create homework");
+      if (createResponse.data && !createResponse.data.success) {
+        throw new Error(createResponse.data.error || "Failed to create homework");
       }
 
-      const homeworkId = createResponse.data?.id;
+      const homeworkId = createResponse.data?.data?.id;
       if (!homeworkId) {
         throw new Error("No homework ID returned");
       }
@@ -89,12 +91,12 @@ export function StudentHomeworkUploadWidget() {
           formData.append("file", file);
 
           const uploadResponse = await apiCallForSpaHelper({
-            url: `/api/workspaces/students/homeworks/${homeworkId}/upload-image`,
+            url: `/api/workspaces/student/${workspaceId}/homeworks/${homeworkId}/upload-image`,
             method: "POST",
             body: formData,
           });
 
-          if (!uploadResponse.success) {
+          if (uploadResponse.data && !uploadResponse.data.success) {
             toast.warning(
               `File ${file.name} upload failed. You can upload it later.`,
             );
@@ -115,7 +117,7 @@ export function StudentHomeworkUploadWidget() {
 
   return (
     <div className="space-y-6">
-      <StudentPageTitleWidget title="Upload Homework" />
+      <StudentPageTitleWidget pageTitle="Upload Homework" />
 
       <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">

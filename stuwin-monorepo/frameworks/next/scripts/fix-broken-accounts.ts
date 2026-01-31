@@ -40,7 +40,6 @@ async function main() {
 
             await db.insert(workspaces).values({
                 id: generateSlimId(),
-                workspaceAccessKey: generateSlimId(),
                 type: 'personal',
                 title: 'Personal Workspace',
                 ownerAccountId: account.id,

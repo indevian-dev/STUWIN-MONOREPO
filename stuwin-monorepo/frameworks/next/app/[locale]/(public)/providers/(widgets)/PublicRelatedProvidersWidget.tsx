@@ -4,7 +4,7 @@ import {
   useState,
   useEffect
 } from 'react';
-import { PublicProviderCardTile } from '@/app/[locale]/(public)/Providers/(tiles)/PublicProviderCardTile';
+import { PublicProviderCardTile } from '@/app/[locale]/(public)/providers/(tiles)/PublicProviderCardTile';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';

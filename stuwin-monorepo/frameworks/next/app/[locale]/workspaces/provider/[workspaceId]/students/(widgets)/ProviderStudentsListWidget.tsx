@@ -39,11 +39,12 @@ export function ProviderStudentsListWidget({
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredStudents = students.filter(student =>
-    student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
   };
 
@@ -92,7 +93,7 @@ export function ProviderStudentsListWidget({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-medium text-dark">
-                        {student.name || t('unnamed_student')}
+                        {student.fullName || t('unnamed_student')}
                       </h3>
                       <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                         {t('active')}
@@ -109,10 +110,12 @@ export function ProviderStudentsListWidget({
                           {student.phone}
                         </div>
                       )}
-                      <div className="flex items-center gap-1">
-                        <PiCalendar className="w-4 h-4" />
-                        {t('joined')} {formatDate(student.createdAt)}
-                      </div>
+                      {student.createdAt && (
+                        <div className="flex items-center gap-1">
+                          <PiCalendar className="w-4 h-4" />
+                          {t('joined')} {formatDate(student.createdAt)}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

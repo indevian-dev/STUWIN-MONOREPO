@@ -25,16 +25,7 @@ export interface EndpointConfig {
   [key: string]: any;
 }
 
-export interface ApiValidationResult {
-  isValid: boolean;
-  code?: string;
-  authData?: any;
-  ctx?: any; // AuthContext
-  accountId?: string;
-  userId?: string;
-  needsRefresh?: boolean;
-  step?: string;
-}
+
 
 export interface RouteValidation {
   isValid: boolean;

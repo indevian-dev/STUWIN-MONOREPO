@@ -61,7 +61,7 @@ export function ProviderStudentDetailWidget({
               <label className="text-sm font-medium text-neutral-600">
                 {t('full_name')}
               </label>
-              <p className="text-dark font-medium">{student.name || t('not_provided')}</p>
+              <p className="text-dark font-medium">{student.fullName || t('not_provided')}</p>
             </div>
 
             <div>
@@ -127,9 +127,9 @@ export function ProviderStudentDetailWidget({
                 {t('address')}
               </label>
               {
-              /* <p className="text-dark text-sm">
-                {student.address || t('not_provided')}
-              </p> */
+                /* <p className="text-dark text-sm">
+                  {student.address || t('not_provided')}
+                </p> */
               }
             </div>
 

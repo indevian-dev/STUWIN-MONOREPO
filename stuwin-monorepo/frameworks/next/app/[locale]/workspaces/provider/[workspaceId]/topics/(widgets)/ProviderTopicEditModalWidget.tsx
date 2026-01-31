@@ -5,19 +5,10 @@ import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { Subject } from "@/types/resources/subjects";
 import { ApiResponse } from "@/types";
 import { useParams } from "next/navigation";
-import dynamic from "next/dynamic";
+import Editor from "@/lib/components/Editor";
 import { PiInfo, PiFilePdf, PiX } from "react-icons/pi";
 import { ProviderTopicPdfManagementWidget } from "./ProviderTopicPdfManagementWidget";
-
 import { ConsoleLogger } from "@/lib/app-infrastructure/loggers/ConsoleLogger";
-
-const Editor = dynamic(
-  () => import("@/app/[locale]/workspaces/staff/[workspaceId]/ui/editor"),
-  {
-    ssr: false,
-    loading: () => <div className="p-4 text-gray-500">Loading editor...</div>,
-  },
-);
 
 interface ProviderTopicEditModalWidgetProps {
   topicId: string;
@@ -385,7 +376,7 @@ export function ProviderTopicEditModalWidget({
                     <div className="border border-gray-300 rounded-lg overflow-hidden">
                       <Editor
                         ref={editorRef}
-                        initialData={body}
+                        initialContent={body}
                         onChange={(data: string) => setBody(data)}
                         placeholder="Enter the full topic content..."
                         height="400px"
@@ -404,7 +395,7 @@ export function ProviderTopicEditModalWidget({
                 </div>
               ) : (
                 <ProviderTopicPdfManagementWidget
-                  topicId={topicId}
+                  topicId={parseInt(topicId)}
                   topicName={name || "Topic"}
                   existingPdfKey={pdfS3Key}
                   existingTotalPages={totalPdfPages}

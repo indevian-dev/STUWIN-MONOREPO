@@ -1,72 +1,35 @@
 import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
-import { eq, and } from 'drizzle-orm';
-import { accounts, users, workspaceRoles, workspaceToWorkspace } from '@/lib/app-infrastructure/database/schema';
 
-export const GET = unifiedApiHandler(async (request, { auth, db, log, params }) => {
+/**
+ * GET /api/workspaces/student/[workspaceId]/accounts/me
+ * 
+ * Fetches student account data with workspace-specific roles and permissions
+ * Decoupled into AuthService
+ */
+export const GET = unifiedApiHandler(async (request, { auth, module, log, params }) => {
   try {
     const accountId = auth.accountId;
     const workspaceId = params.workspaceId as string;
 
-    log.debug('Fetching account data', { accountId, workspaceId });
-
-    // Fetch account with user and role data using Drizzle
-    // We join workspaceToWorkspace to find the role of this account in this workspace
-    const accountResult = await db
-      .select({
-        account: accounts,
-        user: users,
-        role: workspaceRoles
-      })
-      .from(accounts)
-      .innerJoin(users, eq(accounts.userId, users.id))
-      .leftJoin(workspaceToWorkspace, and(
-        eq(workspaceToWorkspace.accountId, accounts.id),
-        eq(workspaceToWorkspace.toWorkspaceId, workspaceId)
-      ))
-      .leftJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
-      .where(eq(accounts.id, accountId))
-      .limit(1);
-
-    if (!accountResult.length) {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 404 }
-      );
+    if (!accountId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = accountResult[0];
+    log.debug('Fetching account profile', { accountId, workspaceId });
 
-    const accountData = {
-      account: {
-        id: data.account.id,
-        created_at: data.account.createdAt,
-        updated_at: data.account.updatedAt,
-        suspended: data.account.suspended,
-        role: data.role ? {
-          id: data.role.id,
-          name: data.role.name,
-          permissions: data.role.permissions
-        } : null,
-        is_personal: false, // Calculated/Legacy field, schema doesn't have it,
-      },
-      user: {
-        id: data.user?.id,
-        email: data.user?.email,
-        name: data.user?.firstName,
-        last_name: data.user?.lastName,
-        avatar_url: data.user?.avatarUrl,
-        phone: data.user?.phone,
-        email_is_verified: data.user?.emailIsVerified,
-        phone_is_verified: data.user?.phoneIsVerified,
-      },
-      permissions: (data.role?.permissions as string[]) || []
-    };
+    // Delegate to AuthService
+    const result = await module.auth.getAccountProfile(accountId, workspaceId);
 
-    log.info('Account data fetched', { accountId });
-    return NextResponse.json(accountData);
+    if (!result.success) {
+      log.warn('Failed to fetch account profile', { accountId, error: result.error });
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+
+    log.info('Account profile fetched', { accountId });
+    return NextResponse.json(result.data);
   } catch (error) {
-    log.error('Error fetching account data', error);
+    log.error('Error in account profile route', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

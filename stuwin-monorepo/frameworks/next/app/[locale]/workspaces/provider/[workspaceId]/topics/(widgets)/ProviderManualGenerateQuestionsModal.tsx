@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useParams } from 'next/navigation';
-import { ApiResponse } from '@/types';
-import { Topic } from '@/types/resources/topics';
+import { ApiResponse, Topic } from '@/types';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface ProviderManualGenerateQuestionsModalProps {
@@ -52,10 +51,12 @@ export function ProviderManualGenerateQuestionsModal({
       method: 'GET',
       url: `/api/workspaces/provider/${workspaceId}/topics`,
       params: { id: topicId }
-    }) as ApiResponse<{ topic: Topic }>;
+    });
 
-    if ('success' in response && response.success && 'data' in response && response.data) {
-      setTopic(response.data.topic);
+    const apiResponse = response.data as any;
+
+    if (apiResponse.success && apiResponse.data?.topic) {
+      setTopic(apiResponse.data.topic);
     }
   };
 

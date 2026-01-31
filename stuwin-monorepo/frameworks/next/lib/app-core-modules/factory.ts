@@ -11,6 +11,8 @@ import { ActivityService } from "./activity/activity.service";
 import { SupportService } from "./support/support.service";
 import { JobService } from "./jobs/jobs.service";
 import { PaymentService } from "./payment/payment.service";
+import { RoleService } from "./workspace/role.service";
+
 
 // Repositories
 import { LearningRepository } from "./learning/learning.repository";
@@ -21,6 +23,8 @@ import { ActivityRepository } from "./activity/activity.repository";
 import { SupportRepository } from "./support/support.repository";
 import { JobRepository } from "./jobs/jobs.repository";
 import { PaymentRepository } from "./payment/payment.repository";
+import { RoleRepository } from "./workspace/role.repository";
+
 
 // Shared/Legacy Services
 import { MailService } from "./domain/MailService";
@@ -48,9 +52,11 @@ export class ModuleFactory {
     get auth() {
         return new AuthService(
             new AuthRepository(db),
+            new PaymentRepository(db),
             this.ctx
         );
     }
+
 
     get verification() {
         return new VerificationService(
@@ -122,6 +128,15 @@ export class ModuleFactory {
             db
         );
     }
+
+    get roles() {
+        return new RoleService(
+            new RoleRepository(db),
+            this.ctx,
+            db
+        );
+    }
+
 
     // ═══════════════════════════════════════════════════════════════
     // ALIASES (Backward Compatibility)

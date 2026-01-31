@@ -1,5 +1,29 @@
-
 import type { Timestamps } from '../../../common/base';
+
+export type QuestionComplexity = 'easy' | 'medium' | 'hard' | 'expert';
+export type QuestionLanguage = 'azerbaijani' | 'russian' | 'english';
+
+export interface QuestionGeneratorFormData {
+    subjectId: string | null;
+    gradeLevel: number | null;
+    complexity: QuestionComplexity | null;
+    topic: string;
+    count: number;
+    language: QuestionLanguage;
+}
+
+export interface QuestionGeneratorFormErrors {
+    subjectId?: string;
+    gradeLevel?: string;
+    complexity?: string;
+    topic?: string;
+    count?: string;
+    language?: string;
+}
+
+export interface GenerateQuestionsResponse {
+    questions: Question.PrivateAccess[];
+}
 
 export namespace Question {
     export interface PrivateAccess extends Timestamps {
@@ -9,7 +33,7 @@ export namespace Question {
         correctAnswer: string;
         subjectId: string;
         gradeLevel: number;
-        complexity: 'easy' | 'medium' | 'hard' | 'expert';
+        complexity: QuestionComplexity;
         topic?: string;
         language: string;
         explanationGuide?: any;
@@ -23,7 +47,7 @@ export namespace Question {
         correctAnswer: string;
         subjectId: string;
         gradeLevel: number;
-        complexity: 'easy' | 'medium' | 'hard' | 'expert';
+        complexity: QuestionComplexity;
         topic?: string;
         language?: string;
         explanationGuide?: any;

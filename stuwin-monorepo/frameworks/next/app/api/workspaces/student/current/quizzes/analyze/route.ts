@@ -1,30 +1,29 @@
-import { withApiHandler } from "@/lib/app-access-control/interceptors";
-import { ModuleFactory } from "@/lib/app-core-modules/factory";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/app-access-control/interceptors/ApiInterceptor";
 
-export const POST = withApiHandler(
-    async (req: any, { ctx, log }) => {
+export const POST = unifiedApiHandler(
+    async (req: NextRequest, { module, log }: UnifiedContext) => {
         try {
             const body = await req.json();
             const { quizId } = body;
 
             if (!quizId) {
-                return NextResponse.json({ success: false, error: "quizId is required" }, { status: 400 }) as any;
+                return NextResponse.json({ success: false, error: "quizId is required" }, { status: 400 });
             }
 
-            const modules = new ModuleFactory(ctx);
-            const result = await modules.activity.analyzeQuiz(quizId);
+            const result = await module.activity.analyzeQuiz(quizId);
 
             if (!result.success) {
-                return NextResponse.json({ success: false, error: result.error }) as any;
+                return NextResponse.json({ success: false, error: result.error });
             }
 
             return NextResponse.json({
                 success: true,
                 data: result.data,
-            }) as any;
+            });
         } catch (error) {
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 }) as any;
+            log.error("Quiz analysis error", error);
+            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
         }
     },
     {

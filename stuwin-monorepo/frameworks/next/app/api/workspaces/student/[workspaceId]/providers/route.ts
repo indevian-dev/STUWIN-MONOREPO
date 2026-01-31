@@ -19,7 +19,7 @@ export const GET = unifiedApiHandler(async (request, { module, params, auth }) =
   // or return the raw graph connection + workspace data
   const data = connected.map(c => ({
     ...c.workspace,
-    enrollmentStatus: c.connection.isActive ? 'active' : 'inactive',
+    enrollmentStatus: c.connection.isApproved ? 'active' : 'inactive',
     enrolledAt: c.connection.createdAt,
     isPlatformEnrollment: true // Default for now
   }));
