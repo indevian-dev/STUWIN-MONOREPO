@@ -22,6 +22,7 @@ export namespace Topic {
         parentTopicId: string | null;
         subjectPdfId?: string | null;
         estimatedEducationStartDate: string | null;
+        aiAssistantCrib: string | null;
     }
 
     export interface ListItem {

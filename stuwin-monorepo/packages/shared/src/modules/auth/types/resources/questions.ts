@@ -39,6 +39,7 @@ export namespace Question {
         explanationGuide?: any;
         authorAccountId: string;
         isPublished: boolean;
+        aiAssistantCrib?: string;
     }
 
     export interface CreateInput {
@@ -51,6 +52,7 @@ export namespace Question {
         topic?: string;
         language?: string;
         explanationGuide?: any;
+        aiAssistantCrib?: string;
     }
 
     export interface UpdateInput extends Partial<CreateInput> { }

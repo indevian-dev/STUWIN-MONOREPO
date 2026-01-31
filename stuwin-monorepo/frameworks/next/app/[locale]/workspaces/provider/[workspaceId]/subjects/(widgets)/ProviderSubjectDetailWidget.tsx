@@ -24,6 +24,7 @@ export interface Subject {
   gradeLevel: number | null;
   language: string | null;
   createdAt: string;
+  aiAssistantCrib: string | null;
 }
 
 export interface SubjectPdf {

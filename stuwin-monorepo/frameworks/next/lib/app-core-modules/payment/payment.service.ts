@@ -35,12 +35,11 @@ export class PaymentService {
 
     async initiatePayment(params: {
         tierId: string,
-        scope: 'WORKSPACE_TYPE' | 'WORKSPACE',
-        scopeId: string, // workspaceId or workspaceType (e.g. 'student')
+        workspaceId: string,
         couponCode?: string,
         language?: string
     }) {
-        const { tierId, scope, scopeId, couponCode, language = 'az' } = params;
+        const { tierId, workspaceId, couponCode, language = 'az' } = params;
 
         const tiers = await this.paymentRepo.getSubscriptions();
         const tier = tiers.find(t => t.id === tierId);
@@ -57,15 +56,14 @@ export class PaymentService {
 
         const transaction = await this.paymentRepo.createTransaction({
             accountId: this.ctx.accountId,
-            workspaceId: scope === 'WORKSPACE' ? scopeId : this.ctx.activeWorkspaceId, // Link to active if Type scope
+            workspaceId: workspaceId,
             paidAmount: amount,
             status: "pending",
             metadata: {
                 tierId,
                 tierType: tier.type,
                 couponCode,
-                scope,
-                scopeId
+                workspaceId
             }
         });
 
@@ -119,7 +117,7 @@ export class PaymentService {
     }
 
     async completePayment(transactionId: string) {
-        const transaction = await this.db.query.paymentTransactions.findFirst({
+        const transaction = await this.db.query.workspaceSubscriptionTransactions.findFirst({
             where: (t, { eq }) => eq(t.id, transactionId)
         });
 
@@ -131,8 +129,9 @@ export class PaymentService {
 
         const metadata = transaction.metadata as any;
         const tierType = metadata?.tierType || "pro";
-        const scope = metadata?.scope || (transaction.workspaceId ? 'WORKSPACE' : 'WORKSPACE_TYPE'); // Fallback for old transactions
-        const scopeId = metadata?.scopeId || (scope === 'WORKSPACE' ? transaction.workspaceId : 'student'); // Default to student type if unknown
+        const workspaceId = transaction.workspaceId;
+
+        if (!workspaceId) throw new Error("Workspace ID missing in transaction");
 
         // Calculate end date (default 30 days)
         const until = new Date();
@@ -141,8 +140,7 @@ export class PaymentService {
         // CREATE ACTIVE SUBSCRIPTION
         await this.paymentRepo.createActiveSubscription({
             accountId: transaction.accountId as string,
-            scope: scope,
-            scopeId: scopeId,
+            workspaceId: workspaceId,
             planType: tierType,
             startsAt: new Date(),
             endsAt: until,
@@ -151,20 +149,8 @@ export class PaymentService {
             paymentTransactionId: transaction.id
         });
 
-        // LEGACY SYNC (Keep old tables updated for backward compatibility if needed)
-        if (scope === 'WORKSPACE' && transaction.workspaceId) {
-            const workspace = await this.db.query.workspaces.findFirst({
-                where: (w, { eq }) => eq(w.id, transaction.workspaceId!)
-            });
-            if (workspace) {
-                await this.paymentRepo.updateWorkspaceSubscription(transaction.workspaceId, tierType, until);
-            }
-        } else if (scope === 'WORKSPACE_TYPE') {
-            // For Type scope, we typically update the account or a flag.
-            if (transaction.accountId) {
-                await this.paymentRepo.updateAccountSubscription(transaction.accountId, tierType, until);
-            }
-        }
+        // Update Workspace Subscription Date
+        await this.paymentRepo.updateWorkspaceSubscription(workspaceId, tierType, until);
 
         return { success: true, subscribedUntil: until };
     }
@@ -175,24 +161,12 @@ export class PaymentService {
     }
 
     async getEffectiveSubscriptionStatus(workspaceId: string, workspaceType: string) {
-        // 1. Check Workspace Specific
-        const workspaceSubs = await this.paymentRepo.getActiveSubscriptionByScope('WORKSPACE', workspaceId);
+        const workspaceSubs = await this.paymentRepo.getActiveSubscriptionByWorkspace(workspaceId);
         if (workspaceSubs && workspaceSubs.length > 0) {
             return {
                 type: workspaceSubs[0].planType,
                 until: workspaceSubs[0].endsAt as Date,
                 source: 'WORKSPACE',
-                isActive: true
-            };
-        }
-
-        // 2. Check Workspace Type
-        const typeSubs = await this.paymentRepo.getActiveSubscriptionByScope('WORKSPACE_TYPE', workspaceType);
-        if (typeSubs && typeSubs.length > 0) {
-            return {
-                type: typeSubs[0].planType,
-                until: typeSubs[0].endsAt as Date,
-                source: 'WORKSPACE_TYPE',
                 isActive: true
             };
         }

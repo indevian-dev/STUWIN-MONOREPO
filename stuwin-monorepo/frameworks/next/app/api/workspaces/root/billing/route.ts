@@ -32,12 +32,10 @@ export const POST = unifiedApiHandler(async (req, { module, log }) => {
             return NextResponse.json({ success: false, error: "tierId is required" }, { status: 400 });
         }
 
-        // workspaceId is undefined for account-level billing (Root), so we assume 'student' type scope
-        // This makes it a general subscription for the user account (student features)
+        // Root billing typically targets the account's personal workspace or similar
         const result = await module.payment.initiatePayment({
             tierId,
-            scope: 'WORKSPACE_TYPE',
-            scopeId: 'student',
+            workspaceId: 'root',
             couponCode,
             language: language || 'az'
         });

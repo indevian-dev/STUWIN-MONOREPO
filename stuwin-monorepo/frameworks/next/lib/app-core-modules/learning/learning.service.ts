@@ -139,6 +139,7 @@ export class LearningService extends BaseService {
         isGlobal?: boolean;
         organizationId?: string;
         workspaceId?: string;
+        aiAssistantCrib?: string;
     }) {
         try {
             const slug = slugify(data.title, { lower: true, strict: true });
@@ -150,6 +151,7 @@ export class LearningService extends BaseService {
                 cover: data.cover,
                 aiLabel: data.aiLabel,
                 workspaceId: data.workspaceId,
+                aiAssistantCrib: data.aiAssistantCrib,
                 createdAt: new Date(),
                 isActive: true
             });
@@ -171,6 +173,7 @@ export class LearningService extends BaseService {
         is_active?: boolean; // For backward compatibility with legacy payloads
         cover?: string;
         aiLabel?: string;
+        aiAssistantCrib?: string;
     }) {
         try {
             const updateData: any = { ...data };
@@ -301,7 +304,8 @@ export class LearningService extends BaseService {
                     language: data.language,
                     subjectPdfId: data.pdfId,
                     workspaceId: this.ctx.activeWorkspaceId || "default",
-                    isActiveForAi: false
+                    isActiveForAi: false,
+                    aiAssistantCrib: (data as any).aiAssistantCrib
                 }, tx as any);
 
                 return { success: true as const, data: topic };

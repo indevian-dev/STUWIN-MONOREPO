@@ -32,6 +32,8 @@ export class WorkspaceService extends BaseService {
                     metadata: details.metadata || {},
                     ownerAccountId: ownerAccountId,
                     isActive: true,
+                    providerSubscriptionPrice: (details as any).price || null,
+                    providerTrialDaysCount: (details as any).trialDays || 0,
                 }, tx as any);
 
                 // No more "Roles" or "Memberships" tables. 
@@ -158,6 +160,8 @@ export class WorkspaceService extends BaseService {
                 metadata: details.metadata,
                 ownerAccountId: ownerAccountId,
                 isActive: false, // Must be approved by Staff
+                providerSubscriptionPrice: (details as any).price || null,
+                providerTrialDaysCount: (details as any).trialDays || 0,
             });
 
             return { success: true, data: workspace };
@@ -172,16 +176,23 @@ export class WorkspaceService extends BaseService {
     async createStudentWorkspace(ownerAccountId: string, details: { displayName: string; gradeLevel?: any; providerId: string }) {
         try {
             return await this.db.transaction(async (tx) => {
-                // 1. Create Student Workspace
+                // 1. Fetch Provider to get trial days
+                const provider = await this.repository.findById(details.providerId, tx as any);
+                const trialDays = provider?.providerTrialDaysCount || 0;
+                const subscribedUntil = new Date();
+                subscribedUntil.setDate(subscribedUntil.getDate() + trialDays);
+
+                // 2. Create Student Workspace
                 const studentWorkspace = await this.repository.create({
                     title: details.displayName,
                     type: "student",
                     ownerAccountId: ownerAccountId,
                     metadata: { gradeLevel: details.gradeLevel },
                     isActive: true,
+                    studentSubscribedUntill: subscribedUntil,
                 }, tx as any);
 
-                // 2. Connect to the selected Provider (School/Center)
+                // 3. Connect to the selected Provider (School/Center)
                 // Student IS ENROLLED IN Provider
                 await this.repository.connectWorkspaces({
                     fromWorkspaceId: studentWorkspace.id,

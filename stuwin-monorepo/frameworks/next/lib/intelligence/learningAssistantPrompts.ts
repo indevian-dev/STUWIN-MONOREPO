@@ -36,6 +36,7 @@ export const LEARNING_CONVERSATION_PROMPT_TEMPLATE = (context: {
   topic: string
   conversationHistory: Array<{ role: 'student' | 'ai'; content: string }>
   newStudentMessage: string
+  aiCrib?: string
 }) => {
   const history = context.conversationHistory
     .map((msg) => `${msg.role === 'ai' ? 'AI Tutor' : 'Student'}: ${msg.content}`)
@@ -53,6 +54,10 @@ ${history}
 STUDENT'S NEW MESSAGE:
 ${context.newStudentMessage}
 
+${context.aiCrib ? `ADDITIONAL CONTEXT (AI CRIB):
+${context.aiCrib}
+` : ""}
+
 Please provide a helpful response that:
 1. Addresses the student's specific question
 2. Maintains context from our previous discussion
@@ -66,10 +71,15 @@ export const HOMEWORK_ANALYSIS_PROMPT_TEMPLATE = (context: {
   description?: string
   topic?: string
   studentQuestion: string
+  aiCrib?: string
 }) => {
   return `The student is working on homework: "${context.homeworkTitle}"
 ${context.description ? `Description: ${context.description}` : ''}
 ${context.topic ? `Topic: ${context.topic}` : ''}
+
+${context.aiCrib ? `ADDITIONAL CONTEXT (AI CRIB):
+${context.aiCrib}
+` : ""}
 
 Student's Question: ${context.studentQuestion}
 
@@ -86,10 +96,15 @@ export const QUIZ_PREPARATION_PROMPT_TEMPLATE = (context: {
   topic: string
   studentQuestion: string
   difficulty?: string
+  aiCrib?: string
 }) => {
   return `The student is preparing for a quiz: "${context.quizTitle}"
 Topic: ${context.topic}
 ${context.difficulty ? `Difficulty Level: ${context.difficulty}` : ''}
+
+${context.aiCrib ? `ADDITIONAL CONTEXT (AI CRIB):
+${context.aiCrib}
+` : ""}
 
 Student's Question: ${context.studentQuestion}
 

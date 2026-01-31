@@ -98,8 +98,11 @@ export const workspaces = pgTable("workspaces", {
     isBlocked: boolean("is_blocked").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-    subscriptionType: varchar("subscription_type"),
-    subscribedUntil: timestamp("subscribed_until", { withTimezone: true }),
+    studentSubscribedUntill: timestamp("student_subscribed_untill", { withTimezone: true }),
+    providerSubscriptionPrice: real("provider_subscription_price"),
+    providerProgramDescription: text("provider_program_description"),
+    providerSubscriptionPeriod: varchar("provider_subscription_period").default("month"),
+    providerTrialDaysCount: bigint("provider_trial_days_count", { mode: "number" }).default(0),
 }, (table) => {
     return {
         parentWorkspaceFkey: foreignKey({
@@ -114,7 +117,7 @@ export const workspaces = pgTable("workspaces", {
 // PAYMENTS & SUBSCRIPTIONS
 // ═══════════════════════════════════════════════════════════════
 
-export const paymentTransactions = pgTable("payment_transactions", {
+export const workspaceSubscriptionTransactions = pgTable("workspace_subscription_transactions", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     paymentChannel: varchar("payment_channel"),
@@ -137,7 +140,7 @@ export const paymentSubscriptions = pgTable("payment_subscription", {
     isActive: boolean("is_active"),
 });
 
-export const paymentCoupons = pgTable("payment_coupons", {
+export const workspaceSubscriptionCoupons = pgTable("workspace_subscription_coupons", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     discountPercent: bigint("discount_percent", { mode: "number" }),
@@ -150,10 +153,7 @@ export const paymentCoupons = pgTable("payment_coupons", {
 export const activeSubscriptions = pgTable("active_subscriptions", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     accountId: varchar("account_id").references(() => accounts.id), // Owner/Payer
-
-    // Scope Definitions
-    scope: varchar("scope").notNull(), // Enum: 'WORKSPACE_TYPE', 'WORKSPACE'
-    scopeId: varchar("scope_id").notNull(), // 'student'/'provider' (for TYPE) OR workspace_id (for WORKSPACE)
+    workspaceId: varchar("workspace_id").references(() => workspaces.id),
 
     // Plan Details
     planType: varchar("plan_type").notNull(), // e.g. 'pro', 'premium' (matches paymentSubscriptions.type)
@@ -226,6 +226,7 @@ export const learningSubjects = pgTable("learning_subjects", {
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
     gradeLevel: integer("grade_level"),
     language: varchar("language"),
+    aiAssistantCrib: text("ai_assistant_crib"),
 });
 
 export const learningSubjectPdfs = pgTable("learning_subject_pdfs", {
@@ -267,6 +268,7 @@ export const learningSubjectTopics = pgTable("learning_subject_topics", {
     ftsTokens: text("fts_tokens"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
     language: varchar("language"),
+    aiAssistantCrib: text("ai_assistant_crib"),
 }, (table) => {
     return {
         parentTopicFkey: foreignKey({
@@ -294,6 +296,7 @@ export const questions = pgTable("questions", {
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
     learningSubjectTopicId: varchar("learning_subject_topic_id").references(() => learningSubjectTopics.id),
     isPublished: boolean("is_published").default(false),
+    aiAssistantCrib: text("ai_assistant_crib"),
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -337,6 +340,7 @@ export const studentHomeworks = pgTable("student_homeworks", {
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
+    aiAssistantCrib: text("ai_assistant_crib"),
 });
 
 export const studentQuizReports = pgTable("student_quiz_reports", {
@@ -419,6 +423,8 @@ export const systemPrompts = pgTable("system_prompts", {
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     body: text("body"),
     title: text("title"),
+    usageFlowType: varchar("usage_flow_type"),
+    isActive: boolean("is_active"),
 });
 
 export const accountNotifications = pgTable("account_notifications", {

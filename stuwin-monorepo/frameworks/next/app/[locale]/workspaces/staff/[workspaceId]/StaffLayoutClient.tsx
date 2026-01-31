@@ -21,8 +21,10 @@ import {
   PiUsersFill,
   PiGrainsFill,
   PiStorefrontFill,
-  PiClock
+  PiClock,
+  PiRobot
 } from 'react-icons/pi';
+
 import { FiBell } from 'react-icons/fi';
 import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
 import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
@@ -105,7 +107,15 @@ export function StaffLayoutClient({
           { href: `/staff-workspace/${workspaceId}/users`, icon: PiUsersFill, label: 'users' }
         ]
       },
+      ai_management: {
+        label: 'ai_lab',
+        icon: PiRobot,
+        items: [
+          { href: `/staff-workspace/${workspaceId}/ai-lab`, icon: PiRobot, label: 'system_prompts' }
+        ]
+      },
       management: {
+
         label: 'support',
         icon: PiPlugs,
         items: [

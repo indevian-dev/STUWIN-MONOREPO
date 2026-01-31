@@ -99,6 +99,7 @@ function BulkTopicCreateModal({
               item.estimatedEducationStartDate || null,
             isActiveForAi:
               item.isActiveForAi !== undefined ? item.isActiveForAi : false,
+            aiAssistantCrib: item.aiAssistantCrib || null,
             subjectId,
           }));
 
@@ -256,7 +257,7 @@ function BulkTopicCreateModal({
 // - start_page or pdfPageStart
 // - end_page or pdfPageEnd
 // - body, gradeLevel, chapterNumber
-// - isActiveForAi, aiSummary`}
+// - isActiveForAi, aiSummary, aiAssistantCrib`}
                     </pre>
                   </details>
                 </div>
@@ -350,6 +351,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
     estimatedEducationStartDate: topic.estimatedEducationStartDate
       ? new Date(topic.estimatedEducationStartDate).toISOString().slice(0, 16)
       : "",
+    aiAssistantCrib: topic.aiAssistantCrib || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -378,6 +380,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
         pdfPageEnd: formData.pdfPageEnd ? parseInt(formData.pdfPageEnd) : null,
         estimatedEducationStartDate:
           formData.estimatedEducationStartDate || null,
+        aiAssistantCrib: formData.aiAssistantCrib || null,
       };
 
       await onSave(updateData);
@@ -506,7 +509,6 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t("aiSummary")}
@@ -520,6 +522,22 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={t("aiSummaryPlaceholder")}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("aiAssistantCrib")}
+              </label>
+              <textarea
+                value={formData.aiAssistantCrib}
+                onChange={(e) =>
+                  setFormData({ ...formData, aiAssistantCrib: e.target.value })
+                }
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                placeholder={t("aiAssistantCribPlaceholder")}
+              />
+              <p className="mt-1 text-xs text-gray-500">{t("aiAssistantCribHelp")}</p>
             </div>
 
             <div>
@@ -651,8 +669,8 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
             {saving ? t("saving") : t("save")}
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 

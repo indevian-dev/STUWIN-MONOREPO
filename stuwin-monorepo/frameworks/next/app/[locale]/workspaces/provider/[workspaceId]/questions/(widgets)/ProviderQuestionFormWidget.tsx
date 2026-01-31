@@ -26,6 +26,7 @@ interface ProviderQuestionFormData {
   answers: string[];
   correctAnswer: string;
   explanationGuide: string;
+  aiAssistantCrib: string;
 }
 
 interface ProviderQuestionFormErrors {
@@ -48,6 +49,7 @@ interface QuestionData {
   answers: string[];
   correct_answer: string;
   explanation_guide?: any;
+  aiAssistantCrib?: string;
 }
 
 interface ProviderQuestionFormWidgetProps {
@@ -73,7 +75,8 @@ export function ProviderQuestionFormWidget({
     complexity: null,
     answers: ['', '', '', ''],
     correctAnswer: '',
-    explanationGuide: ''
+    explanationGuide: '',
+    aiAssistantCrib: ''
   });
   const [errors, setErrors] = useState<ProviderQuestionFormErrors>({});
 
@@ -86,7 +89,8 @@ export function ProviderQuestionFormWidget({
         complexity: initialData.complexity || '',
         answers: initialData.answers || ['', '', '', ''],
         correctAnswer: initialData.correct_answer || '',
-        explanationGuide: initialData.explanation_guide ? JSON.stringify(initialData.explanation_guide) : ''
+        explanationGuide: initialData.explanation_guide ? JSON.stringify(initialData.explanation_guide) : '',
+        aiAssistantCrib: initialData.aiAssistantCrib || ''
       });
     }
   }, [initialData]);
@@ -162,7 +166,8 @@ export function ProviderQuestionFormWidget({
           correct: '',
           incorrect: '',
           hints: []
-        }
+        },
+        aiAssistantCrib: formData.aiAssistantCrib || undefined
       };
 
       const response = await apiCallForSpaHelper({
@@ -255,6 +260,23 @@ export function ProviderQuestionFormWidget({
         />
         <p className="mt-1 text-xs text-gray-500">
           Enter a JSON object with explanation details (optional)
+        </p>
+      </div>
+
+      {/* AI Assistant Crib */}
+      <div>
+        <label className='block text-sm font-medium text-gray-700 mb-1'>
+          AI Assistant Crib (Context for AI Tutor)
+        </label>
+        <textarea
+          value={formData.aiAssistantCrib}
+          onChange={(e) => setFormData({ ...formData, aiAssistantCrib: e.target.value })}
+          rows={3}
+          className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm'
+          placeholder="Special instructions or hints for the AI when helping students with this question"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          This content will be passed to the AI Tutor to provide specific context or hints.
         </p>
       </div>
 

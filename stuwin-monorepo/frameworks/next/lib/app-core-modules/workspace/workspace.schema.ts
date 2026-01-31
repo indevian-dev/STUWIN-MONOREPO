@@ -14,6 +14,11 @@ export const workspaceSchema = z.object({
     workspaceId: z.string().optional(),
     ownerAccountId: z.string(),
     isActive: z.boolean().default(true),
+    studentSubscribedUntill: z.string().datetime().nullable().optional(),
+    providerSubscriptionPrice: z.number().nullable().optional(),
+    providerProgramDescription: z.string().nullable().optional(),
+    providerSubscriptionPeriod: z.string().default("month").optional(),
+    providerTrialDaysCount: z.number().default(0).optional(),
 });
 
 export const createWorkspaceSchema = workspaceSchema.omit({ id: true, workspaceId: true });

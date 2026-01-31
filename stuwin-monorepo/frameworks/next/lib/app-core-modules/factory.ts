@@ -12,6 +12,7 @@ import { SupportService } from "./support/support.service";
 import { JobService } from "./jobs/jobs.service";
 import { PaymentService } from "./payment/payment.service";
 import { RoleService } from "./workspace/role.service";
+import { SystemPromptService } from "./intelligence/system-prompt.service";
 
 
 // Repositories
@@ -24,6 +25,7 @@ import { SupportRepository } from "./support/support.repository";
 import { JobRepository } from "./jobs/jobs.repository";
 import { PaymentRepository } from "./payment/payment.repository";
 import { RoleRepository } from "./workspace/role.repository";
+import { SystemPromptRepository } from "./intelligence/system-prompt.repository";
 
 
 // Shared/Legacy Services
@@ -109,8 +111,10 @@ export class ModuleFactory {
         return new ActivityService(
             new ActivityRepository(db),
             this.ctx,
-            db
+            db,
+            new SystemPromptService(new SystemPromptRepository(db), this.ctx, db)
         );
+
     }
 
     get jobs() {
@@ -136,6 +140,19 @@ export class ModuleFactory {
             db
         );
     }
+
+    get intelligence() {
+        return new SystemPromptService(
+            new SystemPromptRepository(db),
+            this.ctx,
+            db
+        );
+    }
+
+    get systemPrompts() {
+        return this.intelligence;
+    }
+
 
 
     // ═══════════════════════════════════════════════════════════════

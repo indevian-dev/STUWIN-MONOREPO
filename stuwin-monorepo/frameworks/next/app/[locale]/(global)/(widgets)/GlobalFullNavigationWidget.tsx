@@ -117,7 +117,6 @@ export function GlobalFullNavigationWidget({
       {isAuthenticated && (
         <li className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded">
           <GlobalProfileWidget />
-          <GlobalSubscriptionStatusWidget />
         </li>
       )}
 

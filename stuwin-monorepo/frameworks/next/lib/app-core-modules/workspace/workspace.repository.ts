@@ -53,7 +53,7 @@ export class WorkspaceRepository extends BaseRepository {
         orderDir?: 'asc' | 'desc';
     } = {}, tx?: DbClient) {
         const client = tx ?? this.db;
-        const limit = options.limit || 24;
+        const limit = options.limit || 100;
         const offset = options.offset || 0;
 
         let orderByClause = desc(workspaces.createdAt);
@@ -67,7 +67,18 @@ export class WorkspaceRepository extends BaseRepository {
         );
 
         const data = await client
-            .select()
+            .select({
+                id: workspaces.id,
+                title: workspaces.title,
+                metadata: workspaces.metadata,
+                ownerAccountId: workspaces.ownerAccountId,
+                cityId: workspaces.cityId,
+                isActive: workspaces.isActive,
+                createdAt: workspaces.createdAt,
+                providerSubscriptionPrice: workspaces.providerSubscriptionPrice,
+                providerTrialDaysCount: workspaces.providerTrialDaysCount,
+                providerProgramDescription: workspaces.providerProgramDescription,
+            })
             .from(workspaces)
             .where(whereClause)
             .limit(limit)

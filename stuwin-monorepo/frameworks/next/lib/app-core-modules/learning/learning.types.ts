@@ -30,6 +30,7 @@ export namespace Subject {
         totalQuestions: number;
         totalTopics: number;
         canManageTopics: boolean;
+        aiAssistantCrib?: string;
     }
 
     export interface StudentView extends Timestamps {
@@ -57,6 +58,7 @@ export namespace Subject {
         slug: string;
         isActive?: boolean;
         aiLabel?: string;
+        aiAssistantCrib?: string;
     }
 }
 
@@ -78,6 +80,7 @@ export namespace Topic {
         pdfPageEnd?: number;
         chapterNumber?: string;
         parentTopicId?: string;
+        aiAssistantCrib?: string;
     }
 
     export interface CreateInput {
@@ -91,6 +94,7 @@ export namespace Topic {
         pdfPageEnd?: number;
         chapterNumber?: string;
         parentTopicId?: string;
+        aiAssistantCrib?: string;
     }
 }
 
@@ -118,6 +122,7 @@ export namespace Question {
         language: string;
         topicId: string;
         status: QuestionStatus;
+        aiAssistantCrib?: string;
     }
 
     export interface CreateInput {
@@ -134,6 +139,7 @@ export namespace Question {
         };
         language?: string;
         topicId: string;
+        aiAssistantCrib?: string;
     }
 }
 

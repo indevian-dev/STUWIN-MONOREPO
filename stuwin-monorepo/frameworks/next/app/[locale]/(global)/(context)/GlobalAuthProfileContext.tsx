@@ -55,8 +55,7 @@ interface GlobalAuthProfileContextType {
 
 export interface ActiveSubscription {
     id: string;
-    scope: 'WORKSPACE_TYPE' | 'WORKSPACE';
-    scopeId: string;
+    workspaceId: string;
     planType: string;
     startsAt: string; // ISO date string from JSON
     endsAt: string | null;
@@ -246,33 +245,18 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
     const getEffectiveSubscription = useCallback((workspaceId: string, workspaceType: string) => {
         const now = new Date();
 
-        // 1. Check Workspace Specific
+        // Check if there is an active subscription for this workspace
         const workspaceSub = subscriptions.find(s =>
-            s.scope === 'WORKSPACE' &&
-            s.scopeId === workspaceId &&
+            s.workspaceId === workspaceId &&
             s.status === 'active' &&
             (!s.endsAt || new Date(s.endsAt) > now)
         );
+
         if (workspaceSub) {
             return {
                 type: workspaceSub.planType,
                 until: workspaceSub.endsAt ? new Date(workspaceSub.endsAt) : null,
                 source: 'WORKSPACE' as const
-            };
-        }
-
-        // 2. Check Workspace Type
-        const typeSub = subscriptions.find(s =>
-            s.scope === 'WORKSPACE_TYPE' &&
-            s.scopeId === workspaceType &&
-            s.status === 'active' &&
-            (!s.endsAt || new Date(s.endsAt) > now)
-        );
-        if (typeSub) {
-            return {
-                type: typeSub.planType,
-                until: typeSub.endsAt ? new Date(typeSub.endsAt) : null,
-                source: 'WORKSPACE_TYPE' as const
             };
         }
 

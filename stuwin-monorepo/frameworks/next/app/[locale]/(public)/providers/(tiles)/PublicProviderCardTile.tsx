@@ -17,6 +17,7 @@ interface Provider {
   title: string | null;
   logo: string | null;
   location?: ProviderLocation | null;
+  providerSubscriptionPrice?: number | null;
 }
 
 interface PublicProviderCardTileProps {
@@ -54,12 +55,19 @@ export function PublicProviderCardTile({ Provider, compact = false }: PublicProv
           <h3 className="font-medium text-sm text-gray-900 truncate group-hover:text-brand transition-colors">
             {Provider.title}
           </h3>
-          {Provider.location?.city && (
-            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-              <FiMapPin size={12} />
-              <span className="truncate">{Provider.location.city}</span>
-            </p>
-          )}
+          <div className="flex items-center gap-2 mt-1">
+            {Provider.location?.city && (
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <FiMapPin size={12} />
+                <span className="truncate">{Provider.location.city}</span>
+              </p>
+            )}
+            {Provider.providerSubscriptionPrice !== undefined && (
+              <p className="text-xs font-bold text-brand ml-auto">
+                {Provider.providerSubscriptionPrice === 0 ? 'Free' : `${Provider.providerSubscriptionPrice} AZN`}
+              </p>
+            )}
+          </div>
         </div>
       </Link>
     );
@@ -83,12 +91,19 @@ export function PublicProviderCardTile({ Provider, compact = false }: PublicProv
         <h3 className="font-medium text-sm text-gray-900 line-clamp-1 group-hover:text-brand transition-colors">
           {Provider.title}
         </h3>
-        {Provider.location && (
-          <p className="text-xs text-gray-500 mt-1 line-clamp-1 flex items-center gap-1">
-            <FiMapPin size={12} />
-            <span>{Provider.location.address || Provider.location.city}</span>
-          </p>
-        )}
+        <div className="flex items-center justify-between mt-1">
+          {Provider.location && (
+            <p className="text-xs text-gray-500 line-clamp-1 flex items-center gap-1">
+              <FiMapPin size={12} />
+              <span>{Provider.location.address || Provider.location.city}</span>
+            </p>
+          )}
+          {Provider.providerSubscriptionPrice !== undefined && (
+            <p className="text-xs font-bold text-brand">
+              {Provider.providerSubscriptionPrice === 0 ? 'Free' : `${Provider.providerSubscriptionPrice} AZN`}
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   );

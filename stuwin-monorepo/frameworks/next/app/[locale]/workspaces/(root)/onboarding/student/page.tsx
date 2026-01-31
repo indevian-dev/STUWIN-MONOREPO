@@ -53,8 +53,7 @@ export default function StudentOnboardingPage() {
     };
 
     const handleProviderSelect = (providerId: string) => {
-        setFormData({ ...formData, providerId });
-        setStep(2);
+        router.push(`/workspaces/enroll/${providerId}`);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -176,11 +175,23 @@ export default function StudentOnboardingPage() {
                                         <div className="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center text-xl text-neutral-500 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                                             <PiBuildings />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-dark group-hover:text-teal-600">{provider.title}</h3>
-                                            <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
-                                                {provider.city?.title || "Online"}
-                                            </p>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-dark group-hover:text-teal-600 truncate">{provider.title}</h3>
+                                            <div className="flex items-center gap-3">
+                                                <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
+                                                    {provider.city?.title || "Online"}
+                                                </p>
+                                                {provider.providerSubscriptionPrice !== undefined && (
+                                                    <p className="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-lg">
+                                                        {provider.providerSubscriptionPrice === 0 ? t('free') : `${provider.providerSubscriptionPrice} AZN`}
+                                                    </p>
+                                                )}
+                                                {provider.providerTrialDaysCount > 0 && (
+                                                    <p className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg uppercase tracking-tighter">
+                                                        {provider.providerTrialDaysCount} {t('trial_days')}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                         <PiArrowRight className="ml-auto text-neutral-300 group-hover:text-teal-500" />
                                     </button>

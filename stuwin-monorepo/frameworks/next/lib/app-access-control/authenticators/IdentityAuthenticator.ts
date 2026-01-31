@@ -1,6 +1,6 @@
 import { db } from "@/lib/app-infrastructure/database";
 import { users, accounts, userCredentials, workspaces, workspaceToWorkspace, workspaceRoles } from "@/lib/app-infrastructure/database/schema";
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, sql } from "drizzle-orm";
 import {
   validatePassword,
   hashPassword,
@@ -510,8 +510,8 @@ export async function getUserData(
           permissions: workspaceRoles.permissions,
           isStaff: workspaceRoles.isStaff,
           workspaceType: workspaceRoles.forWorkspaceType,
-          workspaceSubscriptionType: workspaces.subscriptionType,
-          workspaceSubscribedUntil: workspaces.subscribedUntil
+          workspaceSubscriptionType: sql`NULL` as any, // Removed column
+          workspaceSubscribedUntil: workspaces.studentSubscribedUntill
         })
           .from(workspaceToWorkspace)
           .leftJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))

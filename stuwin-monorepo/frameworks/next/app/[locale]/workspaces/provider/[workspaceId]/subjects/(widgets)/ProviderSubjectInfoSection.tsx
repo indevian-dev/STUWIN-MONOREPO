@@ -26,6 +26,7 @@ export function SubjectInfoSection({
     aiLabel: subject.aiLabel || "",
     gradeLevel: subject.gradeLevel || 0,
     language: subject.language || "",
+    aiAssistantCrib: subject.aiAssistantCrib || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export function SubjectInfoSection({
       aiLabel: subject.aiLabel || "",
       gradeLevel: subject.gradeLevel || 0,
       language: subject.language || "",
+      aiAssistantCrib: subject.aiAssistantCrib || "",
     });
   };
 
@@ -213,19 +215,37 @@ export function SubjectInfoSection({
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("aiLabel")}
+              </label>
+              <input
+                type="text"
+                value={editData.aiLabel}
+                onChange={(e) =>
+                  setEditData({ ...editData, aiLabel: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t("aiLabelPlaceholder")}
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t("aiLabel")}
+              {t("aiAssistantCrib")}
             </label>
-            <input
-              type="text"
-              value={editData.aiLabel}
+            <textarea
+              value={editData.aiAssistantCrib}
               onChange={(e) =>
-                setEditData({ ...editData, aiLabel: e.target.value })
+                setEditData({ ...editData, aiAssistantCrib: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t("aiLabelPlaceholder")}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              placeholder={t("aiAssistantCribPlaceholder")}
             />
+            <p className="mt-1 text-xs text-gray-500">{t("aiAssistantCribHelp")}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -355,6 +375,15 @@ export function SubjectInfoSection({
                   <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded">
                     {subject.aiLabel}
                   </span>
+                </div>
+              )}
+
+              {subject.aiAssistantCrib && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">{t("aiAssistantCrib")}</p>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100 font-mono whitespace-pre-wrap">
+                    {subject.aiAssistantCrib}
+                  </p>
                 </div>
               )}
 

@@ -3,8 +3,12 @@ import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
 import { genAI, GEMINI_MODELS } from "@/lib/integrations/geminiClient";
-import { questions as questionsTable, studentQuizzes, studentLearningSessions, learningSubjects } from "@/lib/app-infrastructure/database/schema";
+import { questions as questionsTable, studentQuizzes, studentLearningSessions, learningSubjects, learningSubjectTopics, studentHomeworks } from "@/lib/app-infrastructure/database/schema";
 import { inArray, eq, and, sql, desc } from "drizzle-orm";
+// import { HOMEWORK_SESSION_SYSTEM_PROMPT, QUIZ_ANALYSIS_PROMPT, LEARNING_CONTEXT_PROMPT } from "@/lib/intelligence/activityPrompts";
+
+import { PromptFlowType } from "@/lib/intelligence/fallbackPrompts";
+import { SystemPromptService } from "../intelligence/system-prompt.service";
 
 /**
  * ActivityService - Logic for managing quizzes, homework, and sessions
@@ -13,7 +17,8 @@ export class ActivityService extends BaseService {
     constructor(
         private readonly repository: ActivityRepository,
         private readonly ctx: AuthContext,
-        private readonly db: Database
+        private readonly db: Database,
+        private readonly systemPrompts: SystemPromptService
     ) {
         super();
     }
@@ -254,10 +259,6 @@ export class ActivityService extends BaseService {
                         user_answer: null,
                         user_answer_letter: null,
                         correct_answer: correctAnswer,
-                        is_correct: false,
-                        time_spent: 0,
-                        complexity: question.complexity || dbQuestion?.complexity,
-                        explanation: (dbQuestion?.explanationGuide as any)?.body ?? (dbQuestion?.explanationGuide as any) ?? "",
                     });
                 }
             });
@@ -358,20 +359,19 @@ export class ActivityService extends BaseService {
                 return { success: true, data: session };
             }
 
-            // Create a new Socratic session
-            const systemPrompt = `You are an AI Educational Tutor. 
-            Student is working on homework: "${homework.title}".
-            Description: ${homework.description || 'N/A'}
-            Content: ${homework.textContent || 'N/A'}
-            
-            RULES:
-            1. NEVER give the direct answer.
-            2. If student asks for answer, explain why you can't and guide them.
-            3. Use Socratic method: ask questions that lead to the solution.
-            4. Provide analogies and break down complex concepts.
-            5. Validate correct thinking steps.
-            
-            Current goal: Guide the student to solve this homework by themselves.`;
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                homeworkId: homework.id,
+                topicId: homework.topicId || undefined,
+            });
+
+            const systemPrompt = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.HOMEWORK_EXPLANATION, {
+
+                homeworkTitle: homework.title,
+                description: homework.description,
+                textContent: homework.textContent,
+                aiCrib
+            });
 
             const session = await this.repository.createSession({
                 workspaceId: homework.workspaceId,
@@ -467,37 +467,20 @@ export class ActivityService extends BaseService {
                 userAnswers: quiz.userAnswers,
             };
 
-            // 2. AI Prompt
-            const prompt = `You are an educational AI tutor analyzing a student's full quiz session.
-            
-            QUIZ SUMMARY:
-            Score: ${quizData.score}%
-            Correct: ${quizData.correctAnswers}/${quizData.totalQuestions}
-            
-            DATA:
-            ${JSON.stringify(quizData.questions)}
-            
-            Focus on:
-            1. Concepts the student understands well.
-            2. Conceptual gaps (topics where mistakes were made).
-            3. Actionable learning path recommendation.
-            4. Encouraging feedback.
-            
-            IMPORTANT: Focus on LEARNING, not just correct/incorrect.
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                subjectId: quiz.learningSubjectId || undefined,
+            });
 
-            CRITICAL INSTRUCTION:
-            You MUST generate the entire output (reportText, strengths, gaps, recommendations) in the following language/locale: ${locale}.
-            This is mandatory. Even if the input data is in another language, your final JSON output values must be in ${locale}.
-            
-            Return ONLY a JSON object with this structure:
-            {
-              "reportText": "A beautiful markdown formatted report in ${locale}",
-              "learningInsights": {
-                "strengths": ["topic1", "topic2"],
-                "gaps": ["topic3"],
-                "recommendations": ["Do more of X", "Read Y"]
-              }
-            }`;
+            const prompt = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.STUDENT_QUIZ_SUMMARY, {
+
+                score: quizData.score || 0,
+                correctAnswers: quizData.correctAnswers || 0,
+                totalQuestions: quizData.totalQuestions || 0,
+                questionsData: JSON.stringify(quizData.questions),
+                locale,
+                aiCrib
+            });
 
             const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_002 });
             const aiResult = await model.generateContent([{ text: prompt }]);
@@ -633,25 +616,30 @@ CONTEXT: This is a ${contextType} session.
                 context += `\n\nPrevious Discovery Paths (Summary):\n${historyText}\n`;
             }
 
-            const prompt = `
-You are an expert learning assistant for students. We are in an interactive learning session.
-The student is exploring the concepts behind a ${contextType}.
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                questionId: contextId && contextType === 'topic' ? undefined : contextId, // ContextId might be question id in many cases
+                subjectId: session.topicId ? (await this.db.select({ sid: learningSubjectTopics.learningSubjectId }).from(learningSubjectTopics).where(eq(learningSubjectTopics.id, session.topicId)).limit(1))[0]?.sid || undefined : undefined,
+                topicId: session.topicId || undefined,
+            });
 
-${context}
+            // Map contextType to fallback prompt flow type
+            let flowType = PromptFlowType.QUESTION_EXPLANATION;
+            if (contextType === 'topic') flowType = PromptFlowType.TOPIC_EXPLORATION;
 
-Your Goal:
-1. If this is the start (no selectedText), provide a comprehensive but friendly analysis of WHY the correct answer is correct and why the student's answer was incorrect (if it was).
-2. If the student selected a specific word or phrase ("SPECIFIC FOCUS"), explain that concept in the context of this question. 
-3. Use a friendly, encouraging tone (e.g., "Hello there! Let's dive in.").
-4. Format your response in clean Markdown. Use LaTeX for math ($...$ or $$...$$).
-5. Keep explanations bite-sized and clear. We want to encourage "discovery" rather than just dumping information.
+            const prompt = await this.systemPrompts.getEffectivePromptResult(flowType, {
 
-CRITICAL INSTRUCTION:
-You MUST generate the entire output in the following language/locale: ${locale}.
-This is mandatory. Even if the input text is in another language, your explanation must be in ${locale}.
-
-Output exactly the explanation in Markdown.
-`;
+                contextType,
+                subjectTitle: subjectTitle || 'General Mathematics',
+                complexity: complexity || 'Standard',
+                question,
+                correctAnswer,
+                userAnswer,
+                selectedText: selectedText || undefined,
+                historyText: digests.length > 0 ? context : undefined,
+                locale,
+                aiCrib
+            });
 
             const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH_1_5 });
             const aiResult = await model.generateContent([{ text: prompt }]);
@@ -712,5 +700,53 @@ Output exactly the explanation in Markdown.
             this.handleError(error, "analyzeQuizQuestion");
             return { success: false, error: "Failed to analyze question" };
         }
+    }
+
+
+    private async getEffectiveCrib(params: {
+        questionId?: string;
+        topicId?: string;
+        subjectId?: string;
+        homeworkId?: string;
+    }) {
+        const cribs: string[] = [];
+
+        // 1. Question Crib
+        if (params.questionId) {
+            const q = await this.db.select({ crib: questionsTable.aiAssistantCrib }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            if (q[0]?.crib) cribs.push(q[0].crib);
+        }
+
+        // 2. Homework Crib
+        if (params.homeworkId) {
+            const h = await this.db.select({ crib: studentHomeworks.aiAssistantCrib }).from(studentHomeworks).where(eq(studentHomeworks.id, params.homeworkId)).limit(1);
+            if (h[0]?.crib) cribs.push(h[0].crib);
+        }
+
+        // 3. Topic Crib (If only questionId provided, we should probably fetch its topic and subject too)
+        let topicId = params.topicId;
+        let subjectId = params.subjectId;
+
+        if (params.questionId && !topicId) {
+            const qData = await this.db.select({ tid: questionsTable.learningSubjectTopicId, sid: questionsTable.learningSubjectId }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            if (qData[0]) {
+                topicId = qData[0].tid || undefined;
+                subjectId = qData[0].sid || undefined;
+            }
+        }
+
+        if (topicId) {
+            const t = await this.db.select({ crib: learningSubjectTopics.aiAssistantCrib, sid: learningSubjectTopics.learningSubjectId }).from(learningSubjectTopics).where(eq(learningSubjectTopics.id, topicId)).limit(1);
+            if (t[0]?.crib) cribs.push(t[0].crib);
+            if (!subjectId) subjectId = t[0]?.sid || undefined;
+        }
+
+        // 4. Subject Crib
+        if (subjectId) {
+            const s = await this.db.select({ crib: learningSubjects.aiAssistantCrib }).from(learningSubjects).where(eq(learningSubjects.id, subjectId)).limit(1);
+            if (s[0]?.crib) cribs.push(s[0].crib);
+        }
+
+        return cribs.length > 0 ? cribs.join("\n\n---\n\n") : undefined;
     }
 }

@@ -34,8 +34,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, log }) =
         const { workspaceId } = params as { workspaceId: string };
         const result = await module.payment.initiatePayment({
             tierId,
-            scope: 'WORKSPACE',
-            scopeId: workspaceId,
+            workspaceId: workspaceId,
             couponCode,
             language: language || 'az'
         });
