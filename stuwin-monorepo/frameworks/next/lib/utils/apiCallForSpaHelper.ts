@@ -194,9 +194,17 @@ async function executeRequest({
     const errorCode = errorData?.code || errorData?.type;
 
     if (status === 401) {
+      const isAuthCheck = url.includes('/api/auth');
+
       ConsoleLogger.log(`🔐 401 Unauthorized [${errorCode}]: ${errorData?.error || errorData?.message}`);
-      ConsoleLogger.log('🚪 Redirecting to login...');
-      redirectToAuth();
+
+      if (!isAuthCheck) {
+        ConsoleLogger.log('🚪 Redirecting to login...');
+        redirectToAuth();
+      } else {
+        ConsoleLogger.log('⚠️ Auth check failed (expected behavior for unauthenticated users), skipping redirect.');
+      }
+
       throw createApiError(errorData?.error || errorData?.message || 'Authentication required', 401, errorCode || 'UNAUTHORIZED');
     }
 
