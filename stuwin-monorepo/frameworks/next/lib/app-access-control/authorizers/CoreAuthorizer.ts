@@ -113,10 +113,12 @@ class ValidationSteps {
 
   static async validateSession(ctx: ValidationContext): Promise<StepResult> {
     if (!ctx.session) {
-      // Only log as error if auth is strictly required for this endpoint
-      if (ctx.endpointConfig?.authRequired !== false) {
-        logger.error('No session ID provided');
+      // If auth is NOT required, return success (Guest mode)
+      if (ctx.endpointConfig?.authRequired === false) {
+        return { success: true };
       }
+
+      logger.error('No session ID provided');
       return { success: false, code: 'UNAUTHORIZED' };
     }
 
@@ -162,6 +164,11 @@ class ValidationSteps {
       needEmailVerification: ctx.endpointConfig?.needEmailVerification,
       needPhoneVerification: ctx.endpointConfig?.needPhoneVerification
     });
+
+    // If guest (no authData) and auth optional, skip status checks
+    if (!ctx.authData && ctx.endpointConfig?.authRequired === false) {
+      return { success: true };
+    }
 
     const result = checkAccountStatus(ctx.authData, ctx.endpointConfig?.needEmailVerification, ctx.endpointConfig?.needPhoneVerification);
 
