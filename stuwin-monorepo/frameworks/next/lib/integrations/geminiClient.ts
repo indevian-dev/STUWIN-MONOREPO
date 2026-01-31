@@ -6,14 +6,46 @@ import {
 import { GoogleAIFileManager } from '@google/generative-ai/server';
 
 // Initialize Gemini API
-const apiKey = process.env.GEMINI_API_KEY;
+let _genAI: GoogleGenerativeAI;
+let _fileManager: GoogleAIFileManager;
 
-if (!apiKey) {
-  throw new Error('GEMINI_API_KEY is not configured');
-}
+const getApiKey = () => {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    throw new Error('GEMINI_API_KEY is not configured');
+  }
+  return key;
+};
 
-export const genAI = new GoogleGenerativeAI(apiKey);
-export const fileManager = new GoogleAIFileManager(apiKey);
+const getGenAI = () => {
+  if (!_genAI) {
+    _genAI = new GoogleGenerativeAI(getApiKey());
+  }
+  return _genAI;
+};
+
+const getFileManager = () => {
+  if (!_fileManager) {
+    _fileManager = new GoogleAIFileManager(getApiKey());
+  }
+  return _fileManager;
+};
+
+export const genAI = new Proxy({} as GoogleGenerativeAI, {
+  get: (_target, prop) => {
+    const instance = getGenAI();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
+});
+
+export const fileManager = new Proxy({} as GoogleAIFileManager, {
+  get: (_target, prop) => {
+    const instance = getFileManager();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
+});
 
 // Safety settings (relaxed for educational content)
 export const safetySettings = [
