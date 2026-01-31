@@ -3,17 +3,11 @@ FROM oven/bun:1 AS base
 WORKDIR /app
 
 # Stage 1: Install dependencies
-FROM base AS install
-RUN mkdir -p /temp/dev
-# Copy monorepo root package.json and lockfiles
-COPY stuwin-monorepo/package.json stuwin-monorepo/bun.lock* stuwin-monorepo/yarn.lock* stuwin-monorepo/package-lock.json* /temp/dev/
-# Copy workspaces package.json files
-COPY stuwin-monorepo/frameworks/next/package.json /temp/dev/frameworks/next/
-COPY stuwin-monorepo/packages/shared/package.json /temp/dev/packages/shared/
-
-# Install dependencies for the monorepo
-# We run it in the /temp/dev which will be our monorepo root
-RUN cd /temp/dev && bun install
+FROM base AS deps
+COPY stuwin-monorepo/package.json stuwin-monorepo/bun.lock* stuwin-monorepo/yarn.lock* stuwin-monorepo/package-lock.json* ./
+COPY stuwin-monorepo/frameworks/next/package.json ./frameworks/next/
+COPY stuwin-monorepo/packages/shared/package.json ./packages/shared/
+RUN bun install
 
 # Stage 2: Prerelease (Source copy and Build)
 FROM base AS prerelease
@@ -22,15 +16,11 @@ WORKDIR /app
 # This effectively makes /app the monorepo root inside the container
 COPY stuwin-monorepo/ .
 
-# Copy dependencies from install stage
+# Copy dependencies from deps stage
 # We do this AFTER copying source code to ensure node_modules are not overwritten
-COPY --from=install /temp/dev/node_modules ./node_modules
-
-
-
-
-# Ensure node_modules binaries are in PATH (both root and workspace)
-ENV PATH="/app/frameworks/next/node_modules/.bin:/app/node_modules/.bin:$PATH"
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/frameworks/next/node_modules ./frameworks/next/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 
 # Set environment variables for build time
 ARG NEXT_PUBLIC_APP_URL
