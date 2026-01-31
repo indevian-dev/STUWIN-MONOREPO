@@ -8,27 +8,57 @@
 import { Client, Receiver } from '@upstash/qstash';
 
 // Initialize QStash client
-const qstashToken = process.env.QSTASH_TOKEN;
+let _qstashClient: Client;
+let _qstashReceiver: Receiver;
 
-if (!qstashToken) {
-  throw new Error('QSTASH_TOKEN is not configured');
-}
+const getQstashToken = () => {
+  const token = process.env.QSTASH_TOKEN;
+  if (!token) {
+    throw new Error('QSTASH_TOKEN is not configured');
+  }
+  return token;
+};
 
-export const qstashClient = new Client({
-  token: qstashToken,
+const getClient = () => {
+  if (!_qstashClient) {
+    _qstashClient = new Client({
+      token: getQstashToken(),
+    });
+  }
+  return _qstashClient;
+};
+
+const getReceiver = () => {
+  if (!_qstashReceiver) {
+    const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
+    const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
+
+    if (!currentSigningKey || !nextSigningKey) {
+      throw new Error('QSTASH_CURRENT_SIGNING_KEY and QSTASH_NEXT_SIGNING_KEY must be configured');
+    }
+
+    _qstashReceiver = new Receiver({
+      currentSigningKey,
+      nextSigningKey,
+    });
+  }
+  return _qstashReceiver;
+};
+
+export const qstashClient = new Proxy({} as Client, {
+  get: (_target, prop) => {
+    const instance = getClient();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
 });
 
-// Initialize Receiver for signature verification
-const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
-const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
-
-if (!currentSigningKey || !nextSigningKey) {
-  throw new Error('QSTASH_CURRENT_SIGNING_KEY and QSTASH_NEXT_SIGNING_KEY must be configured');
-}
-
-export const qstashReceiver = new Receiver({
-  currentSigningKey,
-  nextSigningKey,
+export const qstashReceiver = new Proxy({} as Receiver, {
+  get: (_target, prop) => {
+    const instance = getReceiver();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
 });
 
 // Export for convenience
