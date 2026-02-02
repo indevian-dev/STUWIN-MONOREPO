@@ -1,6 +1,6 @@
 
 import { eq, and, desc, sql, count } from "drizzle-orm";
-import { accountNotifications, accountBookmarks, cities, countries, questions as questionsTable } from "@/lib/app-infrastructure/database/schema";
+import { accountNotifications, accountBookmarks, cities, countries, providerQuestions as questionsTable } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 

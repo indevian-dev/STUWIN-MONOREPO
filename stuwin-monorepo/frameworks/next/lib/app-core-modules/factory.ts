@@ -13,6 +13,7 @@ import { JobService } from "./jobs/jobs.service";
 import { PaymentService } from "./payment/payment.service";
 import { RoleService } from "./workspace/role.service";
 import { SystemPromptService } from "./intelligence/system-prompt.service";
+import { SemanticMasteryService } from "./semantic-mastery/SemanticMasteryService";
 
 
 // Repositories
@@ -32,6 +33,7 @@ import { SystemPromptRepository } from "./intelligence/system-prompt.repository"
 import { MailService } from "./domain/MailService";
 import { ReportService } from "./domain/ReportService";
 import { VerificationService } from "./auth/verification.service";
+import { AuditService } from "./domain/AuditService";
 
 /**
  * ModuleFactory - Central entry point for all modularized services
@@ -47,7 +49,8 @@ export class ModuleFactory {
         return new LearningService(
             new LearningRepository(db),
             this.ctx,
-            db
+            db,
+            this.semanticMastery
         );
     }
 
@@ -112,9 +115,13 @@ export class ModuleFactory {
             new ActivityRepository(db),
             this.ctx,
             db,
-            new SystemPromptService(new SystemPromptRepository(db), this.ctx, db)
+            new SystemPromptService(new SystemPromptRepository(db), this.ctx, db),
+            this.semanticMastery
         );
+    }
 
+    get semanticMastery() {
+        return new SemanticMasteryService();
     }
 
     get jobs() {
@@ -181,5 +188,9 @@ export class ModuleFactory {
 
     get reports() {
         return new ReportService(this.ctx);
+    }
+
+    get audit() {
+        return new AuditService(this.ctx, db);
     }
 }

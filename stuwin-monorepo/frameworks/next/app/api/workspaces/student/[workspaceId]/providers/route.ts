@@ -13,13 +13,13 @@ export const GET = unifiedApiHandler(async (request, { module, params, auth }) =
   // This replaces the old direct SQL query to ENROLLMENTS table
 
   // Correction: We want to LIST, not CONNECT
-  const connected = await module.workspace.repository.listConnectedWorkspaces(workspaceId, "enrollment");
+  const connected = await module.workspace.repository.listConnections(workspaceId);
 
   // Transform the result to match expected frontend format if needed
   // or return the raw graph connection + workspace data
   const data = connected.map(c => ({
     ...c.workspace,
-    enrollmentStatus: c.connection.isApproved ? 'active' : 'inactive',
+    enrollmentStatus: c.workspace.isActive ? 'active' : 'inactive',
     enrolledAt: c.connection.createdAt,
     isPlatformEnrollment: true // Default for now
   }));

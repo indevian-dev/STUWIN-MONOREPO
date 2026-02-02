@@ -494,4 +494,11 @@ export const studentEndpoints: EndpointsMap = {
     type: "api",
     permission: "STUDENT_HOMEWORK_DELETE"
   }),
+
+  "/api/workspaces/student/:workspaceId/progress": createStudentEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "api",
+    permission: "STUDENT_ACCESS"
+  }),
 };

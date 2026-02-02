@@ -19,7 +19,7 @@ export class WorkspaceService extends BaseService {
 
 
     async createWorkspace(ownerAccountId: string, details: { title: string; type: string; metadata?: any }) {
-        const allowedTypes = ['student', 'provider', 'staff', 'parent', 'tutor'];
+        const allowedTypes = ['student', 'provider', 'staff', 'parent'];
         if (!allowedTypes.includes(details.type)) {
             return { success: false, error: `Invalid workspace type: ${details.type}` };
         }
@@ -29,15 +29,20 @@ export class WorkspaceService extends BaseService {
                 const workspace = await this.repository.create({
                     title: details.title,
                     type: details.type,
-                    metadata: details.metadata || {},
-                    ownerAccountId: ownerAccountId,
+                    profile: (details as any).profile || (details.metadata as any) || {},
                     isActive: true,
-                    providerSubscriptionPrice: (details as any).price || null,
-                    providerTrialDaysCount: (details as any).trialDays || 0,
                 }, tx as any);
 
-                // No more "Roles" or "Memberships" tables. 
-                // The "ownerAccountId" on the workspace table IS the permission.
+                // Add Owner Access (Direct)
+                // Role: 'manager' is typically the owner role for Provider/Staff.
+                // For Student/Parent, it might be 'owner' or specific. Using 'manager' as generic owner role for now.
+                // Ensure 'manager' role exists in seed data.
+                await this.repository.addAccess({
+                    actorAccountId: ownerAccountId,
+                    targetWorkspaceId: workspace.id,
+                    viaWorkspaceId: workspace.id,
+                    accessRole: 'manager',
+                }, tx as any);
 
                 return { success: true, workspace };
             });
@@ -48,30 +53,8 @@ export class WorkspaceService extends BaseService {
     }
 
     /**
-     * Connects two workspaces (e.g. Student enrolling in a School)
+     * Lists Providers (Schools/Courses)
      */
-    async connectWorkspaces(fromWorkspaceId: string, toWorkspaceId: string, relationType: string) {
-        try {
-            // Check if connection exists
-            const existing = await this.repository.findConnection(fromWorkspaceId, toWorkspaceId);
-            if (existing) {
-                return { success: true, connection: existing, message: "Already connected" };
-            }
-
-            const connection = await this.repository.connectWorkspaces({
-                fromWorkspaceId: fromWorkspaceId,
-                toWorkspaceId: toWorkspaceId,
-                relationType: relationType,
-            });
-
-            return { success: true, connection };
-
-        } catch (error) {
-            this.handleError(error, "connectWorkspaces");
-            return { success: false, error: "Failed to connect workspaces" };
-        }
-    }
-
     async listProviders(options: any = {}) {
         try {
             const result = await this.repository.listProviders(options);
@@ -89,6 +72,16 @@ export class WorkspaceService extends BaseService {
         } catch (error) {
             this.handleError(error, "listUserWorkspaces");
             return { success: false, error: "Failed to list user workspaces" };
+        }
+    }
+
+    async listEnrolledProviders(accountId: string) {
+        try {
+            const data = await this.repository.findEnrolledAccesses(accountId);
+            return { success: true, data };
+        } catch (error) {
+            this.handleError(error, "listEnrolledProviders");
+            return { success: false, error: "Failed to list enrolled providers" };
         }
     }
 
@@ -128,16 +121,25 @@ export class WorkspaceService extends BaseService {
                 const parentWorkspace = await this.repository.create({
                     title: "Parent Dashboard",
                     type: "parent",
-                    ownerAccountId: ownerAccountId,
                     isActive: true,
                 }, tx as any);
 
-                // 2. Connect to all selected student workspaces
+                // 2. Add Parent Owner Access
+                await this.repository.addAccess({
+                    actorAccountId: ownerAccountId,
+                    targetWorkspaceId: parentWorkspace.id,
+                    viaWorkspaceId: parentWorkspace.id,
+                    accessRole: 'manager', // Owner of Parent Workspace
+                }, tx as any);
+
+                // 3. Connect to all selected student workspaces
+                // Parent accesses Student Workspace VIA Parent Workspace
                 for (const studentWsId of studentWorkspaceIds) {
-                    await this.repository.connectWorkspaces({
-                        fromWorkspaceId: parentWorkspace.id,
-                        toWorkspaceId: studentWsId,
-                        relationType: "parent_monitor",
+                    await this.repository.addAccess({
+                        actorAccountId: ownerAccountId, // Parent User
+                        targetWorkspaceId: studentWsId, // Student Workspace
+                        viaWorkspaceId: parentWorkspace.id, // Via Parent Dashboard
+                        accessRole: 'parent_monitor', // Role in Student Workspace
                     }, tx as any);
                 }
 
@@ -150,35 +152,51 @@ export class WorkspaceService extends BaseService {
     }
 
     /**
-     * Provider/Tutor Flow: Create organization/tutor workspace (Inactive until Staff approval)
+     * Provider Flow: Create organization workspace (Inactive until Staff approval)
      */
     async submitProviderApplication(ownerAccountId: string, details: { title: string; metadata: any }, type: string = "provider") {
         try {
-            const workspace = await this.repository.create({
-                title: details.title,
-                type: type, // provider or tutor
-                metadata: details.metadata,
-                ownerAccountId: ownerAccountId,
-                isActive: false, // Must be approved by Staff
-                providerSubscriptionPrice: (details as any).price || null,
-                providerTrialDaysCount: (details as any).trialDays || 0,
-            });
+            return await this.db.transaction(async (tx) => {
+                const workspace = await this.repository.create({
+                    title: details.title,
+                    type: type,
+                    profile: details.metadata || {}, // Mapping legacy metadata to profile
+                    isActive: false, // Must be approved by Staff
+                }, tx as any);
 
-            return { success: true, data: workspace };
+                // Add Owner Access (but workspace is inactive)
+                await this.repository.addAccess({
+                    actorAccountId: ownerAccountId,
+                    targetWorkspaceId: workspace.id,
+                    viaWorkspaceId: workspace.id,
+                    accessRole: 'manager',
+                }, tx as any);
+
+                return { success: true, data: workspace };
+            });
         } catch (error) {
             this.handleError(error, "submitProviderApplication");
             return { success: false, error: "Application failed" };
         }
     }
+
     /**
      * Student Flow: Create student workspace and enroll in a provider
      */
     async createStudentWorkspace(ownerAccountId: string, details: { displayName: string; gradeLevel?: any; providerId: string }) {
         try {
             return await this.db.transaction(async (tx) => {
-                // 1. Fetch Provider to get trial days
+                // 0. Check if already enrolled to prevent double-workspace creation
+                const existing = await this.repository.findAccess(ownerAccountId, details.providerId, undefined, tx as any);
+                if (existing) {
+                    return { success: false, error: "Already enrolled in this provider", code: "ALREADY_ENROLLED" };
+                }
+
+                // 1. Fetch Provider to get trial days from its profile
                 const provider = await this.repository.findById(details.providerId, tx as any);
-                const trialDays = provider?.providerTrialDaysCount || 0;
+                const profile = provider?.profile as any;
+                const trialDays = profile?.providerTrialDaysCount || 0;
+
                 const subscribedUntil = new Date();
                 subscribedUntil.setDate(subscribedUntil.getDate() + trialDays);
 
@@ -186,18 +204,31 @@ export class WorkspaceService extends BaseService {
                 const studentWorkspace = await this.repository.create({
                     title: details.displayName,
                     type: "student",
-                    ownerAccountId: ownerAccountId,
-                    metadata: { gradeLevel: details.gradeLevel },
+                    profile: {
+                        type: 'student',
+                        gradeLevel: details.gradeLevel
+                    },
                     isActive: true,
-                    studentSubscribedUntill: subscribedUntil,
                 }, tx as any);
 
-                // 3. Connect to the selected Provider (School/Center)
+                // 3. Add Student Owner Access (Direct)
+                await this.repository.addAccess({
+                    actorAccountId: ownerAccountId,
+                    targetWorkspaceId: studentWorkspace.id,
+                    viaWorkspaceId: studentWorkspace.id,
+                    accessRole: 'student', // Student is 'student' role in their own workspace? Or 'manager'? 
+                    // Usually 'student' role implies learning features.
+                }, tx as any);
+
+                // 4. Connect to the selected Provider (School/Center)
                 // Student IS ENROLLED IN Provider
-                await this.repository.connectWorkspaces({
-                    fromWorkspaceId: studentWorkspace.id,
-                    toWorkspaceId: details.providerId,
-                    relationType: "enrolled_in",
+                // Actor: Student, Target: Provider, Via: StudentWorkspace
+                await this.repository.addAccess({
+                    actorAccountId: ownerAccountId,
+                    targetWorkspaceId: details.providerId,
+                    viaWorkspaceId: studentWorkspace.id,
+                    accessRole: 'student', // Role in Provider is 'student'
+                    subscribedUntil: subscribedUntil, // Subscription is ON the access to Provider
                 }, tx as any);
 
                 return { success: true, data: studentWorkspace };
@@ -207,6 +238,8 @@ export class WorkspaceService extends BaseService {
             return { success: false, error: "Student onboarding failed" };
         }
     }
+
+    // ... (S3 Media methods kept as is)
     /**
      * Generate S3 Pre-signed URL for User Media
      */

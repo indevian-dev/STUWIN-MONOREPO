@@ -181,14 +181,14 @@ export default function StudentOnboardingPage() {
                                                 <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                                                     {provider.city?.title || "Online"}
                                                 </p>
-                                                {provider.providerSubscriptionPrice !== undefined && (
+                                                {provider.profile?.providerSubscriptionPrice !== undefined && (
                                                     <p className="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-lg">
-                                                        {provider.providerSubscriptionPrice === 0 ? t('free') : `${provider.providerSubscriptionPrice} AZN`}
+                                                        {provider.profile?.providerSubscriptionPrice === 0 ? t('free') : `${provider.profile?.providerSubscriptionPrice} AZN`}
                                                     </p>
                                                 )}
-                                                {provider.providerTrialDaysCount > 0 && (
+                                                {provider.profile?.providerTrialDaysCount > 0 && (
                                                     <p className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg uppercase tracking-tighter">
-                                                        {provider.providerTrialDaysCount} {t('trial_days')}
+                                                        {provider.profile?.providerTrialDaysCount} {t('trial_days')}
                                                     </p>
                                                 )}
                                             </div>

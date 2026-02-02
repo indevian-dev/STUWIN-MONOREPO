@@ -14,10 +14,10 @@ export const accountNotifications = pgTable("account_notifications", {
 	workspaceAccessKey: varchar("workspace_access_key").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.accountId],
-			foreignColumns: [accounts.id],
-			name: "account_notifications_account_id_accounts_id_fk"
-		}),
+		columns: [table.accountId],
+		foreignColumns: [accounts.id],
+		name: "account_notifications_account_id_accounts_id_fk"
+	}),
 ]);
 
 export const accountOtps = pgTable("account_otps", {
@@ -37,15 +37,15 @@ export const accountBookmarks = pgTable("account_bookmarks", {
 	workspaceAccessKey: varchar("workspace_access_key").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.accountId],
-			foreignColumns: [accounts.id],
-			name: "account_bookmarks_account_id_accounts_id_fk"
-		}),
+		columns: [table.accountId],
+		foreignColumns: [accounts.id],
+		name: "account_bookmarks_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.questionId],
-			foreignColumns: [questions.id],
-			name: "account_bookmarks_question_id_questions_id_fk"
-		}),
+		columns: [table.questionId],
+		foreignColumns: [questions.id],
+		name: "account_bookmarks_question_id_questions_id_fk"
+	}),
 ]);
 
 export const blogs = pgTable("blogs", {
@@ -75,10 +75,10 @@ export const accounts = pgTable("accounts", {
 	suspended: boolean().default(false),
 }, (table) => [
 	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "accounts_user_id_users_id_fk"
-		}),
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "accounts_user_id_users_id_fk"
+	}),
 ]);
 
 export const learningSubjectPdfs = pgTable("learning_subject_pdfs", {
@@ -86,17 +86,17 @@ export const learningSubjectPdfs = pgTable("learning_subject_pdfs", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	pdfUrl: text("pdf_url"),
 	pdfOrder: text("pdf_order"),
-	learningSubjectId: varchar("learning_subject_id"),
+	providerSubjectId: varchar("learning_subject_id"),
 	isActive: boolean("is_active"),
 	uploadAccountId: varchar("upload_account_id"),
 	topicsOrderedIds: json("topics_ordered_ids"),
 	workspaceAccessKey: varchar("workspace_access_key").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.learningSubjectId],
-			foreignColumns: [learningSubjects.id],
-			name: "learning_subject_pdfs_learning_subject_id_learning_subjects_id_"
-		}),
+		columns: [table.providerSubjectId],
+		foreignColumns: [learningSubjects.id],
+		name: "learning_subject_pdfs_learning_subject_id_learning_subjects_id_"
+	}),
 ]);
 
 export const learningSubjectTopics = pgTable("learning_subject_topics", {
@@ -106,7 +106,7 @@ export const learningSubjectTopics = pgTable("learning_subject_topics", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	gradeLevel: bigint("grade_level", { mode: "number" }),
 	name: text(),
-	learningSubjectId: varchar("learning_subject_id"),
+	providerSubjectId: varchar("learning_subject_id"),
 	aiSummary: text("ai_summary"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	topicPublishedQuestionsStats: bigint("topic_published_questions_stats", { mode: "number" }).default(0),
@@ -133,20 +133,20 @@ export const learningSubjectTopics = pgTable("learning_subject_topics", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
-			columns: [table.learningSubjectId],
-			foreignColumns: [learningSubjects.id],
-			name: "learning_subject_topics_learning_subject_id_learning_subjects_i"
-		}),
+		columns: [table.providerSubjectId],
+		foreignColumns: [learningSubjects.id],
+		name: "learning_subject_topics_learning_subject_id_learning_subjects_i"
+	}),
 	foreignKey({
-			columns: [table.subjectPdfId],
-			foreignColumns: [learningSubjectPdfs.id],
-			name: "learning_subject_topics_subject_pdf_id_learning_subject_pdfs_id"
-		}),
+		columns: [table.subjectPdfId],
+		foreignColumns: [learningSubjectPdfs.id],
+		name: "learning_subject_topics_subject_pdf_id_learning_subject_pdfs_id"
+	}),
 	foreignKey({
-			columns: [table.parentTopicId],
-			foreignColumns: [table.id],
-			name: "topics_parent_topic_id_fkey"
-		}),
+		columns: [table.parentTopicId],
+		foreignColumns: [table.id],
+		name: "topics_parent_topic_id_fkey"
+	}),
 ]);
 
 export const countries = pgTable("countries", {
@@ -194,7 +194,7 @@ export const questions = pgTable("questions", {
 	correctAnswer: text("correct_answer"),
 	authorAccountId: varchar("author_account_id"),
 	reviewerAccountId: varchar("reviewer_account_id"),
-	learningSubjectId: varchar("learning_subject_id"),
+	providerSubjectId: varchar("learning_subject_id"),
 	complexity: text(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	gradeLevel: bigint("grade_level", { mode: "number" }),
@@ -202,29 +202,29 @@ export const questions = pgTable("questions", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	language: text(),
 	workspaceAccessKey: varchar("workspace_access_key"),
-	learningSubjectTopicId: varchar("learning_subject_topic_id"),
+	providerSubjectTopicId: varchar("learning_subject_topic_id"),
 	isPublished: boolean("is_published").default(false),
 }, (table) => [
 	foreignKey({
-			columns: [table.authorAccountId],
-			foreignColumns: [accounts.id],
-			name: "questions_author_account_id_accounts_id_fk"
-		}),
+		columns: [table.authorAccountId],
+		foreignColumns: [accounts.id],
+		name: "questions_author_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.learningSubjectId],
-			foreignColumns: [learningSubjects.id],
-			name: "questions_learning_subject_id_learning_subjects_id_fk"
-		}),
+		columns: [table.providerSubjectId],
+		foreignColumns: [learningSubjects.id],
+		name: "questions_learning_subject_id_learning_subjects_id_fk"
+	}),
 	foreignKey({
-			columns: [table.learningSubjectTopicId],
-			foreignColumns: [learningSubjectTopics.id],
-			name: "questions_learning_subject_topic_id_learning_subject_topics_id_"
-		}),
+		columns: [table.providerSubjectTopicId],
+		foreignColumns: [learningSubjectTopics.id],
+		name: "questions_learning_subject_topic_id_learning_subject_topics_id_"
+	}),
 	foreignKey({
-			columns: [table.reviewerAccountId],
-			foreignColumns: [accounts.id],
-			name: "questions_reviewer_account_id_accounts_id_fk"
-		}),
+		columns: [table.reviewerAccountId],
+		foreignColumns: [accounts.id],
+		name: "questions_reviewer_account_id_accounts_id_fk"
+	}),
 ]);
 
 export const studentReports = pgTable("student_reports", {
@@ -238,10 +238,10 @@ export const studentReports = pgTable("student_reports", {
 	workspaceAccessKey: varchar("workspace_access_key"),
 }, (table) => [
 	foreignKey({
-			columns: [table.studentAccountId],
-			foreignColumns: [accounts.id],
-			name: "student_reports_student_account_id_accounts_id_fk"
-		}),
+		columns: [table.studentAccountId],
+		foreignColumns: [accounts.id],
+		name: "student_reports_student_account_id_accounts_id_fk"
+	}),
 ]);
 
 export const userCredentials = pgTable("user_credentials", {
@@ -254,10 +254,10 @@ export const userCredentials = pgTable("user_credentials", {
 	userId: varchar("user_id"),
 }, (table) => [
 	foreignKey({
-			columns: [table.id],
-			foreignColumns: [users.id],
-			name: "user_credentials_id_users_id_fk"
-		}),
+		columns: [table.id],
+		foreignColumns: [users.id],
+		name: "user_credentials_id_users_id_fk"
+	}),
 	unique("user_credentials_facebook_id_unique").on(table.facebookId),
 	unique("user_credentials_google_id_unique").on(table.googleId),
 	unique("user_credentials_apple_id_unique").on(table.appleId),
@@ -278,7 +278,7 @@ export const studentLearningSessions = pgTable("student_learning_sessions", {
 	topicId: varchar("topic_id"),
 	homeworkId: varchar("homework_id"),
 	rootQuestion: text("root_question").notNull(),
-	messages: jsonb().default({"nodes":[]}).notNull(),
+	messages: jsonb().default({ "nodes": [] }).notNull(),
 	status: varchar().default('active').notNull(),
 	branchCount: integer("branch_count").default(0).notNull(),
 	messageCount: integer("message_count").default(0).notNull(),
@@ -287,15 +287,15 @@ export const studentLearningSessions = pgTable("student_learning_sessions", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.studentAccountId],
-			foreignColumns: [accounts.id],
-			name: "student_learning_sessions_student_account_id_accounts_id_fk"
-		}),
+		columns: [table.studentAccountId],
+		foreignColumns: [accounts.id],
+		name: "student_learning_sessions_student_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.topicId],
-			foreignColumns: [learningSubjectTopics.id],
-			name: "student_learning_sessions_topic_id_learning_subject_topics_id_f"
-		}),
+		columns: [table.topicId],
+		foreignColumns: [learningSubjectTopics.id],
+		name: "student_learning_sessions_topic_id_learning_subject_topics_id_f"
+	}),
 ]);
 
 export const studentQuizzes = pgTable("student_quizzes", {
@@ -305,7 +305,7 @@ export const studentQuizzes = pgTable("student_quizzes", {
 	score: real(),
 	questions: json(),
 	result: json(),
-	learningSubjectId: varchar("learning_subject_id"),
+	providerSubjectId: varchar("learning_subject_id"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	gradeLevel: bigint("grade_level", { mode: "number" }),
 	language: text(),
@@ -321,15 +321,15 @@ export const studentQuizzes = pgTable("student_quizzes", {
 	workspaceAccessKey: varchar("workspace_access_key").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.learningSubjectId],
-			foreignColumns: [learningSubjects.id],
-			name: "student_quizzes_learning_subject_id_learning_subjects_id_fk"
-		}),
+		columns: [table.providerSubjectId],
+		foreignColumns: [learningSubjects.id],
+		name: "student_quizzes_learning_subject_id_learning_subjects_id_fk"
+	}),
 	foreignKey({
-			columns: [table.studentAccountId],
-			foreignColumns: [accounts.id],
-			name: "student_quizzes_student_account_id_accounts_id_fk"
-		}),
+		columns: [table.studentAccountId],
+		foreignColumns: [accounts.id],
+		name: "student_quizzes_student_account_id_accounts_id_fk"
+	}),
 ]);
 
 export const workspaceRoles = pgTable("workspace_roles", {
@@ -365,31 +365,36 @@ export const users = pgTable("users", {
 	unique("users_fin_unique").on(table.fin),
 ]);
 
-export const workspaceToWorkspace = pgTable("workspace_to_workspace", {
+export const workspaceAccesses = pgTable("workspace_accesses", {
 	id: varchar().primaryKey().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	relationType: varchar("relation_type"),
-	accountId: varchar("account_id"),
-	fromWorkspaceId: varchar("from_workspace_id"),
-	toWorkspaceId: varchar("to_workspace_id"),
-	isApproved: boolean("is_approved"),
-	role: varchar(),
+	actorAccountId: varchar("actor_account_id"),
+	targetWorkspaceId: varchar("target_workspace_id"),
+	viaWorkspaceId: varchar("via_workspace_id"),
+	accessRole: varchar("access_role"),
+	subscribedUntil: timestamp("subscribed_until", { withTimezone: true, mode: 'string' }),
+	subscriptionTier: varchar("subscription_tier"),
 }, (table) => [
 	foreignKey({
-			columns: [table.accountId],
-			foreignColumns: [accounts.id],
-			name: "workspace_to_workspace_account_id_accounts_id_fk"
-		}),
+		columns: [table.actorAccountId],
+		foreignColumns: [accounts.id],
+		name: "workspace_accesses_actor_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.fromWorkspaceId],
-			foreignColumns: [workspaces.id],
-			name: "workspace_to_workspace_from_workspace_id_workspaces_id_fk"
-		}),
+		columns: [table.targetWorkspaceId],
+		foreignColumns: [workspaces.id],
+		name: "workspace_accesses_target_workspace_id_workspaces_id_fk"
+	}),
 	foreignKey({
-			columns: [table.toWorkspaceId],
-			foreignColumns: [workspaces.id],
-			name: "workspace_to_workspace_to_workspace_id_workspaces_id_fk"
-		}),
+		columns: [table.viaWorkspaceId],
+		foreignColumns: [workspaces.id],
+		name: "workspace_accesses_via_workspace_id_workspaces_id_fk"
+	}),
+	foreignKey({
+		columns: [table.accessRole],
+		foreignColumns: [workspaceRoles.name],
+		name: "workspace_accesses_access_role_workspace_roles_name_fk"
+	}),
 ]);
 
 export const cities = pgTable("cities", {
@@ -399,10 +404,10 @@ export const cities = pgTable("cities", {
 	countryId: varchar("country_id"),
 }, (table) => [
 	foreignKey({
-			columns: [table.countryId],
-			foreignColumns: [countries.id],
-			name: "cities_country_id_countries_id_fk"
-		}),
+		columns: [table.countryId],
+		foreignColumns: [countries.id],
+		name: "cities_country_id_countries_id_fk"
+	}),
 ]);
 
 export const studentHomeworks = pgTable("student_homeworks", {
@@ -425,20 +430,20 @@ export const studentHomeworks = pgTable("student_homeworks", {
 	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	foreignKey({
-			columns: [table.learningConversationId],
-			foreignColumns: [studentLearningSessions.id],
-			name: "student_homeworks_learning_conversation_id_student_learning_ses"
-		}),
+		columns: [table.learningConversationId],
+		foreignColumns: [studentLearningSessions.id],
+		name: "student_homeworks_learning_conversation_id_student_learning_ses"
+	}),
 	foreignKey({
-			columns: [table.studentAccountId],
-			foreignColumns: [accounts.id],
-			name: "student_homeworks_student_account_id_accounts_id_fk"
-		}),
+		columns: [table.studentAccountId],
+		foreignColumns: [accounts.id],
+		name: "student_homeworks_student_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.topicId],
-			foreignColumns: [learningSubjectTopics.id],
-			name: "student_homeworks_topic_id_learning_subject_topics_id_fk"
-		}),
+		columns: [table.topicId],
+		foreignColumns: [learningSubjectTopics.id],
+		name: "student_homeworks_topic_id_learning_subject_topics_id_fk"
+	}),
 ]);
 
 export const workspaces = pgTable("workspaces", {
@@ -456,14 +461,14 @@ export const workspaces = pgTable("workspaces", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
-			columns: [table.ownerAccountId],
-			foreignColumns: [accounts.id],
-			name: "workspaces_owner_account_id_accounts_id_fk"
-		}),
+		columns: [table.ownerAccountId],
+		foreignColumns: [accounts.id],
+		name: "workspaces_owner_account_id_accounts_id_fk"
+	}),
 	foreignKey({
-			columns: [table.parentWorkspaceId],
-			foreignColumns: [table.id],
-			name: "workspaces_parent_workspace_id_fkey"
-		}),
+		columns: [table.parentWorkspaceId],
+		foreignColumns: [table.id],
+		name: "workspaces_parent_workspace_id_fkey"
+	}),
 	unique("workspaces_workspace_access_key_unique").on(table.workspaceAccessKey),
 ]);

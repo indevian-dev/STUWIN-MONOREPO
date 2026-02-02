@@ -11,7 +11,7 @@ import { PiBuildings, PiUserGear, PiStudent, PiBriefcase } from 'react-icons/pi'
 
 interface Workspace {
     workspaceId: string;
-    workspaceType: 'student' | 'provider' | 'tutor' | 'staff' | 'personal';
+    workspaceType: 'student' | 'provider' | 'staff';
     title: string;
     description: string;
     routePath: string;

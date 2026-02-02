@@ -55,23 +55,6 @@ export default function OnboardingWelcomePage() {
                         </div>
                     </button>
 
-                    {/* Tutor Path */}
-                    <button
-                        onClick={() => router.push("/workspaces/onboarding/tutor")}
-                        className="group relative bg-white p-8 rounded-[2.5rem] border border-border hover:border-purple-500 transition-all duration-500 text-left hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1"
-                    >
-                        <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                            <PiChalkboardTeacher />
-                        </div>
-                        <h3 className="text-2xl font-black text-dark mb-2 group-hover:text-purple-600 transition-colors">{t('im_tutor')}</h3>
-                        <p className="text-body text-sm font-medium mb-6 leading-relaxed opacity-80">
-                            {t('tutor_desc')}
-                        </p>
-                        <div className="flex items-center gap-2 text-purple-600 font-black uppercase tracking-widest text-xs">
-                            {t('apply_as_tutor')} <PiArrowRight />
-                        </div>
-                    </button>
-
                     {/* Provider Path */}
                     <button
                         onClick={() => router.push("/workspaces/onboarding/provider")}

@@ -1,5 +1,5 @@
 
-import { eq, desc, and, ilike, or, count } from "drizzle-orm";
+import { eq, desc, and, ilike, or, count, sql } from "drizzle-orm";
 import { blogs, pages, systemPrompts } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
@@ -36,10 +36,10 @@ export class ContentRepository extends BaseRepository {
         let whereClause = onlyActive ? eq(blogs.isActive, true) : undefined;
         if (search) {
             const searchFilter = or(
-                ilike(blogs.titleAz, `%${search}%`),
-                ilike(blogs.titleEn, `%${search}%`),
-                ilike(blogs.contentAz, `%${search}%`),
-                ilike(blogs.contentEn, `%${search}%`)
+                sql`${blogs.localizedContent}->'az'->>'title' ILIKE ${`%${search}%`}`,
+                sql`${blogs.localizedContent}->'en'->>'title' ILIKE ${`%${search}%`}`,
+                sql`${blogs.localizedContent}->'az'->>'content' ILIKE ${`%${search}%`}`,
+                sql`${blogs.localizedContent}->'en'->>'content' ILIKE ${`%${search}%`}`
             );
             whereClause = whereClause ? and(whereClause, searchFilter) : searchFilter;
         }
@@ -179,7 +179,7 @@ export class ContentRepository extends BaseRepository {
         const client = tx ?? this.db;
         return await client
             .update(pages)
-            .set({ ...data, updateAt: new Date() })
+            .set({ ...data, updatedAt: new Date() })
             .where(eq(pages.id, id))
             .returning();
     }

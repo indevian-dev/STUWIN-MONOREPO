@@ -5,14 +5,14 @@ import type { Timestamps } from '../../../types/base';
 // WORKSPACE MODULE TYPES
 // ═══════════════════════════════════════════════════════════════
 
-export type WorkspaceType = 'student' | 'provider' | 'staff' | 'parent' | 'tutor' | 'admin';
+export type WorkspaceType = 'student' | 'provider' | 'staff' | 'parent' | 'admin';
 
 export interface Workspace {
     id: string;
     title: string;
     type: WorkspaceType;
-    ownerAccountId: string;
     isActive: boolean;
+    profile?: any;
     createdAt: Date;
     updatedAt?: Date;
 }

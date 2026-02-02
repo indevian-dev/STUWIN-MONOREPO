@@ -19,8 +19,8 @@ We prioritize **Passwordless OTP (Phone/Email)** for authentication but support 
 Users are "Visitors" to workspaces.
 - A user logs in -> Gets a `session_token` cookie.
 - Middleware verifies `session_token`.
-- User navigates to `/workspaces/student/123`.
-- Interceptor checks: Does User(Token) have `Student` relation to Workspace `123`?
+- User navigates to `/workspaces/user/123`.
+- Interceptor checks: Does User(Token) have `User` relation to Workspace `123`?
   - **Yes:** Grant Access.
   - **No:** Redirect to 403 / Onboarding.
 

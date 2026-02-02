@@ -12,7 +12,7 @@ export const POST = unifiedApiHandler(
             return NextResponse.json({ success: false, error: "Homework ID is required" }, { status: 400 });
         }
 
-        const result = await module.activity.initiateHomeworkSession(homeworkId);
+        const result = await module.activity.initiateHomeworkAiSession(homeworkId);
 
         if (!result.success) {
             log.error("Failed to initiate homework session", { homeworkId, error: result.error });

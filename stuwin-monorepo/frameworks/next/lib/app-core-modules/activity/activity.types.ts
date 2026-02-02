@@ -15,7 +15,7 @@ export namespace Quiz {
     export interface Entity extends Timestamps {
         id: string;
         studentAccountId: string;
-        learningSubjectId: string;
+        providerSubjectId: string;
         workspaceId: string;
         questions: any;
         userAnswers?: any;

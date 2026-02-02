@@ -1,7 +1,7 @@
 
 import { db } from "@/lib/app-infrastructure/database";
-import { accounts, workspaces } from "@/lib/app-infrastructure/database/schema";
-import { eq, notInArray } from "drizzle-orm";
+import { accounts, workspaces, workspaceAccesses } from "@/lib/app-infrastructure/database/schema";
+import { eq, notInArray, and } from "drizzle-orm";
 import { generateSlimId } from "@/lib/utils/slimUlidUtility";
 
 async function main() {
@@ -16,9 +16,14 @@ async function main() {
         process.exit(0);
     }
 
-    // Get all workspaces to find owners
-    const allWorkspaces = await db.select().from(workspaces);
-    const workspaceOwnerIds = new Set(allWorkspaces.map(w => w.ownerAccountId).filter(Boolean));
+    // Get all accesses to find owners (Role: manager, via == target)
+    const ownerAccesses = await db.select().from(workspaceAccesses).where(
+        and(
+            eq(workspaceAccesses.viaWorkspaceId, workspaceAccesses.targetWorkspaceId),
+            eq(workspaceAccesses.accessRole, 'manager')
+        )
+    );
+    const workspaceOwnerIds = new Set(ownerAccesses.map(a => a.actorAccountId).filter(Boolean));
 
     // Find accounts that don't own a workspace
     const orphanedAccounts = allAccounts.filter(acc => !workspaceOwnerIds.has(acc.id));
@@ -38,12 +43,20 @@ async function main() {
         try {
             console.log(`Creating workspace for account ${account.id} (User: ${account.userId})...`);
 
+            const wsId = generateSlimId();
             await db.insert(workspaces).values({
-                id: generateSlimId(),
-                type: 'personal',
+                id: wsId,
+                type: 'student', // Changed from personal to student as per modern naming
                 title: 'Personal Workspace',
-                ownerAccountId: account.id,
                 isActive: true
+            });
+
+            await db.insert(workspaceAccesses).values({
+                id: generateSlimId(),
+                actorAccountId: account.id,
+                targetWorkspaceId: wsId,
+                viaWorkspaceId: wsId,
+                accessRole: 'manager'
             });
 
             fixedCount++;

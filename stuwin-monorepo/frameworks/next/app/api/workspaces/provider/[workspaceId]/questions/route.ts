@@ -122,7 +122,7 @@ export const POST = unifiedApiHandler(async (request, { module, auth }) => {
     // Create via service
     const result = await module.learning.createQuestion({
       question: questionBody,
-      learningSubjectId: subject_id,
+      providerSubjectId: subject_id,
       gradeLevel: grade_level,
       complexity,
       answers,

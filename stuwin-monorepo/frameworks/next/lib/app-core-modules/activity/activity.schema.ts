@@ -10,7 +10,7 @@ export const quizStatusSchema = z.enum(['in_progress', 'completed', 'abandoned']
 export const quizSchema = z.object({
     id: z.string().optional(),
     studentAccountId: z.string(),
-    learningSubjectId: z.string(),
+    providerSubjectId: z.string(),
     workspaceId: z.string(),
     questions: z.array(z.any()),
     userAnswers: z.array(z.any()).optional(),
@@ -43,7 +43,7 @@ export const quizReportSchema = z.object({
     learningInsights: z.any().optional(),
 });
 
-export const sessionSchema = z.object({
+export const aiSessionSchema = z.object({
     id: z.string().optional(),
     studentAccountId: z.string(),
     workspaceId: z.string(),

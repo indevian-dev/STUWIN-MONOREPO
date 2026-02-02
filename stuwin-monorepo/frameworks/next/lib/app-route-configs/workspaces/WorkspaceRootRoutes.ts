@@ -109,7 +109,8 @@ export const workspacesRootEndpoints: EndpointsMap = {
     authRequired: true,
     type: "page",
   }),
-  "/workspaces/onboarding/tutor": createEndpoint({
+
+  "/workspaces/enroll/:providerId": createEndpoint({
     method: "GET",
     authRequired: true,
     type: "page",
@@ -148,6 +149,23 @@ export const workspacesRootEndpoints: EndpointsMap = {
   }),
 
   "/api/workspaces/root/billing/coupon": createRootEndpoint({
+    method: "POST",
+    authRequired: true,
+    type: "api",
+  }),
+
+  // New Billing Endpoints (Transactions & Subscriptions)
+  "/api/workspaces/billing/subscriptions": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "api",
+  }),
+  "/api/workspaces/billing/transactions": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "api",
+  }),
+  "/api/workspaces/billing/initiate": createRootEndpoint({
     method: "POST",
     authRequired: true,
     type: "api",

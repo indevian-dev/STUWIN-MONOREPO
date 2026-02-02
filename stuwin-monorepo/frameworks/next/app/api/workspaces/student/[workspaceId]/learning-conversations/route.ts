@@ -14,7 +14,7 @@ export const GET = unifiedApiHandler(
     try {
       // Fetch single conversation
       if (conversationId) {
-        const result = await module.activity.getSessionById(conversationId);
+        const result = await module.activity.getAiSessionById(conversationId);
 
         if (!result.success || !result.data) {
           return NextResponse.json({ error: result.error ?? "Conversation not found" }, { status: 404 });
@@ -40,7 +40,7 @@ export const GET = unifiedApiHandler(
       }
 
       // List conversations
-      const result = await module.activity.listSessions(auth.accountId, status);
+      const result = await module.activity.listAiSessions(auth.accountId, status);
 
       if (!result.success || !result.data) {
         return NextResponse.json({ error: result.error ?? "Failed to fetch list" }, { status: 500 });

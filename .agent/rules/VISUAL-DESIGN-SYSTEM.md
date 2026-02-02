@@ -21,7 +21,7 @@ Usage in Tailwind: `bg-brand`, `text-primary`, `rounded-xl`.
 
 ### "Widgetization"
 UI is built as **Widgets**: self-contained components that own their data fetching and presentation.
-- Example: `StudentQuizProgressWidget.tsx`
+- Example: `DomainEntityProgressWidget.tsx`
 - It is NOT a "Page". It is a "Tile" dropped into a Layout or Page.
 
 ## 4. Agent Rules (Do's and Don'ts)

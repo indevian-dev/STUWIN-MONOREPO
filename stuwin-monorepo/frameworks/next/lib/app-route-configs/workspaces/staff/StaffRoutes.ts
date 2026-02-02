@@ -116,6 +116,13 @@ export const staffEndpoints: EndpointsMap = {
   // ============================================
   // Staff - Accounts Pages
   // ============================================
+
+  "/workspaces/staff/:workspaceId": createStaffEndpoint({
+    method: "GET",
+    authRequired: true,
+    permission: "STAFF_ACCESS",
+    type: "page",
+  }),
   "/workspaces/staff/:workspaceId/accounts": createStaffEndpoint({
     method: "GET",
     authRequired: true,
@@ -756,18 +763,28 @@ export const staffEndpoints: EndpointsMap = {
   }),
 
   // ============================================
+  // Staff - AI Lab Pages
+  // ============================================
+  "/workspaces/staff/:workspaceId/ai-lab": createStaffEndpoint({
+    method: "GET",
+    authRequired: true,
+    permission: "STAFF_ACCESS",
+    type: "page",
+  }),
+
+  // ============================================
   // Staff - Prompts APIs
   // ============================================
-  "/api/workspaces/staff/:workspaceId/prompts": createStaffEndpoint({
+  "/api/workspaces/staff/:workspaceId/ai-lab/prompts": createStaffEndpoint({
     method: "GET",
     authRequired: true,
-    permission: "STAFF_PAGE_READ",
+    permission: "STAFF_ACCESS",
     type: "api",
   }),
-  "/api/workspaces/staff/:workspaceId/prompts/:id": createStaffEndpoint({
+  "/api/workspaces/staff/:workspaceId/ai-lab/prompts/:id": createStaffEndpoint({
     method: "GET",
     authRequired: true,
-    permission: "STAFF_PAGE_READ",
+    permission: "STAFF_ACCESS",
     type: "api",
   }),
 

@@ -1,5 +1,6 @@
 
 import { LearningRepository } from "./learning.repository";
+import { SemanticMasteryService } from "../semantic-mastery/SemanticMasteryService";
 import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
@@ -15,7 +16,8 @@ export class LearningService extends BaseService {
     constructor(
         private readonly repository: LearningRepository,
         private readonly ctx: AuthContext,
-        private readonly db: Database
+        private readonly db: Database,
+        private readonly semanticMastery: SemanticMasteryService
     ) {
         super();
     }
@@ -111,7 +113,7 @@ export class LearningService extends BaseService {
     }) {
         try {
             const newPdf = await this.repository.createSubjectPdf({
-                learningSubjectId: params.subjectId,
+                providerSubjectId: params.subjectId,
                 pdfUrl: params.pdfUrl,
                 uploadAccountId: params.uploadAccountId,
                 workspaceId: params.workspaceId,
@@ -235,7 +237,7 @@ export class LearningService extends BaseService {
                 this.repository.listQuestions({
                     limit: pageSize,
                     offset,
-                    learningSubjectId: params.subjectId,
+                    providerSubjectId: params.subjectId,
                     complexity: params.complexity,
                     gradeLevel: params.gradeLevel,
                     authorAccountId: params.authorAccountId,
@@ -243,7 +245,7 @@ export class LearningService extends BaseService {
                     workspaceId: params.workspaceId
                 }),
                 this.repository.countQuestions({
-                    learningSubjectId: params.subjectId,
+                    providerSubjectId: params.subjectId,
                     complexity: params.complexity,
                     gradeLevel: params.gradeLevel,
                     authorAccountId: params.authorAccountId,
@@ -275,12 +277,41 @@ export class LearningService extends BaseService {
      */
     async createQuestion(data: any, authorAccountId: string) {
         try {
+            let context = data.context;
+
+            // If context not provided, try to build it from IDs
+            if (!context && (data.providerSubjectId || data.providerSubjectTopicId)) {
+                try {
+                    let subjectName = "Unknown Subject";
+                    let topicName = "Unknown Topic";
+                    let chapterNumber: string | undefined = undefined;
+
+                    if (data.providerSubjectId) {
+                        const subject = await this.repository.findSubjectById(data.providerSubjectId);
+                        if (subject) subjectName = subject.name || subjectName;
+                    }
+
+                    if (data.providerSubjectTopicId) {
+                        const topic = await this.repository.findTopicById(data.providerSubjectTopicId);
+                        if (topic) {
+                            topicName = topic.name || topicName;
+                            chapterNumber = (topic as any).chapterNumber;
+                        }
+                    }
+
+                    context = { subjectName, topicName, chapterNumber };
+                } catch (err) {
+                    this.handleError(err, "createQuestion.contextBuild");
+                }
+            }
+
             const newQuestion = await this.repository.createQuestion({
                 ...data,
                 authorAccountId,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                isPublished: false
+                isPublished: false,
+                context
             });
 
             return { success: true, data: newQuestion };
@@ -296,8 +327,10 @@ export class LearningService extends BaseService {
     async createTopicWithContent(subjectId: string, data: { name: string; description: string; gradeLevel?: number; language?: string; pdfId?: string }) {
         try {
             return await this.db.transaction(async (tx) => {
+                const knowledgeVector = await this.semanticMastery.generateTopicVector(data.name, data.description);
+
                 const topic = await this.repository.createTopic({
-                    learningSubjectId: subjectId,
+                    providerSubjectId: subjectId,
                     name: data.name,
                     description: data.description,
                     gradeLevel: data.gradeLevel,
@@ -305,7 +338,8 @@ export class LearningService extends BaseService {
                     subjectPdfId: data.pdfId,
                     workspaceId: this.ctx.activeWorkspaceId || "default",
                     isActiveForAi: false,
-                    aiAssistantCrib: (data as any).aiAssistantCrib
+                    aiAssistantCrib: (data as any).aiAssistantCrib,
+                    knowledgeVector
                 }, tx as any);
 
                 return { success: true as const, data: topic };
@@ -382,7 +416,7 @@ export class LearningService extends BaseService {
             body: q.question,
             answers: q.answers,
             correct_answer: q.correctAnswer,
-            subject_id: q.learningSubjectId,
+            subject_id: q.providerSubjectId,
             complexity: q.complexity,
             grade_level: q.gradeLevel,
             explanation_guide: q.explanationGuide,
@@ -427,7 +461,7 @@ export class LearningService extends BaseService {
             const topic = await this.repository.findTopicById(topicId);
             if (!topic) return { success: false, error: "Topic not found" };
 
-            if (subjectId && topic.learningSubjectId !== subjectId) {
+            if (subjectId && topic.providerSubjectId !== subjectId) {
                 return { success: false, error: "Topic does not belong to this subject" };
             }
 
@@ -444,8 +478,8 @@ export class LearningService extends BaseService {
     async bulkCreateTopics(subjectId: string, topicsData: any[]) {
         try {
             const result = await this.db.transaction(async (tx) => {
-                const topicsToInsert = topicsData.map(t => ({
-                    learningSubjectId: subjectId,
+                const topicsToInsert = await Promise.all(topicsData.map(async t => ({
+                    providerSubjectId: subjectId,
                     name: t.name,
                     description: t.description || t.body,
                     gradeLevel: t.gradeLevel,
@@ -456,8 +490,9 @@ export class LearningService extends BaseService {
                     isActiveForAi: t.isActiveForAi || false,
                     pdfS3Key: t.pdfS3Key,
                     pdfPageStart: t.pdfPageStart,
-                    pdfPageEnd: t.pdfPageEnd
-                }));
+                    pdfPageEnd: t.pdfPageEnd,
+                    knowledgeVector: await this.semanticMastery.generateTopicVector(t.name, t.description || t.body)
+                })));
 
                 const createdTopics = await this.repository.bulkCreateTopics(topicsToInsert, tx as any);
 
@@ -966,6 +1001,41 @@ export class LearningService extends BaseService {
         } catch (error) {
             this.handleError(error, "analyzeBookTopic");
             return { success: false, error: error instanceof Error ? error.message : "Failed to analyze PDF" };
+        }
+    }
+
+    async getSubjectHeatmap(subjectId: string, providerWorkspaceId: string) {
+        try {
+            // 1. Get classroom centroid
+            const centroid = await this.semanticMastery.getProviderCentroid(providerWorkspaceId);
+            if (!centroid) return { success: false, error: "No semantic DNA found for this classroom yet." };
+
+            // 2. Fetch topics for this subject
+            const topics = await this.repository.listTopicsBySubject(subjectId);
+
+            // 3. Project Centroid onto Topics (Cosine Similarity)
+            const heatmap = topics.map(topic => {
+                const vector = (topic as any).knowledgeVector as number[] | undefined;
+                if (!vector || !centroid) return { topicId: topic.id, name: topic.name, mastery: 0 };
+
+                // Cosine Similarity = (A . B) / (||A|| * ||B||)
+                const dotProduct = vector.reduce((sum: number, v: number, i: number) => sum + v * centroid![i], 0);
+                const magA = Math.sqrt(vector.reduce((sum: number, v: number) => sum + v * v, 0));
+                const magB = Math.sqrt(centroid.reduce((sum: number, v: number) => sum + v * v, 0));
+
+                const similarity = dotProduct / (magA * magB);
+
+                return {
+                    topicId: topic.id,
+                    name: topic.name,
+                    mastery: Math.max(0, Math.min(100, similarity * 100)) // Scaled to 0-100
+                };
+            });
+
+            return { success: true, data: heatmap };
+        } catch (error) {
+            this.handleError(error, "getSubjectHeatmap");
+            return { success: false, error: "Failed to generate semantic heatmap" };
         }
     }
 }

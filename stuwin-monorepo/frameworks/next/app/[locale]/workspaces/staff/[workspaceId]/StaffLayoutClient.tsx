@@ -76,42 +76,42 @@ export function StaffLayoutClient({
       content: {
         label: 'content_management',
         items: [
-          { href: `/staff-workspace/${workspaceId}/blogs`, icon: PiArticle, label: 'blogs' },
-          { href: `/staff-workspace/${workspaceId}/pages/faq`, icon: PiFile, label: 'faq' },
-          { href: `/staff-workspace/${workspaceId}/pages/terms`, icon: PiFile, label: 'terms_of_service' },
-          { href: `/staff-workspace/${workspaceId}/pages/privacy`, icon: PiFile, label: 'privacy_policy' },
-          { href: `/staff-workspace/${workspaceId}/pages/about`, icon: PiFile, label: 'about_us' },
-          { href: `/staff-workspace/${workspaceId}/pages/rules`, icon: PiFile, label: 'rules' }
+          { href: `/workspaces/staff/${workspaceId}/blogs`, icon: PiArticle, label: 'blogs' },
+          { href: `/workspaces/staff/${workspaceId}/pages/faq`, icon: PiFile, label: 'faq' },
+          { href: `/workspaces/staff/${workspaceId}/pages/terms`, icon: PiFile, label: 'terms_of_service' },
+          { href: `/workspaces/staff/${workspaceId}/pages/privacy`, icon: PiFile, label: 'privacy_policy' },
+          { href: `/workspaces/staff/${workspaceId}/pages/about`, icon: PiFile, label: 'about_us' },
+          { href: `/workspaces/staff/${workspaceId}/pages/rules`, icon: PiFile, label: 'rules' }
         ]
       },
       ads_management: {
         label: 'advertisements',
         icon: PiNotebook,
         items: [
-          { href: `/staff-workspace/${workspaceId}/ads`, icon: PiNotebook, label: 'advertisements' }
+          { href: `/workspaces/staff/${workspaceId}/ads`, icon: PiNotebook, label: 'advertisements' }
         ]
       },
       access_management: {
         label: 'access_management',
         icon: PiKey,
         items: [
-          { href: `/staff-workspace/${workspaceId}/providers`, icon: PiStorefront, label: 'providers' },
-          { href: `/staff-workspace/${workspaceId}/providers/applications`, icon: PiStorefrontFill, label: 'provider_applications' }
+          { href: `/workspaces/staff/${workspaceId}/providers`, icon: PiStorefront, label: 'providers' },
+          { href: `/workspaces/staff/${workspaceId}/providers/applications`, icon: PiStorefrontFill, label: 'provider_applications' }
         ]
       },
       users: {
         label: 'users_management',
         icon: PiUsersFill,
         items: [
-          { href: `/staff-workspace/${workspaceId}/roles`, icon: PiGrainsFill, label: 'roles' },
-          { href: `/staff-workspace/${workspaceId}/users`, icon: PiUsersFill, label: 'users' }
+          { href: `/workspaces/staff/${workspaceId}/roles`, icon: PiGrainsFill, label: 'roles' },
+          { href: `/workspaces/staff/${workspaceId}/users`, icon: PiUsersFill, label: 'users' }
         ]
       },
       ai_management: {
         label: 'ai_lab',
         icon: PiRobot,
         items: [
-          { href: `/staff-workspace/${workspaceId}/ai-lab`, icon: PiRobot, label: 'system_prompts' }
+          { href: `/workspaces/staff/${workspaceId}/ai-lab`, icon: PiRobot, label: 'system_prompts' }
         ]
       },
       management: {
@@ -119,17 +119,17 @@ export function StaffLayoutClient({
         label: 'support',
         icon: PiPlugs,
         items: [
-          { href: `/staff-workspace/${workspaceId}/leads`, icon: PiUsers, label: 'leads' },
-          { href: `/staff-workspace/${workspaceId}/support`, icon: PiUsers, label: 'support' }
+          { href: `/workspaces/staff/${workspaceId}/leads`, icon: PiUsers, label: 'leads' },
+          { href: `/workspaces/staff/${workspaceId}/support`, icon: PiUsers, label: 'support' }
         ]
       },
       catalog: {
         label: 'services_statuses',
         icon: PiPackage,
         items: [
-          { href: `/staff-workspace/${workspaceId}/open-search`, icon: PiAcorn, label: 'search_service' },
-          { href: `/staff-workspace/${workspaceId}/mail`, icon: PiEnvelope, label: 'mail_service' },
-          { href: `/staff-workspace/${workspaceId}/jobs`, icon: PiClock, label: 'background_jobs' }
+          { href: `/workspaces/staff/${workspaceId}/open-search`, icon: PiAcorn, label: 'search_service' },
+          { href: `/workspaces/staff/${workspaceId}/mail`, icon: PiEnvelope, label: 'mail_service' },
+          { href: `/workspaces/staff/${workspaceId}/jobs`, icon: PiClock, label: 'background_jobs' }
         ]
       }
     },

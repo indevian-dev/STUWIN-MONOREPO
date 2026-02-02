@@ -17,6 +17,10 @@ export class PaymentService {
         return await this.paymentRepo.getSubscriptions();
     }
 
+    async listTransactions() {
+        return await this.paymentRepo.listTransactions(this.ctx.accountId);
+    }
+
     async applyCoupon(code: string) {
         const coupon = await this.paymentRepo.getCouponByCode(code);
         if (!coupon) {
@@ -41,14 +45,38 @@ export class PaymentService {
     }) {
         const { tierId, workspaceId, couponCode, language = 'az' } = params;
 
+        // 1. Try to find Platform Tier
         const tiers = await this.paymentRepo.getSubscriptions();
-        const tier = tiers.find(t => t.id === tierId);
+        let tier = tiers.find(t => t.id === tierId);
+        let amount = 0;
+        let title = "";
 
-        if (!tier) {
-            throw new Error("Tier not found");
+        if (tier) {
+            amount = tier.price || 0;
+            title = tier.title || tier.type;
+        } else {
+            // 2. Try to find Provider Workspace
+            // If tierId is actually a providerId, fetch that workspace
+            const provider = await this.db.query.workspaces.findFirst({
+                where: (w, { eq }) => eq(w.id, tierId)
+            });
+
+            if (provider && provider.type === 'provider') {
+                const profile = provider.profile as any;
+                amount = profile?.providerSubscriptionPrice || 0;
+                title = provider.title;
+                // Mock a tier object for metadata
+                tier = {
+                    id: provider.id,
+                    type: 'provider_subscription',
+                    price: amount,
+                    title: provider.title
+                } as any;
+            } else {
+                throw new Error("Subscription Plan or Provider not found");
+            }
         }
 
-        let amount = tier.price || 0;
         if (couponCode) {
             const coupon = await this.applyCoupon(couponCode);
             amount = amount * (1 - ((coupon.discountPercent || 0) / 100));
@@ -56,11 +84,14 @@ export class PaymentService {
 
         const transaction = await this.paymentRepo.createTransaction({
             accountId: this.ctx.accountId,
-            workspaceId: workspaceId,
+            workspaceId: workspaceId, // The workspace being paid FOR (or current workspace?)
+            // If paying for Provider enrollment, workspaceId might be the Student Workspace, 
+            // but the 'subscription' is to the Provider. 
+            // For now transaction links to the workspace where 'subscription' applies.
             paidAmount: amount,
             status: "pending",
             metadata: {
-                tierId,
+                tierId, // providerId
                 tierType: tier.type,
                 couponCode,
                 workspaceId
@@ -108,7 +139,7 @@ export class PaymentService {
                 };
             } else {
                 console.error("Epoint error response:", response.data);
-                throw new Error(response.data?.error || "Failed to get redirect URL from payment provider");
+                throw new Error(response.data?.message || "Failed to get redirect URL from payment provider");
             }
         } catch (error: any) {
             console.error("Epoint request failed:", error.response?.data || error.message);
@@ -129,17 +160,37 @@ export class PaymentService {
 
         const metadata = transaction.metadata as any;
         const tierType = metadata?.tierType || "pro";
-        const workspaceId = transaction.workspaceId;
+        const workspaceId = transaction.workspaceId; // Student Workspace ID (via)
+        const tierId = metadata?.tierId; // Provider Workspace ID (target)
 
         if (!workspaceId) throw new Error("Workspace ID missing in transaction");
 
-        // Calculate end date (default 30 days)
+        // Calculate end date based on provider period
+        let daysToAdd = 30;
+        if (tierId) {
+            const provider = await this.db.query.workspaces.findFirst({
+                where: (w, { eq }) => eq(w.id, tierId)
+            });
+            const profile = provider?.profile as any;
+            if (profile?.providerSubscriptionPeriod === 'year') {
+                daysToAdd = 365;
+            }
+        }
+
         const until = new Date();
-        until.setDate(until.getDate() + 30);
+        until.setDate(until.getDate() + daysToAdd);
 
-        // Legacy active_subscriptions table creation removed
+        // Update Workspace Access SubscribedUntil (The actual enrollment)
+        if (tierId) {
+            await this.paymentRepo.updateWorkspaceAccessSubscription(
+                transaction.accountId!,
+                tierId,
+                workspaceId,
+                until
+            );
+        }
 
-        // Update Workspace Subscription Date
+        // For legacy support or personal Pro tiers that apply to the workspace directly
         await this.paymentRepo.updateWorkspaceSubscription(workspaceId, tierType, until);
 
         return { success: true, subscribedUntil: until };
@@ -150,19 +201,51 @@ export class PaymentService {
         return expectedSignature === signature;
     }
 
+    async checkPaymentStatus(transactionId: string) {
+        const transaction = await this.paymentRepo.getTransactionById(transactionId);
+        if (!transaction) throw new Error("Transaction not found");
+
+        const publicKey = process.env.EPOINT_PUBLIC_KEY;
+        const paymentParams = {
+            public_key: publicKey,
+            order_id: transaction.id,
+        };
+
+        const data = Buffer.from(JSON.stringify(paymentParams)).toString('base64');
+        const signature = this.generateEpointSignature(data);
+
+        try {
+            const response = await axios.post('https://epoint.az/api/1/get-status', new URLSearchParams({
+                data: data,
+                signature: signature
+            }).toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            const result = response.data;
+            if (result.status === 'success') {
+                return await this.completePayment(transaction.id);
+            }
+
+            return { success: false, status: result.status, message: result.message || "Payment not yet successful" };
+        } catch (error: any) {
+            console.error("Epoint status check failed:", error.response?.data || error.message);
+            throw new Error("Failed to verify payment with provider");
+        }
+    }
+
     async getEffectiveSubscriptionStatus(workspaceId: string, workspaceType: string) {
         // Refactored to check workspace table directly instead of legacy active_subscriptions
         const workspace = await this.db.query.workspaces.findFirst({
             where: (w, { eq }) => eq(w.id, workspaceId)
         });
 
-        if (workspace && workspace.studentSubscribedUntill && new Date(workspace.studentSubscribedUntill) > new Date()) {
-            return {
-                type: 'pro', // Defaulting to pro as plan type isn't clearly stored on workspace yet besides potentially metadata, or simplified model
-                until: workspace.studentSubscribedUntill,
-                source: 'WORKSPACE',
-                isActive: true
-            };
+        if (workspace) {
+            // studentSubscribedUntill was removed.
+            // Check Access instead if needed, but for now returning null or generic active if needed.
+            if (workspace.isActive) {
+                // return { ... } // Do we need this?
+            }
         }
 
         return null;

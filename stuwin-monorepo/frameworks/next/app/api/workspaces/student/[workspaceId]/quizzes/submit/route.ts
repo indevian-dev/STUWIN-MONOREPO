@@ -7,7 +7,7 @@ export const POST = unifiedApiHandler(
 
     try {
       const body = await request.json();
-      const { quizId, answers } = body;
+      const { quizId, answers, analytics } = body;
 
       if (!quizId || !answers || !Array.isArray(answers)) {
         return NextResponse.json(
@@ -18,7 +18,7 @@ export const POST = unifiedApiHandler(
 
       log.info("Submitting quiz via module", { quizId, accountId, answersCount: answers.length });
 
-      const result = await module.activity.submitQuiz(quizId, accountId, answers);
+      const result = await module.activity.submitQuiz(quizId, accountId, answers, analytics);
 
       if (!result.success) {
         return NextResponse.json({ error: result.error }, { status: 400 });

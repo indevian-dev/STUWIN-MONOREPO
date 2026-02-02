@@ -202,15 +202,14 @@ export class JobService extends BaseService {
             const { quizzes: quizzesList, bookmarks: totalBookmarks, notifications: notificationsData } = activity;
 
             // Process Topics
-            const subjectIds = Array.from(new Set(quizzesList.map((q: any) => q.learningSubjectId).filter((id): id is string => !!id)));
+            const subjectIds = Array.from(new Set(quizzesList.map((q: any) => q.providerSubjectId).filter((id): id is string => !!id)));
             const topicsList = await this.repository.getTopicsBySubjectIds(subjectIds);
             const topicBySubjectId = new Map(topicsList.map(t => [String(t.subjectId), t.name]));
 
-            // Activity Summary
             const completedQuizzes = quizzesList.filter((q: any) => q.status === "completed");
             const totalQuizzes = completedQuizzes.length;
             const averageScore = totalQuizzes > 0 ? completedQuizzes.reduce((sum: number, q: any) => sum + (Number(q.score) || 0), 0) / totalQuizzes : 0;
-            const topicsStudied = [...new Set(completedQuizzes.map((q: any) => topicBySubjectId.get(String(q.learningSubjectId))).filter((name): name is string => !!name))];
+            const topicsStudied = [...new Set(completedQuizzes.map((q: any) => topicBySubjectId.get(String(q.providerSubjectId))).filter((name): name is string => !!name))];
 
             const readNotifications = notificationsData.filter((n: any) => n.markAsRead).length;
             const totalNotifications = notificationsData.length;
@@ -223,7 +222,7 @@ export class JobService extends BaseService {
                     averageScore: Math.round(averageScore * 100) / 100,
                     topicsStudied: topicsStudied.slice(0, 5),
                     quizDetails: completedQuizzes.slice(0, 10).map((q: any) => ({
-                        topicName: topicBySubjectId.get(String(q.learningSubjectId)) || "Unknown",
+                        topicName: topicBySubjectId.get(String(q.providerSubjectId)) || "Unknown",
                         score: q.score || 0
                     }))
                 },
@@ -573,7 +572,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
 
                     // Fetch subject context
                     const subjectContext = await QuestionGenerationService.fetchSubjectContext(
-                        Number(topic.learningSubjectId || 0),
+                        Number(topic.providerSubjectId || 0),
                     );
 
                     const language = "azerbaijani";
@@ -586,7 +585,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         pdfS3Key: topic.pdfS3Key,
                         pdfPageStart: topic.pdfPageStart as number | null,
                         pdfPageEnd: topic.pdfPageEnd as number | null,
-                        subjectId: topic.learningSubjectId as any,
+                        subjectId: topic.providerSubjectId as any,
                         gradeLevel: topic.gradeLevel as number | null,
                         topicQuestionsRemainingToGenerate: topic.topicQuestionsRemainingToGenerate as number | null,
                         topicGeneralQuestionsStats: topic.topicGeneralQuestionsStats as number | null,
@@ -608,7 +607,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         accountId,
                         topicName: topic.name ?? "Untitled Topic",
                         topicId: topic.id ?? undefined,
-                        subjectId: topic.learningSubjectId ?? undefined,
+                        subjectId: topic.providerSubjectId ?? undefined,
                         gradeLevel: topic.gradeLevel ?? undefined,
                         complexity: "medium",
                         language,

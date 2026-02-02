@@ -46,15 +46,15 @@ async function getProviders(page = 1, pageSize = 24) {
       id: w.id,
       createdAt: w.createdAt || new Date(),
       title: w.title || 'Untitled',
-      description: (w.metadata as any)?.description || null,
-      logo: (w.metadata as any)?.avatarUrl || null,
+      description: (w.profile as any)?.providerProgramDescription || null,
+      logo: (w.profile as any)?.logo || null,
       isActive: w.isActive || false,
       isApproved: true,
-      location: (w.metadata as any)?.location || null,
-      phone: (w.metadata as any)?.phone || null,
-      email: (w.metadata as any)?.email || null,
-      website: (w.metadata as any)?.website || null,
-      accountId: w.ownerAccountId
+      location: (w.profile as any)?.location || null,
+      phone: (w.profile as any)?.phone || null,
+      email: (w.profile as any)?.email || null,
+      website: (w.profile as any)?.website || null,
+      accountId: null
     }));
 
     return {

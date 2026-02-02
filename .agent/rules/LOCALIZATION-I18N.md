@@ -1,7 +1,7 @@
 # Localization & I18n
 
 ## 1. Overview
-The application is fully localized using `next-intl`. It supports dynamic runtime switching between languages (English, Russian, Azerbaijani).
+The application is fully localized using `next-intl`. It supports dynamic runtime switching between multiple languages.
 - **Scope:** UI Strings, Dates, Numbers, and **AI Content**.
 - **Strategy:** URL-based localization (`/az/dashboard`) ensures SEO friendliness and shareability.
 

@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
-import { generateSlimId } from '@/lib/utilities/slimUlidUtility'; // If needed for legacy ID gen
+import { generateSlimId } from '@/lib/utils/slimUlidUtility'; // If needed for legacy ID gen
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
   const { id, workspaceId } = await params;
@@ -28,12 +28,12 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
 
     if (result.success && question.authorAccountId) {
       await module.content.supportRepo.createNotification({
-        name: 'Question Approved',
-        body: 'Your question has been approved and published',
+        payload: {
+          type: 'Question Approved',
+          message: 'Your question has been approved and published',
+        },
         markAsRead: false,
         accountId: question.authorAccountId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         workspaceId: workspaceId as string
       });
     }
@@ -48,12 +48,12 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
 
     if (question.authorAccountId) {
       await module.content.supportRepo.createNotification({
-        name: 'Question Rejected',
-        body: rejectMessage,
+        payload: {
+          type: 'Question Rejected',
+          message: rejectMessage,
+        },
         markAsRead: false,
         accountId: question.authorAccountId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         workspaceId: workspaceId as string
       });
     }

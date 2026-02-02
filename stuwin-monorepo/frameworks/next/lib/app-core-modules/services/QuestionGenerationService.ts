@@ -1,8 +1,8 @@
 import { db } from "@/lib/app-infrastructure/database";
 import {
-    learningSubjects,
-    learningSubjectTopics,
-    questions,
+    providerSubjects,
+    providerSubjectTopics,
+    providerQuestions as questions,
 } from "@/lib/app-infrastructure/database/schema";
 import { eq, sql } from "drizzle-orm";
 import {
@@ -33,8 +33,8 @@ export class QuestionGenerationService {
         subjectId: string | number
     ): Promise<string> {
         try {
-            const subject = await db.query.learningSubjects.findFirst({
-                where: eq(learningSubjects.id, String(subjectId)),
+            const subject = await (db.query as any).providerSubjects.findFirst({
+                where: eq(providerSubjects.id, String(subjectId)),
             });
 
             if (!subject) return "General Subject";
@@ -51,8 +51,8 @@ export class QuestionGenerationService {
      */
     static async fetchTopicById(topicId: string | number): Promise<TopicData | null> {
         try {
-            const topic = await db.query.learningSubjectTopics.findFirst({
-                where: eq(learningSubjectTopics.id, String(topicId)),
+            const topic = await (db.query as any).providerSubjectTopics.findFirst({
+                where: eq(providerSubjectTopics.id, String(topicId)),
             });
 
             if (!topic) return null;
@@ -65,7 +65,7 @@ export class QuestionGenerationService {
                 pdfS3Key: topic.pdfS3Key,
                 pdfPageStart: topic.pdfPageStart,
                 pdfPageEnd: topic.pdfPageEnd,
-                subjectId: topic.learningSubjectId,
+                subjectId: topic.providerSubjectId,
                 gradeLevel: topic.gradeLevel,
                 topicQuestionsRemainingToGenerate: topic.topicQuestionsRemainingToGenerate,
                 topicGeneralQuestionsStats: topic.topicGeneralQuestionsStats,
@@ -234,18 +234,49 @@ export class QuestionGenerationService {
     }) {
         if (!generatedQuestions.length) return { savedQuestions: [], topicStatsUpdated: false };
 
+        let finalTopicName = topicName;
+        let finalSubjectName = "Unknown Subject";
+        let finalChapterNumber: string | undefined = undefined;
+
+        // Fetch missing context info
+        try {
+            if (subjectId) {
+                const subject = await (db.query as any).providerSubjects.findFirst({
+                    where: eq(providerSubjects.id, String(subjectId)),
+                });
+                if (subject) finalSubjectName = subject.name;
+            }
+
+            if (topicId) {
+                const topic = await (db.query as any).providerSubjectTopics.findFirst({
+                    where: eq(providerSubjectTopics.id, String(topicId)),
+                });
+                if (topic) {
+                    finalTopicName = topic.name;
+                    finalChapterNumber = topic.chapterNumber;
+                }
+            }
+        } catch (err) {
+            ConsoleLogger.error("Error fetching context for question snapshot", err);
+        }
+
         const questionsToInsert = generatedQuestions.map((q) => ({
             question: q.question,
             answers: q.answers,
             correctAnswer: q.correct_answer,
             authorAccountId: String(accountId),
-            learningSubjectTopicId: topicId ? String(topicId) : null,
-            learningSubjectId: subjectId ? String(subjectId) : null,
+            providerSubjectTopicId: topicId ? String(topicId) : null,
+            providerSubjectId: subjectId ? String(subjectId) : null,
             gradeLevel: gradeLevel || null,
             complexity: q.complexity || complexity, // Use individual Q complexity or global fallback
             language,
             isPublished: true, // Auto-publish for now
             explanationGuide: { model: modelName, action: actionName },
+            context: {
+                subjectName: finalSubjectName,
+                topicName: finalTopicName,
+                chapterNumber: finalChapterNumber
+            }
         }));
 
         const savedQuestions = await db
@@ -258,14 +289,14 @@ export class QuestionGenerationService {
         if (topicId) {
             try {
                 await db
-                    .update(learningSubjectTopics)
+                    .update(providerSubjectTopics)
                     .set({
-                        topicGeneralQuestionsStats: sql`${learningSubjectTopics.topicGeneralQuestionsStats} + ${savedQuestions.length}`,
-                        topicQuestionsRemainingToGenerate: sql`GREATEST(${learningSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0)`,
+                        topicGeneralQuestionsStats: sql`${providerSubjectTopics.topicGeneralQuestionsStats} + ${savedQuestions.length}`,
+                        topicQuestionsRemainingToGenerate: sql`GREATEST(${providerSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0)`,
                         // If remaining goes to 0, disable AI generation for this topic
-                        isActiveForAi: sql`CASE WHEN GREATEST(${learningSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0) <= 0 THEN false ELSE ${learningSubjectTopics.isActiveForAi} END`
+                        isActiveForAi: sql`CASE WHEN GREATEST(${providerSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0) <= 0 THEN false ELSE ${providerSubjectTopics.isActiveForAi} END`
                     })
-                    .where(eq(learningSubjectTopics.id, String(topicId)));
+                    .where(eq(providerSubjectTopics.id, String(topicId)));
 
                 topicStatsUpdated = true;
             } catch (err) {

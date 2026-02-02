@@ -1,5 +1,5 @@
 import { eq, or, sql, and, ne } from "drizzle-orm";
-import { users, accounts, workspaces, workspaceToWorkspace, userCredentials, workspaceRoles } from "@/lib/app-infrastructure/database/schema";
+import { users, accounts, workspaces, workspaceAccesses, userCredentials, workspaceRoles } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -208,41 +208,57 @@ export class AuthRepository extends BaseRepository {
     // ═══════════════════════════════════════════════════════════════
 
     /**
-     * Lists all workspaces owned by or connected to the account
+     * Lists all workspaces owned by or accessible to the account
      */
     async listWorkspacesByAccountId(accountId: string, tx?: DbClient) {
         const client = tx ?? this.db;
 
-        // 1. Get owned workspaces
-        const owned = await client
-            .select()
-            .from(workspaces)
-            .where(eq(workspaces.ownerAccountId, accountId));
+        // Unified list via workspaceAccesses
+        // Includes: Direct Ownership (viaWorkspace=targetWorkspace, Role=Manager/Student)
+        // Includes: Membership (viaWorkspace=SomethingElse, or just direct access to other workspaces)
 
-        // 2. Get connected workspaces (via relations)
-        // For each owned workspace, find what it's connected TO
-        const ownedIds = owned.map(w => w.id);
-        let connected: any[] = [];
+        const accesses = await client
+            .selectDistinct({ // Distinct in case of multiple access paths? Accesses should be unique by actor-target pair ideally.
+                workspace: workspaces,
+                access: workspaceAccesses
+            })
+            .from(workspaceAccesses)
+            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+            .where(eq(workspaceAccesses.actorAccountId, accountId));
 
-        if (ownedIds.length > 0) {
-            const relations = await client
-                .select({
-                    relationType: workspaceToWorkspace.relationType,
-                    workspace: workspaces
-                })
-                .from(workspaceToWorkspace)
-                .innerJoin(workspaces, eq(workspaces.id, workspaceToWorkspace.toWorkspaceId))
-                .where(or(...ownedIds.map(id => eq(workspaceToWorkspace.fromWorkspaceId, id))));
+        // Separating "Owned" vs "Connected" based on 'manager' role or 'student' role in 'student' workspace type?
+        // Logic: 
+        // Owned: Where you have 'manager' role on the workspace AND it's direct access? 
+        // Or strictly separate by Type?
+        // Let's mimic old behavior: Owned = Primary workspaces you created. Connected = Workspaces you access via others?
 
-            connected = relations.map(r => ({
-                ...r.workspace,
-                relationType: r.relationType
-            }));
-        }
+        // Actually, let's just return all as "available" workspaces.
+        // But the Service separates them.
+
+        // Let's loosely define "Owned" as: AccessRole = 'manager' OR (Role='student' AND WorkspaceType='student' and Via=Target)
+
+        const owned: typeof workspaces.$inferSelect[] = [];
+        const connected: any[] = [];
+
+        accesses.forEach(({ workspace, access }) => {
+            const isDirect = access.viaWorkspaceId === access.targetWorkspaceId;
+            const isOwner = access.accessRole === 'manager' && isDirect;
+            const isStudentOwner = access.accessRole === 'student' && workspace.type === 'student' && isDirect;
+            const isParentOwner = access.accessRole === 'manager' && workspace.type === 'parent' && isDirect; // Parent Dashboard Owner
+
+            if (isOwner || isStudentOwner || isParentOwner) {
+                owned.push(workspace);
+            } else {
+                connected.push({
+                    ...workspace,
+                    relationType: access.accessRole // Map accessRole to relationType for compatibility
+                });
+            }
+        });
 
         return {
-            owned,
-            connected
+            owned, // Primary Workspaces (e.g. your Student Account, your Parent Dashboard, your School Admin)
+            connected // Linked Workspaces (e.g. School you are enrolled in, Student you monitor)
         };
     }
 
@@ -314,16 +330,8 @@ export class AuthRepository extends BaseRepository {
                 userId: params.id,
             }).returning();
 
-            // 4. Create Personal Workspace
-            const [workspace] = await trx.insert(workspaces).values({
-                id: params.workspaceId,
-                type: "personal",
-                ownerAccountId: params.accountId,
-                isActive: true,
-                title: "Personal",
-            }).returning();
-
-            return { user, account, workspace };
+            // 4. (Removed) Personal Workspace creation.
+            return { user, account, workspace: null };
         });
     }
 
@@ -366,15 +374,16 @@ export class AuthRepository extends BaseRepository {
             .select({
                 account: accounts,
                 user: users,
-                role: workspaceRoles
+                role: workspaceRoles,
+                access: workspaceAccesses
             })
             .from(accounts)
             .innerJoin(users, eq(accounts.userId, users.id))
-            .leftJoin(workspaceToWorkspace, and(
-                eq(workspaceToWorkspace.accountId, accounts.id),
-                workspaceId ? eq(workspaceToWorkspace.toWorkspaceId, workspaceId) : sql`FALSE`
+            .leftJoin(workspaceAccesses, and(
+                eq(workspaceAccesses.actorAccountId, accounts.id),
+                workspaceId ? eq(workspaceAccesses.targetWorkspaceId, workspaceId) : sql`FALSE`
             ))
-            .leftJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
+            .leftJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
             .where(eq(accounts.id, accountId))
             .limit(1);
 

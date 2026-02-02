@@ -1,5 +1,5 @@
 import { db } from "@/lib/app-infrastructure/database";
-import { workspaceRoles, workspaceToWorkspace } from "@/lib/app-infrastructure/database/schema";
+import { workspaceRoles, workspaceAccesses } from "@/lib/app-infrastructure/database/schema";
 import { eq } from "drizzle-orm";
 
 async function main() {
@@ -9,10 +9,10 @@ async function main() {
 
     console.log("Checking account with super_staff role...");
     const memberships = await db.select({
-        accountId: workspaceToWorkspace.accountId,
-        role: workspaceToWorkspace.role,
-        toWorkspaceId: workspaceToWorkspace.toWorkspaceId
-    }).from(workspaceToWorkspace).where(eq(workspaceToWorkspace.role, "super_staff"));
+        accountId: workspaceAccesses.actorAccountId,
+        role: workspaceAccesses.accessRole,
+        targetWorkspaceId: workspaceAccesses.targetWorkspaceId
+    }).from(workspaceAccesses).where(eq(workspaceAccesses.accessRole, "super_staff"));
     console.log("Memberships:", JSON.stringify(memberships, null, 2));
 }
 

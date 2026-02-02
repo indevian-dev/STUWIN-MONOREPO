@@ -65,5 +65,8 @@
   "my_workspaces": "My Workspaces",
   "discover": "Discover",
   "find_organizations": "Find Organizations",
-  "profile": "Profile"
+  "profile": "Profile",
+  "system_prompts": "System Prompts",
+  "ai_lab": "AI Lab",
+  "billing": "Billing"
 }

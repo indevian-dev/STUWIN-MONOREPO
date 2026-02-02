@@ -117,10 +117,9 @@ export class AuthService extends BaseService {
             const { owned, connected } = await this.repository.listWorkspacesByAccountId(account.id);
             const allWorkspaces = [...owned, ...connected];
 
-            // For now, use the first workspace found as active, or prioritize personal
-            const personalWorkspace = allWorkspaces.find(w => w.type === 'personal');
-            const activeWorkspace = personalWorkspace || allWorkspaces[0];
-            const workspaceType = activeWorkspace?.type || 'personal';
+            // For now, use the first workspace found as active.
+            const activeWorkspace = allWorkspaces[0];
+            const workspaceType = activeWorkspace?.type;
 
             return {
                 success: true,

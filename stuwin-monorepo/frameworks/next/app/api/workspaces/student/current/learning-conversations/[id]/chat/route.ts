@@ -16,7 +16,7 @@ export const POST = unifiedApiHandler(
                 return NextResponse.json({ success: false, error: "Message is required" }, { status: 400 });
             }
 
-            const result = await module.activity.addMessageToSession(sessionId, message);
+            const result = await module.activity.addMessageToAiSession(sessionId, message);
 
             if (!result.success) {
                 return NextResponse.json({ success: false, error: result.error });

@@ -1,5 +1,5 @@
 import { db } from "@/lib/app-infrastructure/database";
-import { users, accounts, userCredentials, workspaces, workspaceToWorkspace, workspaceRoles } from "@/lib/app-infrastructure/database/schema";
+import { users, accounts, userCredentials, workspaces, workspaceAccesses, workspaceRoles } from "@/lib/app-infrastructure/database/schema";
 import { eq, or, and, sql } from "drizzle-orm";
 import {
   validatePassword,
@@ -434,7 +434,7 @@ export async function createUserWithAccount(
       await tx.insert(userCredentials).values({ id: user.id, password: hashedPassword });
       const accounts_res = await tx.insert(accounts).values({ userId: user.id }).returning();
       const account = accounts_res[0];
-      await tx.insert(workspaces).values({ id: generateSlimId(), type: "personal", ownerAccountId: account.id, isActive: true, title: "Personal" });
+      // Workspace creation removed. User must onboard.
       return { createdUser: user, createdAccount: account };
     });
 
@@ -448,6 +448,10 @@ export async function createUserWithAccount(
     return { success: false, createdUser: null, createdAccount: null, error: error.message };
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// UNIFIED USER DATA ACCESS
+// ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
 // UNIFIED USER DATA ACCESS
@@ -506,17 +510,17 @@ export async function getUserData(
       // 2.a Fetch permissions and subscription for specific workspace context
       if (workspaceId) {
         const membershipResult = await db.select({
-          roleName: workspaceToWorkspace.role,
+          roleName: workspaceAccesses.accessRole,
           permissions: workspaceRoles.permissions,
           isStaff: workspaceRoles.isStaff,
           workspaceType: workspaceRoles.forWorkspaceType,
-          workspaceSubscriptionType: sql`NULL` as any, // Removed column
-          workspaceSubscribedUntil: workspaces.studentSubscribedUntill
+          workspaceSubscriptionType: workspaceAccesses.subscriptionTier,
+          workspaceSubscribedUntil: workspaceAccesses.subscribedUntil
         })
-          .from(workspaceToWorkspace)
-          .leftJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
-          .leftJoin(workspaces, eq(workspaceToWorkspace.toWorkspaceId, workspaces.id))
-          .where(and(eq(workspaceToWorkspace.accountId, row.accountId), eq(workspaceToWorkspace.toWorkspaceId, workspaceId)))
+          .from(workspaceAccesses)
+          .leftJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
+          .leftJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+          .where(and(eq(workspaceAccesses.actorAccountId, row.accountId), eq(workspaceAccesses.targetWorkspaceId, workspaceId)))
           .limit(1);
 
         if (membershipResult[0]) {
@@ -533,13 +537,13 @@ export async function getUserData(
 
       // 2.b Fetch Global Staff Permissions (Critical for super_staff access)
       const staffMemberships = await db.select({
-        roleName: workspaceToWorkspace.role,
+        roleName: workspaceAccesses.accessRole,
         permissions: workspaceRoles.permissions,
         workspaceType: workspaceRoles.forWorkspaceType
       })
-        .from(workspaceToWorkspace)
-        .innerJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
-        .where(and(eq(workspaceToWorkspace.accountId, row.accountId), eq(workspaceRoles.isStaff, true)));
+        .from(workspaceAccesses)
+        .innerJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
+        .where(and(eq(workspaceAccesses.actorAccountId, row.accountId), eq(workspaceRoles.isStaff, true)));
 
       for (const membership of staffMemberships) {
         isStaff = true;
@@ -689,14 +693,14 @@ async function getAccountByUserId({
   // 1. Fetch permissions for specific workspace context (if provided)
   if (workspaceId) {
     const contextMembership = await db.select({
-      roleName: workspaceToWorkspace.role,
+      roleName: workspaceAccesses.accessRole,
       permissions: workspaceRoles.permissions,
       isStaff: workspaceRoles.isStaff,
       workspaceType: workspaceRoles.forWorkspaceType
     })
-      .from(workspaceToWorkspace)
-      .leftJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
-      .where(and(eq(workspaceToWorkspace.accountId, account.id), eq(workspaceToWorkspace.toWorkspaceId, workspaceId)))
+      .from(workspaceAccesses)
+      .leftJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
+      .where(and(eq(workspaceAccesses.actorAccountId, account.id), eq(workspaceAccesses.targetWorkspaceId, workspaceId)))
       .limit(1);
 
     if (contextMembership[0]) {
@@ -711,13 +715,13 @@ async function getAccountByUserId({
 
   // 2. Fetch Global Staff Permissions (If user has a staff role anywhere, it might grant global access)
   const staffMemberships = await db.select({
-    roleName: workspaceToWorkspace.role,
+    roleName: workspaceAccesses.accessRole,
     permissions: workspaceRoles.permissions,
     workspaceType: workspaceRoles.forWorkspaceType
   })
-    .from(workspaceToWorkspace)
-    .innerJoin(workspaceRoles, eq(workspaceToWorkspace.role, workspaceRoles.name))
-    .where(and(eq(workspaceToWorkspace.accountId, account.id), eq(workspaceRoles.isStaff, true)));
+    .from(workspaceAccesses)
+    .innerJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
+    .where(and(eq(workspaceAccesses.actorAccountId, account.id), eq(workspaceRoles.isStaff, true)));
 
   for (const membership of staffMemberships) {
     isStaff = true;

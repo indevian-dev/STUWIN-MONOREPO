@@ -40,7 +40,7 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
   if (questionBody !== undefined) updateData.question = questionBody.trim();
   if (answers !== undefined) updateData.answers = answers;
   if (correct_answer !== undefined) updateData.correctAnswer = correct_answer;
-  if (subject_id !== undefined) updateData.learningSubjectId = String(subject_id);
+  if (subject_id !== undefined) updateData.providerSubjectId = String(subject_id);
   if (complexity !== undefined) updateData.complexity = complexity;
   if (grade_level !== undefined) updateData.gradeLevel = parseInt(String(grade_level));
   if (explanation_guide !== undefined) updateData.explanationGuide = explanation_guide;

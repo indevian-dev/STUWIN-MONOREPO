@@ -1,12 +1,12 @@
 import { BaseService } from "./BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
-import { studentReports, workspaceToWorkspace } from "@/lib/app-infrastructure/database/schema";
+import { studentReports, workspaceAccesses } from "@/lib/app-infrastructure/database/schema";
 import { db } from "@/lib/app-infrastructure/database";
 import { eq, and, or, sql, isNotNull } from "drizzle-orm";
 
 /**
  * ReportService - "Multi-Workspace" Optimized Reporting
- * Handles unified access to student reports across the W2W Graph.
+ * Handles unified access to student reports across the Workspace Access Graph.
  */
 export class ReportService extends BaseService {
     constructor(
@@ -18,38 +18,30 @@ export class ReportService extends BaseService {
 
     /**
      * getReports
-     * Fetches reports based on Viewer's Workspace context.
+     * Fetches reports based on Viewer's Workspace context and Actor's Access.
      * 
      * Access Rules:
-     * 1. Viewer is the Student (viewing self)
-     * 2. Viewer is connected via W2W (relation_type check potentially needed)
+     * 1. Viewer is the Student (viewing self) -> viaWorkspaceId == targetWorkspaceId
+     * 2. Viewer is connected (e.g. Parent/Staff) -> viaWorkspaceId != targetWorkspaceId
      * 
-     * @param viewerKey - The workspace Access Key of the current user context
+     * @param viewerKey - The workspace Access Key (Via Workspace ID) of the current user context
      * @param targetKey - (Optional) The specific student workspace to filter by
      */
     async getReports(viewerKey: string, targetKey?: string) {
         try {
-            // Using SQL template for maximal performance and matching the Master Prompt logic exactly
-            // The prompt asked for:
-            // SELECT r.*, w2w.relation_type 
-            // FROM student_reports r
-            // LEFT JOIN workspace_to_workspace w2w ...
-
             const targetFilter = targetKey ? sql`AND ${studentReports.workspaceId} = ${targetKey}` : sql``;
+            const actorId = this.ctx.accountId;
 
             const result = await db.execute(sql`
                 SELECT 
                     r.*, 
-                    w2w.relation_type as "relationType"
+                    wa.access_role as "relationType"
                 FROM ${studentReports} r
-                LEFT JOIN ${workspaceToWorkspace} w2w 
-                    ON w2w.to_workspace_id = r.workspace_id 
-                    AND w2w.from_workspace_id = ${viewerKey}
+                INNER JOIN ${workspaceAccesses} wa 
+                    ON wa.target_workspace_id = r.workspace_id 
                 WHERE 
-                    (
-                        r.workspace_id = ${viewerKey} -- Self view
-                        OR w2w.from_workspace_id IS NOT NULL -- Connected view
-                    )
+                    wa.via_workspace_id = ${viewerKey}
+                    AND wa.actor_account_id = ${actorId}
                     ${targetFilter}
                 ORDER BY r.generated_at DESC
                 LIMIT 100
@@ -59,6 +51,7 @@ export class ReportService extends BaseService {
                 success: true,
                 data: result
             };
+
 
         } catch (error) {
             return this.handleError(error, "ReportService.getReports");

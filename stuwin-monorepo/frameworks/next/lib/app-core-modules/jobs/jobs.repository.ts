@@ -8,7 +8,8 @@ import {
     accountBookmarks,
     accountNotifications,
     studentReports,
-    learningSubjectTopics
+    providerSubjectTopics as learningSubjectTopics,
+    workspaceAccesses
 } from '@/lib/app-infrastructure/database/schema';
 
 /**
@@ -42,7 +43,11 @@ export class JobRepository extends BaseRepository {
                 account: accounts
             })
             .from(workspaces)
-            .leftJoin(accounts, eq(workspaces.ownerAccountId, accounts.id))
+            .leftJoin(workspaceAccesses, and(
+                eq(workspaces.id, workspaceAccesses.targetWorkspaceId),
+                eq(workspaceAccesses.accessRole, 'owner')
+            ))
+            .leftJoin(accounts, eq(workspaceAccesses.actorAccountId, accounts.id))
             .where(eq(workspaces.id, studentId))
             .limit(1);
         return result[0] || null;
@@ -81,10 +86,10 @@ export class JobRepository extends BaseRepository {
         return await this.db.select({
             id: learningSubjectTopics.id,
             name: learningSubjectTopics.name,
-            subjectId: learningSubjectTopics.learningSubjectId
+            subjectId: learningSubjectTopics.providerSubjectId
         })
             .from(learningSubjectTopics)
-            .where(inArray(learningSubjectTopics.learningSubjectId, subjectIds));
+            .where(inArray(learningSubjectTopics.providerSubjectId, subjectIds));
     }
 
     async getTopicById(topicId: string) {

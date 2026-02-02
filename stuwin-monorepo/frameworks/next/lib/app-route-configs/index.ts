@@ -9,7 +9,6 @@ import { authEndpoints } from './auth/AuthRoutes';
 import { publicEndpoints } from './public/PublicRoutes';
 import { systemApis } from './system/SystemRoutes';
 import { workspacesRootEndpoints } from './workspaces/WorkspaceRootRoutes';
-
 // Provider Routes (Consolidated)
 import { providerEndpoints } from './workspaces/provider/ProviderRoutes';
 

@@ -125,6 +125,11 @@ class ValidationSteps {
     const { isValid, session: sessionData, needsRollover } = await SessionAuthenticator.verifySession(ctx.session);
 
     if (!isValid || !sessionData) {
+      // If auth is NOT required, return success (Guest mode) despite invalid token
+      if (ctx.endpointConfig?.authRequired === false) {
+        return { success: true };
+      }
+
       logger.error('Session invalid or expired');
       return { success: false, code: 'UNAUTHORIZED' };
     }
@@ -140,6 +145,11 @@ class ValidationSteps {
     logger.debug('User authentication data retrieved', { accountId });
 
     if (!authData?.account) {
+      // If auth is NOT required, return success (Guest mode)
+      if (ctx.endpointConfig?.authRequired === false) {
+        return { success: true };
+      }
+
       logger.error('Account not found for valid session');
       return { success: false, code: 'UNAUTHORIZED', accountId };
     }

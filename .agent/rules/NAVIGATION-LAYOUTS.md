@@ -27,5 +27,5 @@ We override the native `<a>` tag with Next.js `<Link>`.
 - **ALWAYS** use the standardized `Link` component from `next-intl` (or our wrapper) to preserve the `[locale]`.
 - **ALWAYS** place "Widget" components (small, isolated UI logic) in `(widgets)` folders close to where they are used.
 - **NEVER** trigger full page reloads (`window.location.href`) unless absolutely necessary (e.g., logout to clear state).
-- **DO** use Parallel Routes (`@modal`) for "Deep Actions" like Opening a Lesson or Taking a Quiz, so the background context remains visible.
+- **DO** use Parallel Routes (`@modal`) for "Deep Actions" like opening an item or performing a task, so the background context remains visible.
 - **DO** ensure `Sidebar` items verify `active` state against the current `pathname` to highlight the correct tab.

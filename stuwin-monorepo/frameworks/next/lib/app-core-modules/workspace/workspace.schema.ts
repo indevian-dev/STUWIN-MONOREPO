@@ -12,13 +12,24 @@ export const workspaceSchema = z.object({
     title: z.string().min(2).max(255),
     type: workspaceTypeSchema,
     workspaceId: z.string().optional(),
-    ownerAccountId: z.string(),
     isActive: z.boolean().default(true),
     studentSubscribedUntill: z.string().datetime().nullable().optional(),
     providerSubscriptionPrice: z.number().nullable().optional(),
     providerProgramDescription: z.string().nullable().optional(),
-    providerSubscriptionPeriod: z.string().default("month").optional(),
+    providerSubscriptionPeriod: z.enum(['month', 'year']).default("month").optional(),
     providerTrialDaysCount: z.number().default(0).optional(),
+    currency: z.string().optional(),
+    features: z.array(z.string()).optional(),
+    monthlyPrice: z.number().optional(),
+    yearlyPrice: z.number().optional(),
+    logo: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    website: z.string().optional(),
+    location: z.object({
+        address: z.string().optional(),
+        city: z.string().optional(),
+    }).optional(),
 });
 
 export const createWorkspaceSchema = workspaceSchema.omit({ id: true, workspaceId: true });

@@ -1,10 +1,11 @@
 import { ActivityRepository } from "./activity.repository";
+import { SemanticMasteryService } from "../semantic-mastery/SemanticMasteryService";
 import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
 import { genAI, GEMINI_MODELS } from "@/lib/integrations/geminiClient";
-import { questions as questionsTable, studentQuizzes, studentLearningSessions, learningSubjects, learningSubjectTopics, studentHomeworks } from "@/lib/app-infrastructure/database/schema";
-import { inArray, eq, and, sql, desc } from "drizzle-orm";
+import { providerQuestions as questionsTable, studentQuizzes, studentAiSessions, providerSubjects, providerSubjectTopics, studentHomeworks } from "@/lib/app-infrastructure/database/schema";
+import { inArray, eq, and, sql, desc, or } from "drizzle-orm";
 // import { HOMEWORK_SESSION_SYSTEM_PROMPT, QUIZ_ANALYSIS_PROMPT, LEARNING_CONTEXT_PROMPT } from "@/lib/intelligence/activityPrompts";
 
 import { PromptFlowType } from "@/lib/intelligence/fallbackPrompts";
@@ -18,7 +19,8 @@ export class ActivityService extends BaseService {
         private readonly repository: ActivityRepository,
         private readonly ctx: AuthContext,
         private readonly db: Database,
-        private readonly systemPrompts: SystemPromptService
+        private readonly systemPrompts: SystemPromptService,
+        private readonly semanticMastery: SemanticMasteryService
     ) {
         super();
     }
@@ -48,7 +50,7 @@ export class ActivityService extends BaseService {
             const conditions = [eq(questionsTable.isPublished, true)];
 
             if (subjectId) {
-                conditions.push(eq(questionsTable.learningSubjectId, subjectId));
+                conditions.push(eq(questionsTable.providerSubjectId, subjectId));
             }
             if (gradeLevel) {
                 conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
@@ -75,13 +77,16 @@ export class ActivityService extends BaseService {
             const newQuiz = await this.repository.createQuiz({
                 studentAccountId: accountId,
                 workspaceId: workspaceId,
-                learningSubjectId: subjectId,
+                providerSubjectId: subjectId,
                 gradeLevel: gradeLevel ? Number(gradeLevel) : null,
                 language: language,
                 totalQuestions: selectedQuestions.length,
                 status: "in_progress",
                 startedAt: new Date(),
-                questions: selectedQuestions,
+                questions: selectedQuestions.map(q => q.id), // Store IDs for legacy
+                snapshotQuestions: selectedQuestions, // Immutable full snapshot
+                snapshotSubjectTitle: selectedQuestions[0]?.context?.subjectName,
+                snapshotTopicTitle: selectedQuestions[0]?.context?.topicName,
             });
 
             // Prepare questions for user (hide correct answers)
@@ -97,7 +102,7 @@ export class ActivityService extends BaseService {
                 success: true as const,
                 data: {
                     id: newQuiz.id,
-                    subject_id: newQuiz.learningSubjectId,
+                    provider_subject_id: newQuiz.providerSubjectId,
                     grade_level: newQuiz.gradeLevel,
                     language: newQuiz.language,
                     total_questions: selectedQuestions.length,
@@ -131,7 +136,7 @@ export class ActivityService extends BaseService {
                 this.repository.listQuizzes({
                     accountId,
                     status: params.status,
-                    subjectId: params.subjectId,
+                    providerSubjectId: params.subjectId,
                     workspaceId: params.workspaceId,
                     limit: pageSize,
                     offset
@@ -139,27 +144,27 @@ export class ActivityService extends BaseService {
                 this.repository.countQuizzes({
                     accountId,
                     status: params.status,
-                    subjectId: params.subjectId,
+                    providerSubjectId: params.subjectId,
                     workspaceId: params.workspaceId
                 })
             ]);
 
             // Enrich with subject details
-            const subjectIds = Array.from(new Set(quizzes.map(q => q.learningSubjectId).filter(id => id))) as string[];
+            const subjectIds = Array.from(new Set(quizzes.map(q => q.providerSubjectId).filter(id => id))) as string[];
             let subjectsMap = new Map();
 
             if (subjectIds.length > 0) {
                 const subjects = await this.db
-                    .select({ id: learningSubjects.id, name: learningSubjects.name, slug: learningSubjects.slug })
-                    .from(learningSubjects)
-                    .where(inArray(learningSubjects.id, subjectIds));
+                    .select({ id: providerSubjects.id, name: providerSubjects.name, slug: providerSubjects.slug })
+                    .from(providerSubjects)
+                    .where(inArray(providerSubjects.id, subjectIds));
                 subjectsMap = new Map(subjects.map(s => [s.id, s]));
             }
 
             const enrichedQuizzes = quizzes.map(quiz => ({
                 ...quiz,
-                subjectTitle: quiz.learningSubjectId ? subjectsMap.get(quiz.learningSubjectId)?.name : null,
-                subjectSlug: quiz.learningSubjectId ? subjectsMap.get(quiz.learningSubjectId)?.slug : null,
+                subjectTitle: quiz.providerSubjectId ? subjectsMap.get(quiz.providerSubjectId)?.name : null,
+                subjectSlug: quiz.providerSubjectId ? subjectsMap.get(quiz.providerSubjectId)?.slug : null,
             }));
 
             return {
@@ -180,16 +185,19 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async submitQuiz(quizId: string, accountId: string, answers: any[]) {
+    async submitQuiz(quizId: string, accountId: string, answers: any[], analytics?: any) {
         try {
             const quiz = await this.repository.findQuizById(quizId);
             if (!quiz) return { success: false, error: "Quiz not found" };
             if (quiz.studentAccountId !== accountId) return { success: false, error: "Access denied" };
             if (quiz.status === "completed") return { success: false, error: "Quiz already completed" };
 
-            const questions = (quiz.questions as any[]) || [];
-            const questionIds = questions.map((q) => String(q.id));
+            const rawQuestions = ((quiz as any).snapshotQuestions || quiz.questions || []) as any[];
+            const questionIds = rawQuestions.map((q) => typeof q === 'string' ? q : String(q.id || q));
             if (questionIds.length === 0) return { success: false, error: "No questions found in quiz" };
+
+            // Use snapshot questions if available, otherwise we'll use DB questions
+            const questions = (quiz as any).snapshotQuestions || [];
 
             const questionsFromDb = await this.db
                 .select({
@@ -250,7 +258,7 @@ export class ActivityService extends BaseService {
                         is_correct: isCorrect,
                         time_spent: userAnswer.timeSpent || 0,
                         complexity: question.complexity || dbQuestion?.complexity,
-                        explanation: (dbQuestion?.explanationGuide as any)?.body ?? (dbQuestion?.explanationGuide as any) ?? "",
+                        explanation: (dbQuestion?.explanationGuide as any)?.body ?? (dbQuestion?.explanationGuide as any)?.text ?? (dbQuestion?.explanationGuide as any) ?? "",
                     });
                 } else {
                     detailedResults.push({
@@ -286,6 +294,12 @@ export class ActivityService extends BaseService {
                 correctAnswers: correctAnswersCount,
                 userAnswers: answers,
                 result: resultData,
+                performanceAnalytics: analytics,
+            });
+
+            // Trigger Mastery Tracking (Asynchronous in background)
+            this.updateStudentMastery(accountId, quiz.workspaceId, resultData, rawQuestions).catch(err => {
+                this.handleError(err, "submitQuiz.triggerMastery");
             });
 
             return { success: true, data: result };
@@ -320,6 +334,16 @@ export class ActivityService extends BaseService {
                     status: "pending",
                 }, tx as any);
 
+                // Trigger Semantic Processing for Homework (Initial context)
+                if (data.textContent || data.description) {
+                    this.semanticMastery.processActivityProgress({
+                        studentAccountId: accountId,
+                        workspaceId: data.workspaceId,
+                        providerWorkspaceId: data.workspaceId,
+                        textContent: `${data.title}: ${data.description || ''} ${data.textContent || ''}`
+                    }).catch(err => this.handleError(err, "submitHomework.semanticMastery"));
+                }
+
                 return { success: true, data: homework };
             });
         } catch (error) {
@@ -349,13 +373,13 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async initiateHomeworkSession(homeworkId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    async initiateHomeworkAiSession(homeworkId: string): Promise<{ success: boolean; data?: any; error?: string }> {
         try {
             const homework = await this.repository.findHomeworkById(homeworkId);
             if (!homework) return { success: false, error: "Homework not found" };
 
-            if (homework.learningConversationId) {
-                const session = await this.repository.findSessionById(homework.learningConversationId);
+            if (homework.aiSessionId) {
+                const session = await this.repository.findAiSessionById(homework.aiSessionId);
                 return { success: true, data: session };
             }
 
@@ -373,7 +397,7 @@ export class ActivityService extends BaseService {
                 aiCrib
             });
 
-            const session = await this.repository.createSession({
+            const session = await this.repository.createAiSession({
                 workspaceId: homework.workspaceId,
                 studentAccountId: homework.studentAccountId,
                 homeworkId: homework.id,
@@ -390,7 +414,7 @@ export class ActivityService extends BaseService {
             });
 
             // Link session to homework
-            await this.repository.updateHomework(homework.id, { learningConversationId: session.id });
+            await this.repository.updateHomework(homework.id, { aiSessionId: session.id });
 
             return { success: true, data: session };
         } catch (error) {
@@ -399,9 +423,9 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async addMessageToSession(sessionId: string, userMessage: string) {
+    async addMessageToAiSession(sessionId: string, userMessage: string) {
         try {
-            const session = await this.repository.findSessionById(sessionId);
+            const session = await this.repository.findAiSessionById(sessionId);
             if (!session) return { success: false, error: "Session not found" };
 
             const messages = (session.digests as any).nodes || [];
@@ -433,7 +457,7 @@ export class ActivityService extends BaseService {
                 { role: 'assistant', content: aiResponse, createdAt: new Date().toISOString() }
             ];
 
-            await this.repository.updateSession(sessionId, {
+            await this.repository.updateAiSession(sessionId, {
                 digests: { nodes: updatedMessages },
                 messageCount: updatedMessages.length,
                 totalTokensUsed: (session.totalTokensUsed || 0) + (result.response.usageMetadata?.totalTokenCount || 0)
@@ -469,7 +493,7 @@ export class ActivityService extends BaseService {
 
             // Fetch effective crib
             const aiCrib = await this.getEffectiveCrib({
-                subjectId: quiz.learningSubjectId || undefined,
+                subjectId: quiz.providerSubjectId || undefined,
             });
 
             const prompt = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.STUDENT_QUIZ_SUMMARY, {
@@ -504,6 +528,19 @@ export class ActivityService extends BaseService {
                 learningInsights: reportData.learningInsights,
             });
 
+            // 4. Update the Quiz itself with the report snapshot for semantic processing
+            await this.repository.updateQuiz(quizId, {
+                aiReport: reportData
+            });
+
+            // 5. Trigger Semantic DNA Synthesis
+            this.semanticMastery.processActivityProgress({
+                studentAccountId: quiz.studentAccountId!,
+                workspaceId: quiz.workspaceId,
+                providerWorkspaceId: quiz.workspaceId, // Assuming workspaceId is the provider for now, adjust if needed
+                textContent: reportData.reportText || response
+            }).catch(err => this.handleError(err, "analyzeQuiz.semanticMastery"));
+
             return { success: true, data: report };
         } catch (error) {
             this.handleError(error, "analyzeQuiz");
@@ -511,9 +548,9 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async getSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic'): Promise<{ success: boolean; data?: any; error?: string }> {
+    async getAiSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic'): Promise<{ success: boolean; data?: any; error?: string }> {
         try {
-            const session = await this.repository.findActiveSession(accountId, contextId, contextType);
+            const session = await this.repository.findActiveAiSession(accountId, contextId, contextType);
             if (!session) return { success: true, data: null };
             return { success: true, data: session };
         } catch (error) {
@@ -522,16 +559,16 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async listSessions(accountId: string, status: string = 'active') {
+    async listAiSessions(accountId: string, status: string = 'active') {
         try {
             const sessions = await this.db
                 .select()
-                .from(studentLearningSessions)
+                .from(studentAiSessions)
                 .where(and(
-                    eq(studentLearningSessions.studentAccountId, accountId),
-                    eq(studentLearningSessions.status, status)
+                    eq(studentAiSessions.studentAccountId, accountId),
+                    eq(studentAiSessions.status, status)
                 ))
-                .orderBy(desc(studentLearningSessions.createdAt));
+                .orderBy(desc(studentAiSessions.createdAt));
             return { success: true, data: sessions };
         } catch (error) {
             this.handleError(error, "listSessions");
@@ -539,9 +576,9 @@ export class ActivityService extends BaseService {
         }
     }
 
-    async getSessionById(sessionId: string) {
+    async getAiSessionById(sessionId: string) {
         try {
-            const session = await this.repository.findSessionById(sessionId);
+            const session = await this.repository.findAiSessionById(sessionId);
             if (!session) return { success: false, error: "Session not found" };
             return { success: true, data: session };
         } catch (error) {
@@ -575,7 +612,7 @@ export class ActivityService extends BaseService {
             } = data;
 
             // 1. Find or create session
-            let session = await this.repository.findActiveSession(accountId, contextId, contextType);
+            let session = await this.repository.findActiveAiSession(accountId, contextId, contextType);
 
             if (!session) {
                 const sessionData: any = {
@@ -593,7 +630,7 @@ export class ActivityService extends BaseService {
                 else if (contextType === 'homework') sessionData.homeworkId = contextId;
                 else if (contextType === 'topic') sessionData.topicId = contextId;
 
-                session = await this.repository.createSession(sessionData);
+                session = await this.repository.createAiSession(sessionData);
             }
 
             // 2. Prepare Context & Prompt
@@ -619,7 +656,7 @@ CONTEXT: This is a ${contextType} session.
             // Fetch effective crib
             const aiCrib = await this.getEffectiveCrib({
                 questionId: contextId && contextType === 'topic' ? undefined : contextId, // ContextId might be question id in many cases
-                subjectId: session.topicId ? (await this.db.select({ sid: learningSubjectTopics.learningSubjectId }).from(learningSubjectTopics).where(eq(learningSubjectTopics.id, session.topicId)).limit(1))[0]?.sid || undefined : undefined,
+                subjectId: session.topicId ? (await this.db.select({ sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, session.topicId)).limit(1))[0]?.sid || undefined : undefined,
                 topicId: session.topicId || undefined,
             });
 
@@ -679,7 +716,7 @@ CONTEXT: This is a ${contextType} session.
 
             const updatedDigests = [...currentDigests, newDigest];
 
-            await this.repository.updateSession(session.id, {
+            await this.repository.updateAiSession(session.id, {
                 digests: { nodes: updatedDigests },
                 messageCount: (session.messageCount || 0) + 1,
                 totalTokensUsed: (session.totalTokensUsed || 0) + (aiResult.response.usageMetadata?.totalTokenCount || 0)
@@ -728,7 +765,7 @@ CONTEXT: This is a ${contextType} session.
         let subjectId = params.subjectId;
 
         if (params.questionId && !topicId) {
-            const qData = await this.db.select({ tid: questionsTable.learningSubjectTopicId, sid: questionsTable.learningSubjectId }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            const qData = await this.db.select({ tid: questionsTable.providerSubjectTopicId, sid: questionsTable.providerSubjectId }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
             if (qData[0]) {
                 topicId = qData[0].tid || undefined;
                 subjectId = qData[0].sid || undefined;
@@ -736,17 +773,101 @@ CONTEXT: This is a ${contextType} session.
         }
 
         if (topicId) {
-            const t = await this.db.select({ crib: learningSubjectTopics.aiAssistantCrib, sid: learningSubjectTopics.learningSubjectId }).from(learningSubjectTopics).where(eq(learningSubjectTopics.id, topicId)).limit(1);
+            const t = await this.db.select({ crib: providerSubjectTopics.aiAssistantCrib, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
             if (t[0]?.crib) cribs.push(t[0].crib);
             if (!subjectId) subjectId = t[0]?.sid || undefined;
         }
 
         // 4. Subject Crib
         if (subjectId) {
-            const s = await this.db.select({ crib: learningSubjects.aiAssistantCrib }).from(learningSubjects).where(eq(learningSubjects.id, subjectId)).limit(1);
+            const s = await this.db.select({ crib: providerSubjects.aiAssistantCrib }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
             if (s[0]?.crib) cribs.push(s[0].crib);
         }
 
         return cribs.length > 0 ? cribs.join("\n\n---\n\n") : undefined;
+    }
+
+    async getStudentProgress(accountId: string, subjectId?: string) {
+        try {
+            const masteryRecords = subjectId
+                ? await this.repository.findMasteryBySubject(accountId, subjectId)
+                : [];
+
+            return { success: true, data: masteryRecords };
+        } catch (error) {
+            this.handleError(error, "getStudentProgress");
+            return { success: false, error: "Failed to fetch progress" };
+        }
+    }
+
+    private async updateStudentMastery(accountId: string, workspaceId: string, resultData: any, snapshotQuestions: any[]) {
+        try {
+            // Group performance by topic
+            const topicPerformance: Record<string, { subjectId: string | null, correct: number, total: number, timeSpent: number }> = {};
+
+            snapshotQuestions.forEach(q => {
+                const topicId = q.providerSubjectTopicId || q.learningSubjectTopicId || q.topicId;
+                if (!topicId) return;
+
+                if (!topicPerformance[topicId]) {
+                    topicPerformance[topicId] = {
+                        subjectId: q.providerSubjectId || q.learningSubjectId || q.subjectId || null,
+                        correct: 0,
+                        total: 0,
+                        timeSpent: 0
+                    };
+                }
+
+                const answer = resultData.details.find((d: any) => d.question_id === q.id);
+                topicPerformance[topicId].total++;
+                if (answer?.is_correct) topicPerformance[topicId].correct++;
+                topicPerformance[topicId].timeSpent += (answer?.time_spent || 0);
+            });
+
+            // Update each topic mastery record
+            for (const [topicId, stats] of Object.entries(topicPerformance)) {
+                let mastery = await this.repository.findMastery(accountId, topicId);
+
+                const currentScore = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+
+                if (!mastery) {
+                    await this.repository.createMastery({
+                        studentAccountId: accountId,
+                        workspaceId,
+                        topicId,
+                        providerSubjectId: stats.subjectId,
+                        masteryScore: currentScore,
+                        totalQuizzesTaken: 1,
+                        questionsAttempted: stats.total,
+                        questionsCorrect: stats.correct,
+                        averageTimePerQuestion: stats.total > 0 ? stats.timeSpent / stats.total : 0,
+                        lastAttemptAt: new Date(),
+                        masteryTrend: [{ score: currentScore, date: new Date().toISOString() }]
+                    });
+                } else {
+                    const totalAttempted = (mastery.questionsAttempted || 0) + stats.total;
+                    const totalCorrect = (mastery.questionsCorrect || 0) + stats.correct;
+                    const newQuizzesTaken = (mastery.totalQuizzesTaken || 0) + 1;
+
+                    // Simple moving average for mastery score (30% weight to new attempt)
+                    const newMasteryScore = ((mastery.masteryScore || 0) * 0.7) + (currentScore * 0.3);
+
+                    const trend = ((mastery.masteryTrend as any[]) || []).slice(-9);
+                    trend.push({ score: currentScore, date: new Date().toISOString() });
+
+                    await this.repository.updateMastery(mastery.id, {
+                        masteryScore: newMasteryScore,
+                        totalQuizzesTaken: newQuizzesTaken,
+                        questionsAttempted: totalAttempted,
+                        questionsCorrect: totalCorrect,
+                        lastAttemptAt: new Date(),
+                        masteryTrend: trend,
+                        updatedAt: new Date()
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("[ActivityService] Error updating mastery:", err);
+        }
     }
 }

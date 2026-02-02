@@ -1,14 +1,14 @@
 import { relations } from "drizzle-orm/relations";
-import { accounts, accountNotifications, accountBookmarks, questions, users, learningSubjects, learningSubjectPdfs, learningSubjectTopics, studentReports, userCredentials, studentLearningSessions, studentQuizzes, workspaceToWorkspace, workspaces, countries, cities, studentHomeworks } from "./schema";
+import { accounts, accountNotifications, accountBookmarks, questions, users, learningSubjects, learningSubjectPdfs, learningSubjectTopics, studentReports, userCredentials, studentLearningSessions, studentQuizzes, workspaceAccesses, workspaces, countries, cities, studentHomeworks } from "./schema";
 
-export const accountNotificationsRelations = relations(accountNotifications, ({one}) => ({
+export const accountNotificationsRelations = relations(accountNotifications, ({ one }) => ({
 	account: one(accounts, {
 		fields: [accountNotifications.accountId],
 		references: [accounts.id]
 	}),
 }));
 
-export const accountsRelations = relations(accounts, ({one, many}) => ({
+export const accountsRelations = relations(accounts, ({ one, many }) => ({
 	accountNotifications: many(accountNotifications),
 	accountBookmarks: many(accountBookmarks),
 	user: one(users, {
@@ -24,12 +24,12 @@ export const accountsRelations = relations(accounts, ({one, many}) => ({
 	studentReports: many(studentReports),
 	studentLearningSessions: many(studentLearningSessions),
 	studentQuizzes: many(studentQuizzes),
-	workspaceToWorkspaces: many(workspaceToWorkspace),
+	workspaceAccesses: many(workspaceAccesses),
 	studentHomeworks: many(studentHomeworks),
 	workspaces: many(workspaces),
 }));
 
-export const accountBookmarksRelations = relations(accountBookmarks, ({one}) => ({
+export const accountBookmarksRelations = relations(accountBookmarks, ({ one }) => ({
 	account: one(accounts, {
 		fields: [accountBookmarks.accountId],
 		references: [accounts.id]
@@ -40,7 +40,7 @@ export const accountBookmarksRelations = relations(accountBookmarks, ({one}) => 
 	}),
 }));
 
-export const questionsRelations = relations(questions, ({one, many}) => ({
+export const questionsRelations = relations(questions, ({ one, many }) => ({
 	accountBookmarks: many(accountBookmarks),
 	account_authorAccountId: one(accounts, {
 		fields: [questions.authorAccountId],
@@ -48,11 +48,11 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 		relationName: "questions_authorAccountId_accounts_id"
 	}),
 	learningSubject: one(learningSubjects, {
-		fields: [questions.learningSubjectId],
+		fields: [questions.providerSubjectId],
 		references: [learningSubjects.id]
 	}),
 	learningSubjectTopic: one(learningSubjectTopics, {
-		fields: [questions.learningSubjectTopicId],
+		fields: [questions.providerSubjectTopicId],
 		references: [learningSubjectTopics.id]
 	}),
 	account_reviewerAccountId: one(accounts, {
@@ -62,29 +62,29 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 	}),
 }));
 
-export const usersRelations = relations(users, ({many}) => ({
+export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
 	userCredentials: many(userCredentials),
 }));
 
-export const learningSubjectPdfsRelations = relations(learningSubjectPdfs, ({one, many}) => ({
+export const learningSubjectPdfsRelations = relations(learningSubjectPdfs, ({ one, many }) => ({
 	learningSubject: one(learningSubjects, {
-		fields: [learningSubjectPdfs.learningSubjectId],
+		fields: [learningSubjectPdfs.providerSubjectId],
 		references: [learningSubjects.id]
 	}),
 	learningSubjectTopics: many(learningSubjectTopics),
 }));
 
-export const learningSubjectsRelations = relations(learningSubjects, ({many}) => ({
+export const learningSubjectsRelations = relations(learningSubjects, ({ many }) => ({
 	learningSubjectPdfs: many(learningSubjectPdfs),
 	learningSubjectTopics: many(learningSubjectTopics),
 	questions: many(questions),
 	studentQuizzes: many(studentQuizzes),
 }));
 
-export const learningSubjectTopicsRelations = relations(learningSubjectTopics, ({one, many}) => ({
+export const learningSubjectTopicsRelations = relations(learningSubjectTopics, ({ one, many }) => ({
 	learningSubject: one(learningSubjects, {
-		fields: [learningSubjectTopics.learningSubjectId],
+		fields: [learningSubjectTopics.providerSubjectId],
 		references: [learningSubjects.id]
 	}),
 	learningSubjectPdf: one(learningSubjectPdfs, {
@@ -104,21 +104,21 @@ export const learningSubjectTopicsRelations = relations(learningSubjectTopics, (
 	studentHomeworks: many(studentHomeworks),
 }));
 
-export const studentReportsRelations = relations(studentReports, ({one}) => ({
+export const studentReportsRelations = relations(studentReports, ({ one }) => ({
 	account: one(accounts, {
 		fields: [studentReports.studentAccountId],
 		references: [accounts.id]
 	}),
 }));
 
-export const userCredentialsRelations = relations(userCredentials, ({one}) => ({
+export const userCredentialsRelations = relations(userCredentials, ({ one }) => ({
 	user: one(users, {
 		fields: [userCredentials.id],
 		references: [users.id]
 	}),
 }));
 
-export const studentLearningSessionsRelations = relations(studentLearningSessions, ({one, many}) => ({
+export const studentLearningSessionsRelations = relations(studentLearningSessions, ({ one, many }) => ({
 	account: one(accounts, {
 		fields: [studentLearningSessions.studentAccountId],
 		references: [accounts.id]
@@ -130,9 +130,9 @@ export const studentLearningSessionsRelations = relations(studentLearningSession
 	studentHomeworks: many(studentHomeworks),
 }));
 
-export const studentQuizzesRelations = relations(studentQuizzes, ({one}) => ({
+export const studentQuizzesRelations = relations(studentQuizzes, ({ one }) => ({
 	learningSubject: one(learningSubjects, {
-		fields: [studentQuizzes.learningSubjectId],
+		fields: [studentQuizzes.providerSubjectId],
 		references: [learningSubjects.id]
 	}),
 	account: one(accounts, {
@@ -141,29 +141,29 @@ export const studentQuizzesRelations = relations(studentQuizzes, ({one}) => ({
 	}),
 }));
 
-export const workspaceToWorkspaceRelations = relations(workspaceToWorkspace, ({one}) => ({
+export const workspaceAccessesRelations = relations(workspaceAccesses, ({ one }) => ({
 	account: one(accounts, {
-		fields: [workspaceToWorkspace.accountId],
+		fields: [workspaceAccesses.actorAccountId],
 		references: [accounts.id]
 	}),
-	workspace_fromWorkspaceId: one(workspaces, {
-		fields: [workspaceToWorkspace.fromWorkspaceId],
+	workspace_viaWorkspaceId: one(workspaces, {
+		fields: [workspaceAccesses.viaWorkspaceId],
 		references: [workspaces.id],
-		relationName: "workspaceToWorkspace_fromWorkspaceId_workspaces_id"
+		relationName: "workspaceAccesses_viaWorkspaceId_workspaces_id"
 	}),
-	workspace_toWorkspaceId: one(workspaces, {
-		fields: [workspaceToWorkspace.toWorkspaceId],
+	workspace_targetWorkspaceId: one(workspaces, {
+		fields: [workspaceAccesses.targetWorkspaceId],
 		references: [workspaces.id],
-		relationName: "workspaceToWorkspace_toWorkspaceId_workspaces_id"
+		relationName: "workspaceAccesses_targetWorkspaceId_workspaces_id"
 	}),
 }));
 
-export const workspacesRelations = relations(workspaces, ({one, many}) => ({
-	workspaceToWorkspaces_fromWorkspaceId: many(workspaceToWorkspace, {
-		relationName: "workspaceToWorkspace_fromWorkspaceId_workspaces_id"
+export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
+	workspaceAccesses_viaWorkspaceId: many(workspaceAccesses, {
+		relationName: "workspaceAccesses_viaWorkspaceId_workspaces_id"
 	}),
-	workspaceToWorkspaces_toWorkspaceId: many(workspaceToWorkspace, {
-		relationName: "workspaceToWorkspace_toWorkspaceId_workspaces_id"
+	workspaceAccesses_targetWorkspaceId: many(workspaceAccesses, {
+		relationName: "workspaceAccesses_targetWorkspaceId_workspaces_id"
 	}),
 	account: one(accounts, {
 		fields: [workspaces.ownerAccountId],
@@ -179,18 +179,18 @@ export const workspacesRelations = relations(workspaces, ({one, many}) => ({
 	}),
 }));
 
-export const citiesRelations = relations(cities, ({one}) => ({
+export const citiesRelations = relations(cities, ({ one }) => ({
 	country: one(countries, {
 		fields: [cities.countryId],
 		references: [countries.id]
 	}),
 }));
 
-export const countriesRelations = relations(countries, ({many}) => ({
+export const countriesRelations = relations(countries, ({ many }) => ({
 	cities: many(cities),
 }));
 
-export const studentHomeworksRelations = relations(studentHomeworks, ({one}) => ({
+export const studentHomeworksRelations = relations(studentHomeworks, ({ one }) => ({
 	studentLearningSession: one(studentLearningSessions, {
 		fields: [studentHomeworks.learningConversationId],
 		references: [studentLearningSessions.id]

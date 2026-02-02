@@ -28,7 +28,7 @@ export const updateSubjectSchema = subjectSchema.partial();
 
 export const topicSchema = z.object({
     id: z.string().optional(),
-    learningSubjectId: z.string(),
+    providerSubjectId: z.string(),
     name: z.string().min(2).max(255),
     body: z.string(),
     gradeLevel: z.number().int().min(1).max(12).optional(),
@@ -52,7 +52,7 @@ export const questionSchema = z.object({
     question: z.string().min(5),
     answers: z.array(z.string()).min(2),
     correctAnswer: z.string(),
-    learningSubjectId: z.string(),
+    providerSubjectId: z.string(),
     complexity: z.enum(['easy', 'medium', 'hard', 'expert']),
     gradeLevel: z.number().int().min(1).max(12),
     explanationGuide: z.object({

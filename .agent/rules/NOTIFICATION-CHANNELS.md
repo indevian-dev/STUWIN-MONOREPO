@@ -1,7 +1,7 @@
 # Notification Channels
 
 ## 1. Overview
-The Notification System is a **Multi-Channel Dispatcher**. It decouples the "Trigger" (e.g., Homework Graded) from the "Delivery" (Email, Push, In-App). This allows users to configure *how* they receive updates without changing business logic.
+The Notification System is a **Multi-Channel Dispatcher**. It decouples the "Trigger" (e.g., Action Completed) from the "Delivery" (Email, Push, In-App). This allows users to configure *how* they receive updates without changing business logic.
 
 ## 2. Key Directories & Files
 - **Service Core:** `frameworks/next/lib/app-core-modules/notifications/` (Manager & Dispatcher).
@@ -12,7 +12,7 @@ The Notification System is a **Multi-Channel Dispatcher**. It decouples the "Tri
 ## 3. Architecture & Patterns
 
 ### The Dispatcher Flow
-1.  **Event:** `ActivityService` calls `NotificationService.send({ type: 'HOMEWORK_GRADED', ... })`.
+1.  **Event:** A Business Service calls `NotificationService.send({ type: 'ACTION_COMPLETED', ... })`.
 2.  ** Preference Check:** Service checks User Settings (DB) to see enabled channels for this event type.
 3.  **Dispatch:**
     - If `EMAIL_ENABLED`: Calls `EmailNotificator.send(...)`.

@@ -3,7 +3,7 @@
 ## 1. Overview
 Logging is split into two distinct channels: **Development/Debug Logs** and **Production Action Logs**.
 - **Development Logs:** Ephemeral, high-volume logs used by developers to trace execution flow. They appear in the terminal with color coding.
-- **Action Logs:** Durable, high-value logs stored in the database. These represent "Audit Trails" of user activity (e.g., "User X updated Quiz Y").
+- **Action Logs:** Durable, high-value logs stored in the database. These represent "Audit Trails" of user activity (e.g., "User X updated Entity Y").
 
 ## 2. Key Directories & Files
 - **Loggers Root:** `frameworks/next/lib/app-infrastructure/loggers/`

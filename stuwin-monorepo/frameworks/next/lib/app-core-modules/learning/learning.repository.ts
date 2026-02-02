@@ -1,6 +1,6 @@
 
-import { eq, count, and } from "drizzle-orm";
-import { learningSubjects, learningSubjectTopics, questions, learningSubjectPdfs } from "@/lib/app-infrastructure/database/schema";
+import { eq, count, and, or, sql } from "drizzle-orm";
+import { providerSubjects, providerSubjectTopics, providerQuestions, providerSubjectPdfs } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -14,16 +14,16 @@ export class LearningRepository extends BaseRepository {
 
     async findSubjectById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const prefixedId = id.includes(":") ? id : `learning_subjects:${id}`;
+        const prefixedId = id.includes(":") ? id : `provider_subjects:${id}`;
         const plainId = id.includes(":") ? id.split(":")[1] : id;
 
         const result = await client
             .select()
-            .from(learningSubjects)
+            .from(providerSubjects)
             .where(
-                require("drizzle-orm").or(
-                    eq(learningSubjects.id, plainId),
-                    eq(learningSubjects.id, prefixedId)
+                or(
+                    eq(providerSubjects.id, plainId),
+                    eq(providerSubjects.id, prefixedId)
                 )
             )
             .limit(1);
@@ -34,8 +34,8 @@ export class LearningRepository extends BaseRepository {
         const client = tx ?? this.db;
         const result = await client
             .select()
-            .from(learningSubjects)
-            .where(eq(learningSubjects.slug, slug))
+            .from(providerSubjects)
+            .where(eq(providerSubjects.slug, slug))
             .limit(1);
         return result[0] || null;
     }
@@ -44,32 +44,32 @@ export class LearningRepository extends BaseRepository {
         const client = tx ?? this.db;
 
         const filters = [];
-        if (params.onlyActive) filters.push(eq(learningSubjects.isActive, true));
-        if (params.workspaceId) filters.push(eq(learningSubjects.workspaceId, params.workspaceId));
+        if (params.onlyActive) filters.push(eq(providerSubjects.isActive, true));
+        if (params.workspaceId) filters.push(eq(providerSubjects.workspaceId, params.workspaceId));
 
-        const query = client.select().from(learningSubjects)
+        const query = client.select().from(providerSubjects)
             .where(filters.length > 0 ? and(...filters) : undefined);
         return await query;
     }
 
-    async createSubject(data: typeof learningSubjects.$inferInsert, tx?: DbClient) {
+    async createSubject(data: typeof providerSubjects.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(learningSubjects).values(data).returning();
+        const result = await client.insert(providerSubjects).values(data).returning();
         return result[0];
     }
 
-    async updateSubject(id: string, data: Partial<typeof learningSubjects.$inferInsert>, tx?: DbClient) {
+    async updateSubject(id: string, data: Partial<typeof providerSubjects.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
-        const prefixedId = id.includes(":") ? id : `learning_subjects:${id}`;
+        const prefixedId = id.includes(":") ? id : `provider_subjects:${id}`;
         const plainId = id.includes(":") ? id.split(":")[1] : id;
 
         const result = await client
-            .update(learningSubjects)
+            .update(providerSubjects)
             .set(data)
             .where(
-                require("drizzle-orm").or(
-                    eq(learningSubjects.id, plainId),
-                    eq(learningSubjects.id, prefixedId)
+                or(
+                    eq(providerSubjects.id, plainId),
+                    eq(providerSubjects.id, prefixedId)
                 )
             )
             .returning();
@@ -78,15 +78,15 @@ export class LearningRepository extends BaseRepository {
 
     async deleteSubject(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const prefixedId = id.includes(":") ? id : `learning_subjects:${id}`;
+        const prefixedId = id.includes(":") ? id : `provider_subjects:${id}`;
         const plainId = id.includes(":") ? id.split(":")[1] : id;
 
         const result = await client
-            .delete(learningSubjects)
+            .delete(providerSubjects)
             .where(
-                require("drizzle-orm").or(
-                    eq(learningSubjects.id, plainId),
-                    eq(learningSubjects.id, prefixedId)
+                or(
+                    eq(providerSubjects.id, plainId),
+                    eq(providerSubjects.id, prefixedId)
                 )
             )
             .returning();
@@ -99,23 +99,23 @@ export class LearningRepository extends BaseRepository {
 
     async listTopicsBySubject(subjectId: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const prefixedId = subjectId.includes(":") ? subjectId : `learning_subjects:${subjectId}`;
+        const prefixedId = subjectId.includes(":") ? subjectId : `provider_subjects:${subjectId}`;
         const plainId = subjectId.includes(":") ? subjectId.split(":")[1] : subjectId;
 
         return await client
             .select()
-            .from(learningSubjectTopics)
+            .from(providerSubjectTopics)
             .where(
-                require("drizzle-orm").or(
-                    eq(learningSubjectTopics.learningSubjectId, plainId),
-                    eq(learningSubjectTopics.learningSubjectId, prefixedId)
+                or(
+                    eq(providerSubjectTopics.providerSubjectId, plainId),
+                    eq(providerSubjectTopics.providerSubjectId, prefixedId)
                 )
             );
     }
 
-    async createTopic(data: typeof learningSubjectTopics.$inferInsert, tx?: DbClient) {
+    async createTopic(data: typeof providerSubjectTopics.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(learningSubjectTopics).values(data).returning();
+        const result = await client.insert(providerSubjectTopics).values(data).returning();
         return result[0];
     }
 
@@ -123,39 +123,35 @@ export class LearningRepository extends BaseRepository {
         const client = tx ?? this.db;
         const result = await client
             .select()
-            .from(learningSubjectTopics)
-            .where(eq(learningSubjectTopics.id, id))
+            .from(providerSubjectTopics)
+            .where(eq(providerSubjectTopics.id, id))
             .limit(1);
         return result[0] || null;
     }
 
-    async bulkCreateTopics(data: (typeof learningSubjectTopics.$inferInsert)[], tx?: DbClient) {
+    async bulkCreateTopics(data: (typeof providerSubjectTopics.$inferInsert)[], tx?: DbClient) {
         const client = tx ?? this.db;
-        return await client.insert(learningSubjectTopics).values(data).returning();
+        return await client.insert(providerSubjectTopics).values(data).returning();
     }
 
-    async updateTopic(id: string, data: Partial<typeof learningSubjectTopics.$inferInsert>, tx?: DbClient) {
+    async updateTopic(id: string, data: Partial<typeof providerSubjectTopics.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client
-            .update(learningSubjectTopics)
+            .update(providerSubjectTopics)
             .set(data)
-            .where(eq(learningSubjectTopics.id, id))
+            .where(eq(providerSubjectTopics.id, id))
             .returning();
         return result[0];
     }
 
     async incrementTopicQuestionStats(topicId: string, count: number, tx?: DbClient) {
         const client = tx ?? this.db;
-        // Drizzle doesn't support increment easily without raw SQL or specific driver features in generic way sometimes
-        // But let's check if we can use sql operator
-        // Assuming we can use SQL template
-        const { sql } = require("drizzle-orm");
         return await client
-            .update(learningSubjectTopics)
+            .update(providerSubjectTopics)
             .set({
-                topicGeneralQuestionsStats: sql`${learningSubjectTopics.topicGeneralQuestionsStats} + ${count}`
+                topicGeneralQuestionsStats: sql`${providerSubjectTopics.topicGeneralQuestionsStats} + ${count}`
             })
-            .where(eq(learningSubjectTopics.id, topicId));
+            .where(eq(providerSubjectTopics.id, topicId));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -164,14 +160,14 @@ export class LearningRepository extends BaseRepository {
 
     async findQuestionById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(questions).where(eq(questions.id, id)).limit(1);
+        const result = await client.select().from(providerQuestions).where(eq(providerQuestions.id, id)).limit(1);
         return result[0] || null;
     }
 
     async listQuestions(params: {
         limit: number;
         offset: number;
-        learningSubjectId?: string;
+        providerSubjectId?: string;
         complexity?: string;
         gradeLevel?: number;
         authorAccountId?: string;
@@ -181,14 +177,14 @@ export class LearningRepository extends BaseRepository {
         const client = tx ?? this.db;
 
         const filters = [];
-        if (params.learningSubjectId) filters.push(eq(questions.learningSubjectId, params.learningSubjectId));
-        if (params.complexity) filters.push(eq(questions.complexity, params.complexity));
-        if (params.gradeLevel) filters.push(eq(questions.gradeLevel, params.gradeLevel));
-        if (params.authorAccountId) filters.push(eq(questions.authorAccountId, params.authorAccountId));
-        if (params.workspaceId) filters.push(eq(questions.workspaceId, params.workspaceId));
-        if (params.onlyPublished) filters.push(eq(questions.isPublished, true));
+        if (params.providerSubjectId) filters.push(eq(providerQuestions.providerSubjectId, params.providerSubjectId));
+        if (params.complexity) filters.push(eq(providerQuestions.complexity, params.complexity));
+        if (params.gradeLevel) filters.push(eq(providerQuestions.gradeLevel, params.gradeLevel));
+        if (params.authorAccountId) filters.push(eq(providerQuestions.authorAccountId, params.authorAccountId));
+        if (params.workspaceId) filters.push(eq(providerQuestions.workspaceId, params.workspaceId));
+        if (params.onlyPublished) filters.push(eq(providerQuestions.isPublished, true));
 
-        const query = client.select().from(questions)
+        const query = client.select().from(providerQuestions)
             .where(filters.length > 0 ? and(...filters) : undefined)
             .limit(params.limit)
             .offset(params.offset);
@@ -196,7 +192,7 @@ export class LearningRepository extends BaseRepository {
     }
 
     async countQuestions(params: {
-        learningSubjectId?: string;
+        providerSubjectId?: string;
         complexity?: string;
         gradeLevel?: number;
         authorAccountId?: string;
@@ -206,33 +202,33 @@ export class LearningRepository extends BaseRepository {
         const client = tx ?? this.db;
 
         const filters = [];
-        if (params.learningSubjectId) filters.push(eq(questions.learningSubjectId, params.learningSubjectId));
-        if (params.complexity) filters.push(eq(questions.complexity, params.complexity));
-        if (params.gradeLevel) filters.push(eq(questions.gradeLevel, params.gradeLevel));
-        if (params.authorAccountId) filters.push(eq(questions.authorAccountId, params.authorAccountId));
-        if (params.workspaceId) filters.push(eq(questions.workspaceId, params.workspaceId));
-        if (params.onlyPublished) filters.push(eq(questions.isPublished, true));
+        if (params.providerSubjectId) filters.push(eq(providerQuestions.providerSubjectId, params.providerSubjectId));
+        if (params.complexity) filters.push(eq(providerQuestions.complexity, params.complexity));
+        if (params.gradeLevel) filters.push(eq(providerQuestions.gradeLevel, params.gradeLevel));
+        if (params.authorAccountId) filters.push(eq(providerQuestions.authorAccountId, params.authorAccountId));
+        if (params.workspaceId) filters.push(eq(providerQuestions.workspaceId, params.workspaceId));
+        if (params.onlyPublished) filters.push(eq(providerQuestions.isPublished, true));
 
-        const result = await client.select({ count: count() }).from(questions)
+        const result = await client.select({ count: count() }).from(providerQuestions)
             .where(filters.length > 0 ? and(...filters) : undefined);
         return result[0].count;
     }
 
-    async createQuestion(data: typeof questions.$inferInsert, tx?: DbClient) {
+    async createQuestion(data: typeof providerQuestions.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(questions).values(data).returning();
+        const result = await client.insert(providerQuestions).values(data).returning();
         return result[0];
     }
 
-    async updateQuestion(id: string, data: Partial<typeof questions.$inferInsert>, tx?: DbClient) {
+    async updateQuestion(id: string, data: Partial<typeof providerQuestions.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.update(questions).set(data).where(eq(questions.id, id)).returning();
+        const result = await client.update(providerQuestions).set(data).where(eq(providerQuestions.id, id)).returning();
         return result[0];
     }
 
     async deleteQuestion(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.delete(questions).where(eq(questions.id, id)).returning();
+        const result = await client.delete(providerQuestions).where(eq(providerQuestions.id, id)).returning();
         return result[0];
     }
 
@@ -242,41 +238,41 @@ export class LearningRepository extends BaseRepository {
 
     async listPdfsBySubject(subjectId: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const prefixedId = subjectId.includes(":") ? subjectId : `learning_subjects:${subjectId}`;
+        const prefixedId = subjectId.includes(":") ? subjectId : `provider_subjects:${subjectId}`;
         const plainId = subjectId.includes(":") ? subjectId.split(":")[1] : subjectId;
 
         return await client
             .select()
-            .from(learningSubjectPdfs)
+            .from(providerSubjectPdfs)
             .where(
-                require("drizzle-orm").or(
-                    eq(learningSubjectPdfs.learningSubjectId, plainId),
-                    eq(learningSubjectPdfs.learningSubjectId, prefixedId)
+                or(
+                    eq(providerSubjectPdfs.providerSubjectId, plainId),
+                    eq(providerSubjectPdfs.providerSubjectId, prefixedId)
                 )
             );
     }
 
     async getPdfById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(learningSubjectPdfs).where(eq(learningSubjectPdfs.id, id)).limit(1);
+        const result = await client.select().from(providerSubjectPdfs).where(eq(providerSubjectPdfs.id, id)).limit(1);
         return result[0] || null;
     }
 
     async updatePdfOrder(id: string, orderedIds: string[], tx?: DbClient) {
         const client = tx ?? this.db;
-        return await client.update(learningSubjectPdfs).set({ topicsOrderedIds: orderedIds }).where(eq(learningSubjectPdfs.id, id)).returning();
+        return await client.update(providerSubjectPdfs).set({ topicsOrderedIds: orderedIds }).where(eq(providerSubjectPdfs.id, id)).returning();
     }
 
-    async createSubjectPdf(data: typeof learningSubjectPdfs.$inferInsert, tx?: DbClient) {
+    async createSubjectPdf(data: typeof providerSubjectPdfs.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(learningSubjectPdfs).values(data).returning();
+        const result = await client.insert(providerSubjectPdfs).values(data).returning();
         return result[0];
     }
     async deleteTopic(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client
-            .delete(learningSubjectTopics)
-            .where(eq(learningSubjectTopics.id, id))
+            .delete(providerSubjectTopics)
+            .where(eq(providerSubjectTopics.id, id))
             .returning();
         return result[0];
     }

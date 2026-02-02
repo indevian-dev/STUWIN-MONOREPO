@@ -23,7 +23,7 @@ export interface EndpointConfigOptions {
  * Creates an endpoint configuration factory for a specific workspace
  */
 export const createRouteFactory = (defaults: {
-  workspace: 'student' | 'staff' | 'provider' | 'parent' | 'tutor' | undefined;
+  workspace: 'student' | 'staff' | 'provider' | 'parent' | undefined;
   verifyOwnership?: boolean;
   needEmailVerification?: boolean;
   needPhoneVerification?: boolean;

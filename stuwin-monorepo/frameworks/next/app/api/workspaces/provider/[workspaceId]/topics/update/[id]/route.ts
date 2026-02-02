@@ -33,7 +33,7 @@ export const PUT = unifiedApiHandler(
       }
       if (ai_summary !== undefined) updateData.aiSummary = ai_summary;
       if (grade_level !== undefined) updateData.gradeLevel = grade_level ? parseInt(String(grade_level)) : null;
-      if (subject_id !== undefined) updateData.learningSubjectId = subject_id;
+      if (subject_id !== undefined) updateData.providerSubjectId = subject_id;
       if (is_active_for_ai !== undefined) updateData.isActiveForAi = is_active_for_ai;
       if (topic_estimated_questions_capacity !== undefined) {
         updateData.topicEstimatedQuestionsCapacity = topic_estimated_questions_capacity ? parseInt(String(topic_estimated_questions_capacity)) : null;

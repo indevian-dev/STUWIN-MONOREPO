@@ -8,7 +8,24 @@ export class PaymentRepository {
     constructor(private readonly db: PostgresJsDatabase<typeof schema>) { }
 
     async getSubscriptions() {
-        return await this.db.select().from(paymentSubscriptions).where(eq(paymentSubscriptions.isActive, true));
+        try {
+            return await this.db.select().from(paymentSubscriptions).where(eq(paymentSubscriptions.isActive, true));
+        } catch (error) {
+            console.warn("Table paymentSubscriptions might be missing, returning empty list.", error);
+            // Return dummy tiers if DB fails, to allow UI to render 'Free' at least
+            return [
+                {
+                    id: "free_tier",
+                    title: "Free Account",
+                    type: "free",
+                    price: 0,
+                    isActive: true,
+                    subscriptionPeriod: "month",
+                    metadata: {},
+                    createdAt: new Date()
+                }
+            ] as any[];
+        }
     }
 
     async getCouponByCode(code: string) {
@@ -36,6 +53,19 @@ export class PaymentRepository {
         return result[0];
     }
 
+    async listTransactions(accountId: string) {
+        return await this.db.select().from(workspaceSubscriptionTransactions)
+            .where(eq(workspaceSubscriptionTransactions.accountId, accountId))
+            .orderBy(desc(workspaceSubscriptionTransactions.createdAt));
+    }
+
+    async getTransactionById(id: string) {
+        const result = await this.db.select().from(workspaceSubscriptionTransactions)
+            .where(eq(workspaceSubscriptionTransactions.id, id))
+            .limit(1);
+        return result[0];
+    }
+
     async updateAccountSubscription(accountId: string, type: string, until: Date) {
         return await this.db.update(accounts)
             .set({ subscriptionType: type, subscribedUntil: until })
@@ -51,6 +81,21 @@ export class PaymentRepository {
         return await this.db.update(workspaces)
             .set({ studentSubscribedUntill: until } as any) // Assuming type-wide subscription is removed, but we keep the date
             .where(eq(workspaces.id, workspaceId))
+            .returning();
+    }
+
+    async updateWorkspaceAccessSubscription(actorAccountId: string, targetWorkspaceId: string, viaWorkspaceId: string | undefined, until: Date) {
+        const conditions = [
+            eq(schema.workspaceAccesses.actorAccountId, actorAccountId),
+            eq(schema.workspaceAccesses.targetWorkspaceId, targetWorkspaceId)
+        ];
+        if (viaWorkspaceId) {
+            conditions.push(eq(schema.workspaceAccesses.viaWorkspaceId, viaWorkspaceId));
+        }
+
+        return await this.db.update(schema.workspaceAccesses)
+            .set({ subscribedUntil: until })
+            .where(and(...conditions))
             .returning();
     }
 

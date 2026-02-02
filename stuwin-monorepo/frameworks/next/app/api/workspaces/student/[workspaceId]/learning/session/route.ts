@@ -19,7 +19,7 @@ export const GET = unifiedApiHandler(
                 }, { status: 400 });
             }
 
-            const result = await module.activity.getSession(
+            const result = await module.activity.getAiSession(
                 auth.accountId,
                 contextId,
                 contextType

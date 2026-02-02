@@ -57,8 +57,8 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
         question: q.questionText,
         answers: q.options,
         correctAnswer: q.options[Number(q.correctAnswer)],
-        learningSubjectId: subjectId,
-        learningSubjectTopicId: topicId, // Ensure schema supports this link if needed, otherwise rely on subject
+        providerSubjectId: subjectId,
+        providerSubjectTopicId: topicId, // Ensure schema supports this link if needed, otherwise rely on subject
         complexity: String(q.difficulty || "medium"),
         explanationGuide: q.explanation ? { text: String(q.explanation) } : null,
         gradeLevel: topicData.gradeLevel ? Number(topicData.gradeLevel) : null,

@@ -1,6 +1,6 @@
 
 import { eq, desc, and, sql } from "drizzle-orm";
-import { studentQuizzes, studentHomeworks, studentLearningSessions, studentQuizReports } from "@/lib/app-infrastructure/database/schema";
+import { studentQuizzes, studentHomeworks, studentAiSessions, studentQuizReports, studentTopicMastery } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -27,11 +27,11 @@ export class ActivityRepository extends BaseRepository {
             .orderBy(desc(studentQuizzes.createdAt));
     }
 
-    async listQuizzes(params: { accountId: string; status?: string; subjectId?: string; workspaceId?: string; limit: number; offset: number }, tx?: DbClient) {
+    async listQuizzes(params: { accountId: string; status?: string; providerSubjectId?: string; workspaceId?: string; limit: number; offset: number }, tx?: DbClient) {
         const client = tx ?? this.db;
         const conditions = [eq(studentQuizzes.studentAccountId, params.accountId)];
         if (params.status) conditions.push(eq(studentQuizzes.status, params.status));
-        if (params.subjectId) conditions.push(eq(studentQuizzes.learningSubjectId, params.subjectId));
+        if (params.providerSubjectId) conditions.push(eq(studentQuizzes.providerSubjectId, params.providerSubjectId));
         if (params.workspaceId) conditions.push(eq(studentQuizzes.workspaceId, params.workspaceId));
 
         return await client
@@ -43,11 +43,11 @@ export class ActivityRepository extends BaseRepository {
             .offset(params.offset);
     }
 
-    async countQuizzes(params: { accountId: string; status?: string; subjectId?: string; workspaceId?: string }, tx?: DbClient) {
+    async countQuizzes(params: { accountId: string; status?: string; providerSubjectId?: string; workspaceId?: string }, tx?: DbClient) {
         const client = tx ?? this.db;
         const conditions = [eq(studentQuizzes.studentAccountId, params.accountId)];
         if (params.status) conditions.push(eq(studentQuizzes.status, params.status));
-        if (params.subjectId) conditions.push(eq(studentQuizzes.learningSubjectId, params.subjectId));
+        if (params.providerSubjectId) conditions.push(eq(studentQuizzes.providerSubjectId, params.providerSubjectId));
         if (params.workspaceId) conditions.push(eq(studentQuizzes.workspaceId, params.workspaceId));
 
         const result = await client
@@ -132,46 +132,80 @@ export class ActivityRepository extends BaseRepository {
     // LEARNING SESSIONS
     // ═══════════════════════════════════════════════════════════════
 
-    async findSessionById(id: string, tx?: DbClient) {
+    async findAiSessionById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(studentLearningSessions).where(eq(studentLearningSessions.id, id)).limit(1);
+        const result = await client.select().from(studentAiSessions).where(eq(studentAiSessions.id, id)).limit(1);
         return result[0] || null;
     }
 
-    async createSession(data: typeof studentLearningSessions.$inferInsert, tx?: DbClient) {
+    async createAiSession(data: typeof studentAiSessions.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(studentLearningSessions).values(data).returning();
+        const result = await client.insert(studentAiSessions).values(data).returning();
         return result[0];
     }
 
-    async updateSession(id: string, data: Partial<typeof studentLearningSessions.$inferInsert>, tx?: DbClient) {
+    async updateAiSession(id: string, data: Partial<typeof studentAiSessions.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client
-            .update(studentLearningSessions)
+            .update(studentAiSessions)
             .set({ ...data, updatedAt: new Date() })
-            .where(eq(studentLearningSessions.id, id))
+            .where(eq(studentAiSessions.id, id))
             .returning();
         return result[0];
     }
 
-    async findActiveSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic', tx?: DbClient) {
+    async findActiveAiSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic', tx?: DbClient) {
         const client = tx ?? this.db;
 
         const conditions = [
-            eq(studentLearningSessions.studentAccountId, accountId),
-            eq(studentLearningSessions.status, 'active')
+            eq(studentAiSessions.studentAccountId, accountId),
+            eq(studentAiSessions.status, 'active')
         ];
 
-        if (contextType === 'quiz') conditions.push(eq(studentLearningSessions.quizId, contextId));
-        else if (contextType === 'homework') conditions.push(eq(studentLearningSessions.homeworkId, contextId));
-        else if (contextType === 'topic') conditions.push(eq(studentLearningSessions.topicId, contextId));
+        if (contextType === 'quiz') conditions.push(eq(studentAiSessions.quizId, contextId));
+        else if (contextType === 'homework') conditions.push(eq(studentAiSessions.homeworkId, contextId));
+        else if (contextType === 'topic') conditions.push(eq(studentAiSessions.topicId, contextId));
 
         const result = await client
             .select()
-            .from(studentLearningSessions)
+            .from(studentAiSessions)
             .where(and(...conditions))
             .limit(1);
 
         return result[0] || null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STUDENT TOPIC MASTERY (ANALYTICS)
+    // ═══════════════════════════════════════════════════════════════
+
+    async findMastery(studentAccountId: string, topicId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select()
+            .from(studentTopicMastery)
+            .where(and(eq(studentTopicMastery.studentAccountId, studentAccountId), eq(studentTopicMastery.topicId, topicId)))
+            .limit(1);
+        return result[0] || null;
+    }
+
+    async findMasteryBySubject(studentAccountId: string, subjectId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select()
+            .from(studentTopicMastery)
+            .where(and(eq(studentTopicMastery.studentAccountId, studentAccountId), eq(studentTopicMastery.providerSubjectId, subjectId)));
+    }
+
+    async createMastery(data: typeof studentTopicMastery.$inferInsert, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(studentTopicMastery).values(data).returning();
+        return result[0];
+    }
+
+    async updateMastery(id: string, data: Partial<typeof studentTopicMastery.$inferInsert>, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.update(studentTopicMastery).set(data).where(eq(studentTopicMastery.id, id)).returning();
+        return result[0];
     }
 }

@@ -65,5 +65,8 @@
   "my_workspaces": "Мои рабочие области",
   "discover": "Обзор",
   "find_organizations": "Найти организации",
-  "profile": "Профиль"
+  "profile": "Профиль",
+  "system_prompts": "Системные промпты",
+  "ai_lab": "AI Лаборатория",
+  "billing": "Оплата"
 }

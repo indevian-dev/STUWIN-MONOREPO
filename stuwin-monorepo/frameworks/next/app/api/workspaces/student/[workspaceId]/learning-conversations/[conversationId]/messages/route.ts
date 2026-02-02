@@ -23,7 +23,7 @@ export const POST = unifiedApiHandler(
 
       log.info("Processing chat message for session", { conversationId, accountId: auth.accountId });
 
-      const result = await module.activity.addMessageToSession(conversationId, content);
+      const result = await module.activity.addMessageToAiSession(conversationId, content);
 
       if (!result.success) {
         log.error("Failed to process chat message", { conversationId, error: result.error });

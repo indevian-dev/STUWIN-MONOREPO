@@ -151,10 +151,18 @@ export function withUiAuth<P extends any>(
                     break;
                 case "EMAIL_NOT_VERIFIED":
                 case "VERIFY_EMAIL_REQUIRED":
+                    // Prevent infinite redirect if already on verification page
+                    if (normalizedPath.startsWith('/auth/verify')) {
+                        break; // Proceed to render the page (it allows user to verify)
+                    }
                     redirect(`/${locale}/auth/verify?type=email&redirect=${encodeURIComponent(normalizedPath)}`);
                     break;
                 case "PHONE_NOT_VERIFIED":
                 case "VERIFY_PHONE_REQUIRED":
+                    // Prevent infinite redirect if already on verification page
+                    if (normalizedPath.startsWith('/auth/verify')) {
+                        break;
+                    }
                     redirect(`/${locale}/auth/verify?type=phone&redirect=${encodeURIComponent(normalizedPath)}`);
                     break;
                 case "PERMISSION_DENIED":

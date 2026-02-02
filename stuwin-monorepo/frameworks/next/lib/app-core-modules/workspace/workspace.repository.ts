@@ -1,6 +1,6 @@
 
 import { eq, and, desc, asc, sql } from "drizzle-orm";
-import { workspaces, workspaceToWorkspace, users, accounts } from "@/lib/app-infrastructure/database/schema";
+import { workspaces, workspaceAccesses, users, accounts } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -22,12 +22,22 @@ export class WorkspaceRepository extends BaseRepository {
         return result[0] || null;
     }
 
+    // Deprecated? Workspaces don't have ownerId anymore. Used via Access.
+    // Kept for specific logic if needed, but implementation changes to query access.
     async findByOwnerId(ownerAccountId: string, tx?: DbClient) {
         const client = tx ?? this.db;
+        // Find workspaces where account has 'owner' or 'manager' role directly
         return await client
-            .select()
-            .from(workspaces)
-            .where(eq(workspaces.ownerAccountId, ownerAccountId));
+            .select({
+                workspace: workspaces
+            })
+            .from(workspaceAccesses)
+            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+            .where(and(
+                eq(workspaceAccesses.actorAccountId, ownerAccountId),
+                eq(workspaceAccesses.viaWorkspaceId, workspaces.id) // Direct access
+            ))
+            .then(res => res.map(r => r.workspace));
     }
 
     async create(data: typeof workspaces.$inferInsert, tx?: DbClient) {
@@ -51,6 +61,7 @@ export class WorkspaceRepository extends BaseRepository {
         offset?: number;
         sortField?: string;
         orderDir?: 'asc' | 'desc';
+        search?: string;
     } = {}, tx?: DbClient) {
         const client = tx ?? this.db;
         const limit = options.limit || 100;
@@ -59,28 +70,25 @@ export class WorkspaceRepository extends BaseRepository {
         let orderByClause = desc(workspaces.createdAt);
         if (options.sortField === 'title') {
             orderByClause = options.orderDir === 'asc' ? asc(workspaces.title) : desc(workspaces.title);
+        } else if (options.sortField === 'price') {
+            // JSONB Extraction & Cast for sorting
+            const pricePath = sql<number>`(${workspaces.profile}->>'providerSubscriptionPrice')::numeric`;
+            orderByClause = options.orderDir === 'asc' ? asc(pricePath) : desc(pricePath);
         }
 
-        const whereClause = and(
+        const conditions = [
             eq(workspaces.type, 'provider'),
             eq(workspaces.isActive, true)
-        );
+        ];
+
+        if (options.search) {
+            conditions.push(sql`(${workspaces.title} ILIKE ${'%' + options.search + '%'})`);
+        }
 
         const data = await client
-            .select({
-                id: workspaces.id,
-                title: workspaces.title,
-                metadata: workspaces.metadata,
-                ownerAccountId: workspaces.ownerAccountId,
-                cityId: workspaces.cityId,
-                isActive: workspaces.isActive,
-                createdAt: workspaces.createdAt,
-                providerSubscriptionPrice: workspaces.providerSubscriptionPrice,
-                providerTrialDaysCount: workspaces.providerTrialDaysCount,
-                providerProgramDescription: workspaces.providerProgramDescription,
-            })
+            .select()
             .from(workspaces)
-            .where(whereClause)
+            .where(and(...conditions))
             .limit(limit)
             .offset(offset)
             .orderBy(orderByClause);
@@ -89,34 +97,37 @@ export class WorkspaceRepository extends BaseRepository {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // WORKSPACE GRAPH (CONNECTIONS)
+    // ACCESS & MEMBERSHIP (Replaces Graph)
     // ═══════════════════════════════════════════════════════════════
 
     /**
-     * Finds a connection between two workspaces
+     * Check if access already exists
      */
-    async findConnection(fromWorkspaceId: string, toWorkspaceId: string, tx?: DbClient) {
+    async findAccess(actorAccountId: string, targetWorkspaceId: string, viaWorkspaceId?: string, tx?: DbClient) {
         const client = tx ?? this.db;
+        const conditions = [
+            eq(workspaceAccesses.actorAccountId, actorAccountId),
+            eq(workspaceAccesses.targetWorkspaceId, targetWorkspaceId)
+        ];
+
+        if (viaWorkspaceId) {
+            conditions.push(eq(workspaceAccesses.viaWorkspaceId, viaWorkspaceId));
+        }
+
         const result = await client
             .select()
-            .from(workspaceToWorkspace)
-            .where(
-                and(
-                    eq(workspaceToWorkspace.fromWorkspaceId, fromWorkspaceId),
-                    eq(workspaceToWorkspace.toWorkspaceId, toWorkspaceId)
-                )
-            )
+            .from(workspaceAccesses)
+            .where(and(...conditions))
             .limit(1);
         return result[0] || null;
     }
 
     /**
-     * Connects two workspaces (e.g. Student -> School)
+     * Grants access (Membership / Enrollment)
      */
-    async connectWorkspaces(data: typeof workspaceToWorkspace.$inferInsert, tx?: DbClient) {
+    async addAccess(data: typeof workspaceAccesses.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        // Upsert logic could be added here to handle existing connections
-        const result = await client.insert(workspaceToWorkspace).values(data).returning();
+        const result = await client.insert(workspaceAccesses).values(data).returning();
         return result[0];
     }
 
@@ -125,68 +136,31 @@ export class WorkspaceRepository extends BaseRepository {
     // ═══════════════════════════════════════════════════════════════
 
     /**
-     * Lists workspaces that are connected to the user's "Home Base" (if applicable)
-     * Or simply lists workspaces owned by the user for the dashboard
-     */
-    /**
      * Lists all workspaces the account has access to.
-     * Includes workspaces they own AND workspaces they are members of (linked via W2W).
+     * Unified query via workspace_accesses.
      */
     async listUserWorkspaces(accountId: string, tx?: DbClient) {
         const client = tx ?? this.db;
 
-        // 1. Get workspaces where user is the primary owner
-        const owned = await client
-            .select()
-            .from(workspaces)
-            .where(eq(workspaces.ownerAccountId, accountId));
-
-        // 2. Get workspaces where user has a membership link (W2W connection)
-        const memberships = await client
-            .select({
+        // JOIN workspace_accesses -> workspaces
+        // We want unique workspaces.
+        const result = await client
+            .selectDistinct({
                 workspace: workspaces
             })
-            .from(workspaceToWorkspace)
-            .innerJoin(workspaces, eq(workspaceToWorkspace.toWorkspaceId, workspaces.id))
-            .where(eq(workspaceToWorkspace.accountId, accountId));
+            .from(workspaceAccesses)
+            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+            .where(and(
+                eq(workspaceAccesses.actorAccountId, accountId),
+                eq(workspaceAccesses.viaWorkspaceId, workspaceAccesses.targetWorkspaceId)
+            ));
 
-        // Combine and de-duplicate by ID
-        const allWorkspaces = [...owned];
-        const ownedIds = new Set(allWorkspaces.map(w => w.id));
-
-        for (const item of memberships) {
-            if (!ownedIds.has(item.workspace.id)) {
-                allWorkspaces.push(item.workspace);
-            }
-        }
-
-        return allWorkspaces;
+        return result.map(r => r.workspace);
     }
 
     /**
-     * Lists workspaces that the given workspace has access to (e.g. Student -> Schools)
-     */
-    async listConnectedWorkspaces(fromWorkspaceId: string, relationType?: string, tx?: DbClient) {
-        const client = tx ?? this.db;
-
-        const conditions = [eq(workspaceToWorkspace.fromWorkspaceId, fromWorkspaceId)];
-
-        if (relationType) {
-            conditions.push(eq(workspaceToWorkspace.relationType, relationType));
-        }
-
-        return await client
-            .select({
-                connection: workspaceToWorkspace,
-                workspace: workspaces
-            })
-            .from(workspaceToWorkspace)
-            .innerJoin(workspaces, eq(workspaceToWorkspace.toWorkspaceId, workspaces.id))
-            .where(and(...conditions));
-    }
-
-    /**
-     * Finds workspaces of type student for a child identified by FIN
+     * Finds student workspaces for a child identified by FIN
+     * Logic: User(Child) -> Account -> Access(Direct to StudentNode) -> Workspace
      */
     async findStudentWorkspacesByChildFin(fin: string, tx?: DbClient) {
         const client = tx ?? this.db;
@@ -197,13 +171,42 @@ export class WorkspaceRepository extends BaseRepository {
                 studentName: sql<string>`${users.firstName} || ' ' || ${users.lastName}`
             })
             .from(workspaces)
-            .innerJoin(accounts, eq(workspaces.ownerAccountId, accounts.id))
-            .innerJoin(users, eq(accounts.userId, users.id))
+            .innerJoin(workspaceAccesses, eq(workspaceAccesses.targetWorkspaceId, workspaces.id)) // From Access
+            .innerJoin(accounts, eq(workspaceAccesses.actorAccountId, accounts.id)) // To Account
+            .innerJoin(users, eq(accounts.userId, users.id)) // To User
             .where(
                 and(
                     eq(users.fin, fin),
-                    eq(workspaces.type, 'student')
+                    eq(workspaces.type, 'student'),
+                    eq(workspaceAccesses.viaWorkspaceId, workspaces.id) // Direct Owner Access
                 )
             );
+    }
+
+    async findEnrolledAccesses(accountId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select({
+                access: workspaceAccesses,
+                workspace: workspaces
+            })
+            .from(workspaceAccesses)
+            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+            .where(and(
+                eq(workspaceAccesses.actorAccountId, accountId),
+                eq(workspaces.type, 'provider')
+            ));
+    }
+
+    async listConnections(viaWorkspaceId: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        return await client
+            .select({
+                connection: workspaceAccesses,
+                workspace: workspaces
+            })
+            .from(workspaceAccesses)
+            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
+            .where(eq(workspaceAccesses.viaWorkspaceId, viaWorkspaceId));
     }
 }
