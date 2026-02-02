@@ -36,6 +36,13 @@ export class SemanticMasteryService {
     }
 
     /**
+     * Helper to format number array into pgvector string format "[x,y,z]"
+     */
+    private formatVector(v: number[]): string {
+        return `[${v.join(",")}]`;
+    }
+
+    /**
      * Entry point after a student completes a quiz or homework.
      * 1. Generates a new vector layer.
      * 2. Synthesizes/Updates the Student's global DNA.
@@ -88,7 +95,7 @@ export class SemanticMasteryService {
         // Formula: New = (Old * 0.9) + (New * 0.1)
         await db.update(studentKnowledgeHubs)
             .set({
-                knowledgeVector: sql`(${existing.knowledgeVector}::vector * 0.9) + (${newVector}::vector * 0.1)`,
+                knowledgeVector: sql`(${this.formatVector(existing.knowledgeVector as number[])}::vector * 0.9) + (${this.formatVector(newVector)}::vector * 0.1)`,
                 updatedAt: new Date()
             })
             .where(eq(studentKnowledgeHubs.id, existing.id));
@@ -122,7 +129,7 @@ export class SemanticMasteryService {
                 .onConflictDoUpdate({
                     target: [providerKnowledgeHubs.id],
                     set: {
-                        sumVector: sql`(${providerKnowledgeHubs.sumVector}::vector + ${deltaVector}::vector)`,
+                        sumVector: sql`(${providerKnowledgeHubs.sumVector}::vector + ${this.formatVector(deltaVector)}::vector)`,
                         studentCount: sql`${providerKnowledgeHubs.studentCount} + 1`,
                         updatedAt: new Date()
                     }

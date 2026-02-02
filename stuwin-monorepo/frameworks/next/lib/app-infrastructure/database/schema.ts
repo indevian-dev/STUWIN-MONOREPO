@@ -70,6 +70,18 @@ export const vector768 = customType<{ data: number[] }>({
     dataType() {
         return "vector(768)";
     },
+    toDriver(value: number[]) {
+        return `[${value.join(",")}]`;
+    },
+    fromDriver(value: unknown) {
+        if (typeof value === "string") {
+            return value
+                .replace(/[\[\]]/g, "")
+                .split(",")
+                .map((v) => parseFloat(v));
+        }
+        return value as number[];
+    },
 });
 
 // ═══════════════════════════════════════════════════════════════

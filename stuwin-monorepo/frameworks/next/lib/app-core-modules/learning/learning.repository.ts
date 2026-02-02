@@ -97,10 +97,48 @@ export class LearningRepository extends BaseRepository {
     // TOPICS
     // ═══════════════════════════════════════════════════════════════
 
-    async listTopicsBySubject(subjectId: string, tx?: DbClient) {
+    async listTopicsBySubject(subjectId: string, options?: { excludeVector?: boolean }, tx?: DbClient) {
         const client = tx ?? this.db;
         const prefixedId = subjectId.includes(":") ? subjectId : `provider_subjects:${subjectId}`;
         const plainId = subjectId.includes(":") ? subjectId.split(":")[1] : subjectId;
+
+        if (options?.excludeVector) {
+            return await client
+                .select({
+                    id: providerSubjectTopics.id,
+                    createdAt: providerSubjectTopics.createdAt,
+                    description: providerSubjectTopics.description,
+                    gradeLevel: providerSubjectTopics.gradeLevel,
+                    name: providerSubjectTopics.name,
+                    providerSubjectId: providerSubjectTopics.providerSubjectId,
+                    aiSummary: providerSubjectTopics.aiSummary,
+                    topicPublishedQuestionsStats: providerSubjectTopics.topicPublishedQuestionsStats,
+                    topicGeneralQuestionsStats: providerSubjectTopics.topicGeneralQuestionsStats,
+                    isActiveForAi: providerSubjectTopics.isActiveForAi,
+                    topicEstimatedQuestionsCapacity: providerSubjectTopics.topicEstimatedQuestionsCapacity,
+                    topicQuestionsRemainingToGenerate: providerSubjectTopics.topicQuestionsRemainingToGenerate,
+                    pdfS3Key: providerSubjectTopics.pdfS3Key,
+                    pdfPageStart: providerSubjectTopics.pdfPageStart,
+                    pdfPageEnd: providerSubjectTopics.pdfPageEnd,
+                    totalPdfPages: providerSubjectTopics.totalPdfPages,
+                    chapterNumber: providerSubjectTopics.chapterNumber,
+                    parentTopicId: providerSubjectTopics.parentTopicId,
+                    estimatedEducationStartDate: providerSubjectTopics.estimatedEducationStartDate,
+                    subjectPdfId: providerSubjectTopics.subjectPdfId,
+                    workspaceId: providerSubjectTopics.workspaceId,
+                    ftsTokens: providerSubjectTopics.ftsTokens,
+                    updatedAt: providerSubjectTopics.updatedAt,
+                    language: providerSubjectTopics.language,
+                    aiAssistantCrib: providerSubjectTopics.aiAssistantCrib,
+                })
+                .from(providerSubjectTopics)
+                .where(
+                    or(
+                        eq(providerSubjectTopics.providerSubjectId, plainId),
+                        eq(providerSubjectTopics.providerSubjectId, prefixedId)
+                    )
+                );
+        }
 
         return await client
             .select()

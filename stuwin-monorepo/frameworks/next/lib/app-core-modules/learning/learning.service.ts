@@ -44,7 +44,7 @@ export class LearningService extends BaseService {
             const subject = await this.repository.findSubjectById(subjectId);
             if (!subject) return { success: false, error: "Subject not found" };
 
-            const topics = await this.repository.listTopicsBySubject(subjectId);
+            const topics = await this.repository.listTopicsBySubject(subjectId, { excludeVector: true });
             const pdfs = await this.repository.listPdfsBySubject(subjectId);
 
             return {
@@ -533,7 +533,7 @@ export class LearningService extends BaseService {
     async getTopics(params: { subjectId?: string; gradeLevel?: number }) {
         try {
             if (params.subjectId) {
-                const topics = await this.repository.listTopicsBySubject(params.subjectId);
+                const topics = await this.repository.listTopicsBySubject(params.subjectId, { excludeVector: true });
                 const filteredTopics = params.gradeLevel
                     ? topics.filter(t => t.gradeLevel === params.gradeLevel)
                     : topics;
@@ -936,8 +936,17 @@ export class LearningService extends BaseService {
             const { pdfKey, subjectId, gradeLevel } = params;
             const { GoogleGenerativeAI } = require("@google/generative-ai");
             const { GoogleAIFileManager, FileState } = require("@google/generative-ai/server");
-            const { GetObjectCommand } = require("@aws-sdk/client-s3");
-            const { default: s3Client } = require("@/lib/integrations/awsClient");
+            const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
+
+            const s3Client = new S3Client({
+                region: process.env.AWS_S3_REGION || "auto",
+                endpoint: process.env.AWS_S3_ENDPOINT || "",
+                credentials: {
+                    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+                },
+                forcePathStyle: true,
+            });
 
             if (!process.env.GEMINI_API_KEY) {
                 return { success: false, error: "AI service not configured", code: 500 };
