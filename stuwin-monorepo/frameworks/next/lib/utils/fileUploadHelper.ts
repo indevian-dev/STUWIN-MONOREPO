@@ -31,13 +31,13 @@ export async function uploadFile({
       } catch (conversionError) {
         throw new Error('Failed to convert image to WebP');
       }
-    } 
+    }
     // Check if file is a video
     else if (file.type.startsWith('video/')) {
       // For videos, upload as-is without conversion
       uploadFile = file;
       contentType = file.type;
-    } 
+    }
     else {
       throw new Error('Unsupported file type. Only images and videos are allowed.');
     }
@@ -50,8 +50,7 @@ export async function uploadFile({
     await new Promise<void>((resolve, reject) => {
       axios.put(presignedUrl, uploadFile, {
         headers: {
-          'Content-Type': contentType,
-          'x-amz-acl': 'public-read'
+          'Content-Type': 'application/pdf',
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.lengthComputable && progressEvent.total) {

@@ -13,6 +13,8 @@ The system is built on a hierarchy of Workspaces rather than a rigid "user-to-or
 * **ui_type:** Defines the interface (e.g., `end_user`, `manager`, `sys_admin`).
 * **Account:** The user's identity (Email, Password).
 * **Membership:** Links an **Account** to a **Workspace** + assigns a **Role**.
+    *   **Direct Access:** `target_workspace_id === via_workspace_id`. The account is a member of this workspace (Identity).
+    *   **Linked Access (W2W):** `target_workspace_id !== via_workspace_id`. The account accesses the `target` workspace "through" the `via` workspace (e.g., Student node enrolled in a Provider node).
 
 ---
 

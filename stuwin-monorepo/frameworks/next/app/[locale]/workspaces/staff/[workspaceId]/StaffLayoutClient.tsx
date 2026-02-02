@@ -84,13 +84,6 @@ export function StaffLayoutClient({
           { href: `/workspaces/staff/${workspaceId}/pages/rules`, icon: PiFile, label: 'rules' }
         ]
       },
-      ads_management: {
-        label: 'advertisements',
-        icon: PiNotebook,
-        items: [
-          { href: `/workspaces/staff/${workspaceId}/ads`, icon: PiNotebook, label: 'advertisements' }
-        ]
-      },
       access_management: {
         label: 'access_management',
         icon: PiKey,
@@ -107,6 +100,13 @@ export function StaffLayoutClient({
           { href: `/workspaces/staff/${workspaceId}/users`, icon: PiUsersFill, label: 'users' }
         ]
       },
+      subjects_catalog: {
+        label: 'subjects',
+        icon: PiNotebook,
+        items: [
+          { href: `/workspaces/staff/${workspaceId}/subjects`, icon: PiNotebook, label: 'subjects' }
+        ]
+      },
       ai_management: {
         label: 'ai_lab',
         icon: PiRobot,
@@ -114,20 +114,10 @@ export function StaffLayoutClient({
           { href: `/workspaces/staff/${workspaceId}/ai-lab`, icon: PiRobot, label: 'system_prompts' }
         ]
       },
-      management: {
-
-        label: 'support',
-        icon: PiPlugs,
-        items: [
-          { href: `/workspaces/staff/${workspaceId}/leads`, icon: PiUsers, label: 'leads' },
-          { href: `/workspaces/staff/${workspaceId}/support`, icon: PiUsers, label: 'support' }
-        ]
-      },
       catalog: {
         label: 'services_statuses',
         icon: PiPackage,
         items: [
-          { href: `/workspaces/staff/${workspaceId}/open-search`, icon: PiAcorn, label: 'search_service' },
           { href: `/workspaces/staff/${workspaceId}/mail`, icon: PiEnvelope, label: 'mail_service' },
           { href: `/workspaces/staff/${workspaceId}/jobs`, icon: PiClock, label: 'background_jobs' }
         ]

@@ -220,7 +220,7 @@ export function ProviderHtmlToPdfModalWidget({
       setProgress(85);
 
       // Step 2: Get presigned URL
-      const fileName = `topic-${topicId}-content-${Date.now()}.pdf`;
+      const fileName = `content-converted.pdf`; // Simple name, backend adds unique timestamp
       const presignedResponse = await apiCallForSpaHelper({
         method: 'POST',
         url: `/api/workspaces/provider/${workspaceId}/topics/upload-pdf`,
@@ -235,7 +235,7 @@ export function ProviderHtmlToPdfModalWidget({
         throw new Error('Failed to get upload URL');
       }
 
-      const { presignedUrl, pdfKey } = presignedResponse.data;
+      const { presignedUrl, generatedFileName } = presignedResponse.data;
 
       setProgress(90);
 
@@ -257,7 +257,7 @@ export function ProviderHtmlToPdfModalWidget({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/topics/update/${topicId}`,
         body: {
-          pdf_s3_key: pdfKey,
+          pdf_s3_key: generatedFileName,
           total_pdf_pages: estimatedPages
         }
       });
@@ -265,7 +265,7 @@ export function ProviderHtmlToPdfModalWidget({
       setProgress(100);
 
       // Notify parent
-      onSuccess?.(pdfKey);
+      onSuccess?.(generatedFileName);
 
       setTimeout(() => {
         handleClose();

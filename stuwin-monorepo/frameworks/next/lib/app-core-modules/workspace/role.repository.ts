@@ -18,21 +18,19 @@ export class RoleRepository {
         return role;
     }
 
-    async create(data: { name: string; slug: string; permissions?: string[]; forWorkspaceType?: string; isStaff?: boolean }) {
+    async create(data: { name: string; permissions?: string[]; forWorkspaceType?: string }) {
         const [role] = await this.db
             .insert(workspaceRoles)
             .values({
                 name: data.name,
-                slug: data.slug,
                 permissions: data.permissions || [],
                 forWorkspaceType: data.forWorkspaceType,
-                isStaff: data.isStaff || false,
             })
             .returning();
         return role;
     }
 
-    async update(id: string, data: Partial<{ name: string; slug: string; permissions: string[]; forWorkspaceType: string; isStaff: boolean }>) {
+    async update(id: string, data: Partial<{ name: string; permissions: string[]; forWorkspaceType: string }>) {
         const [role] = await this.db
             .update(workspaceRoles)
             .set(data)

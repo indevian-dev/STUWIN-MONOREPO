@@ -38,11 +38,7 @@ export class RoleService extends BaseService {
 
     async createRole(data: { name: string; permissions?: string[]; forWorkspaceType?: string }) {
         try {
-            const slug = data.name.toLowerCase().replace(/ /g, '-');
-            const role = await this.repository.create({
-                ...data,
-                slug,
-            });
+            const role = await this.repository.create(data);
             return { success: true, role };
         } catch (error) {
             this.handleError(error, "createRole");

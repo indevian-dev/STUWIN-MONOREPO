@@ -5,7 +5,7 @@ import { z } from "zod";
  * Zod schemas for Workspace module
  */
 
-export const workspaceTypeSchema = z.enum(['student', 'provider', 'admin']);
+export const workspaceTypeSchema = z.enum(['student', 'provider', 'admin', 'staff', 'parent']);
 
 export const workspaceSchema = z.object({
     id: z.string().optional(),
@@ -36,16 +36,16 @@ export const createWorkspaceSchema = workspaceSchema.omit({ id: true, workspaceI
 export const updateWorkspaceSchema = workspaceSchema.partial();
 
 export const roleSchema = z.object({
-    id: z.number().optional(),
+    id: z.string().optional(),
     name: z.string().min(2),
-    slug: z.string().min(2),
     permissions: z.record(z.any()),
     forWorkspaceType: workspaceTypeSchema,
 });
 
 export const membershipSchema = z.object({
-    accountId: z.number(),
-    workspaceId: z.number(),
-    workspaceRoleId: z.number(),
+    id: z.string().optional(),
+    accountId: z.string(),
+    workspaceId: z.string(),
+    workspaceRoleId: z.string(),
     isActive: z.boolean().default(true),
 });

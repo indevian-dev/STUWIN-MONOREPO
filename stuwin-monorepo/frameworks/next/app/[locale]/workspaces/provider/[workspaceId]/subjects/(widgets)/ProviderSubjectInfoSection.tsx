@@ -106,7 +106,7 @@ export function SubjectInfoSection({
         throw new Error('Failed to get upload URL');
       }
 
-      const { presignedUrl, publicUrl } = presignResponse.data;
+      const { presignedUrl, coverKey, publicUrl, generatedFileName } = presignResponse.data;
 
       // Step 2: Upload file to S3 using presigned URL (using axios)
       await axios.put(presignedUrl, file, {
@@ -115,12 +115,14 @@ export function SubjectInfoSection({
         },
       });
 
-      // Step 3: Save the cover URL to the database
+      // Step 3: Save the filename to the database (User requirement)
+      // The user requested to store ONLY the filename (e.g. timestamp-name.png).
+      // We can reconstruct the path on frontend: subjects/covers/{id}/{filename}
       const saveResponse = await apiCallForSpaHelper({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subject.id}/cover`,
         method: 'PUT',
         body: {
-          coverUrl: publicUrl,
+          coverUrl: generatedFileName,
         },
       });
 
@@ -129,7 +131,7 @@ export function SubjectInfoSection({
       }
 
       // Step 4: Trigger a re-fetch by updating the subject
-      await onUpdate({ cover: publicUrl });
+      await onUpdate({ cover: generatedFileName });
 
     } catch (err) {
       setError(t("coverUploadError"));
@@ -144,6 +146,25 @@ export function SubjectInfoSection({
 
   const handleCoverImageError = () => {
     setCoverImageError(true);
+  };
+
+  // Helper to construct image source
+  const getCoverSrc = (cover: string | null) => {
+    if (!cover) return "";
+    if (cover.startsWith("http") || cover.startsWith("/")) return cover;
+
+    // If it looks like a key (subjects/covers/...), use it directly
+    if (cover.startsWith("subjects/")) {
+      const domain = process.env.NEXT_PUBLIC_S3_PREFIX || "https://s3.stuwin.ai";
+      const cleanDomain = domain.replace(/\/$/, "");
+      return `${cleanDomain}/${cover}`;
+    }
+
+    // Otherwise, assume it's just the filename (user requirement)
+    // Reconstruct: domain / subjects / covers / {id} / {filename}
+    const domain = process.env.NEXT_PUBLIC_S3_PREFIX || "https://s3.stuwin.ai";
+    const cleanDomain = domain.replace(/\/$/, "");
+    return `${cleanDomain}/subjects/covers/${subject.id}/${cover}`;
   };
 
   return (
@@ -305,7 +326,7 @@ export function SubjectInfoSection({
             <div className="shrink-0 space-y-2">
               {subject.cover && !coverImageError ? (
                 <img
-                  src={subject.cover}
+                  src={getCoverSrc(subject.cover)}
                   alt={subject.name}
                   onError={handleCoverImageError}
                   className="w-32 h-32 object-cover rounded-md border border-gray-200"

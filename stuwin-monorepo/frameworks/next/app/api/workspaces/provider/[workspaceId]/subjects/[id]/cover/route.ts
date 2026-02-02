@@ -12,10 +12,10 @@ export const POST = unifiedApiHandler(
     const result = await module.learning.getSubjectCoverUploadUrl(subjectId, fileName, fileType);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: (result as any).code || 500 });
+      return NextResponse.json({ success: false, error: result.error }, { status: (result as any).code || 500 });
     }
 
-    return NextResponse.json(result.data, { status: 200 });
+    return NextResponse.json({ success: true, ...result.data }, { status: 200 });
   }
 );
 

@@ -512,7 +512,6 @@ export async function getUserData(
         const membershipResult = await db.select({
           roleName: workspaceAccesses.accessRole,
           permissions: workspaceRoles.permissions,
-          isStaff: workspaceRoles.isStaff,
           workspaceType: workspaceRoles.forWorkspaceType,
           workspaceSubscriptionType: workspaceAccesses.subscriptionTier,
           workspaceSubscribedUntil: workspaceAccesses.subscribedUntil
@@ -525,8 +524,8 @@ export async function getUserData(
 
         if (membershipResult[0]) {
           activeRole = membershipResult[0].roleName;
-          isStaff = !!membershipResult[0].isStaff;
           workspaceType = membershipResult[0].workspaceType;
+          isStaff = workspaceType === 'staff';
           workspaceSubscriptionType = membershipResult[0].workspaceSubscriptionType;
           workspaceSubscribedUntil = membershipResult[0].workspaceSubscribedUntil;
 
@@ -543,7 +542,7 @@ export async function getUserData(
       })
         .from(workspaceAccesses)
         .innerJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
-        .where(and(eq(workspaceAccesses.actorAccountId, row.accountId), eq(workspaceRoles.isStaff, true)));
+        .where(and(eq(workspaceAccesses.actorAccountId, row.accountId), eq(workspaceRoles.forWorkspaceType, "staff")));
 
       for (const membership of staffMemberships) {
         isStaff = true;
@@ -695,7 +694,6 @@ async function getAccountByUserId({
     const contextMembership = await db.select({
       roleName: workspaceAccesses.accessRole,
       permissions: workspaceRoles.permissions,
-      isStaff: workspaceRoles.isStaff,
       workspaceType: workspaceRoles.forWorkspaceType
     })
       .from(workspaceAccesses)
@@ -705,8 +703,8 @@ async function getAccountByUserId({
 
     if (contextMembership[0]) {
       activeRole = contextMembership[0].roleName;
-      isStaff = !!contextMembership[0].isStaff;
       workspaceType = contextMembership[0].workspaceType;
+      isStaff = workspaceType === 'staff';
 
       const permsJson = contextMembership[0].permissions as Record<string, boolean> || {};
       Object.keys(permsJson).forEach(k => { if (permsJson[k]) permissions.add(k); });
@@ -721,7 +719,7 @@ async function getAccountByUserId({
   })
     .from(workspaceAccesses)
     .innerJoin(workspaceRoles, eq(workspaceAccesses.accessRole, workspaceRoles.name))
-    .where(and(eq(workspaceAccesses.actorAccountId, account.id), eq(workspaceRoles.isStaff, true)));
+    .where(and(eq(workspaceAccesses.actorAccountId, account.id), eq(workspaceRoles.forWorkspaceType, "staff")));
 
   for (const membership of staffMemberships) {
     isStaff = true;

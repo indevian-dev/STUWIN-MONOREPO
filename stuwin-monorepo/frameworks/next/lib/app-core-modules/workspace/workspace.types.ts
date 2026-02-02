@@ -37,18 +37,17 @@ export interface CreateWorkspaceRequest {
 // ═══════════════════════════════════════════════════════════════
 
 export interface WorkspaceMembership {
-    id: number;
-    accountId: number;
-    workspaceId: number;
-    workspaceRoleId: number;
+    id: string;
+    accountId: string;
+    workspaceId: string;
+    workspaceRoleId: string;
     isActive: boolean;
     createdAt: Date;
 }
 
 export interface WorkspaceRole {
-    id: number;
+    id: string;
     name: string;
-    slug: string;
     permissions: any;
     forWorkspaceType: string;
 }

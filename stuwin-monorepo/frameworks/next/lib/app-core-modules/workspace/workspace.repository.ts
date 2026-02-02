@@ -150,10 +150,7 @@ export class WorkspaceRepository extends BaseRepository {
             })
             .from(workspaceAccesses)
             .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
-            .where(and(
-                eq(workspaceAccesses.actorAccountId, accountId),
-                eq(workspaceAccesses.viaWorkspaceId, workspaceAccesses.targetWorkspaceId)
-            ));
+            .where(eq(workspaceAccesses.actorAccountId, accountId));
 
         return result.map(r => r.workspace);
     }

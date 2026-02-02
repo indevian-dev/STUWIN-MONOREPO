@@ -18,6 +18,12 @@ const nextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 's3.stuwin.ai',
+                port: '',
+                pathname: '/**',
+            },
         ],
     },
     turbopack: {

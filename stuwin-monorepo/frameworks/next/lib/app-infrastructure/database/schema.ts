@@ -218,9 +218,7 @@ export const workspaceRoles = pgTable("workspace_roles", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     name: varchar("name").notNull().unique(),
-    slug: varchar("slug").notNull(),
     permissions: jsonb("permissions").default({}),
-    isStaff: boolean("is_staff").default(false),
     forWorkspaceType: varchar("for_workspace_type"),
 });
 

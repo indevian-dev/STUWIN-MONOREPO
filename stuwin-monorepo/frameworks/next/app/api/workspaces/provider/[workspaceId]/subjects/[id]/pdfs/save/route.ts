@@ -13,22 +13,18 @@ export const POST = unifiedApiHandler(async (request, { module, auth, params }) 
   }
 
   const body = await request.json();
-  const { pdfKey, name, language } = body;
+  const { pdfFileName, name, language } = body;
 
-  if (!pdfKey) {
+  if (!pdfFileName) {
     return NextResponse.json(
-      { error: "pdfKey is required" },
+      { error: "pdfFileName is required" },
       { status: 400 },
     );
   }
 
-  // Construct the PDF URL using the S3 prefix and key
-  const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
-  const pdfUrl = `${s3Prefix}${pdfKey}`;
-
   const result = await module.learning.saveSubjectPdf({
     subjectId: subjectId as string,
-    pdfUrl,
+    pdfFileName,
     uploadAccountId: auth.accountId,
     workspaceId: workspaceId as string,
     name,

@@ -65,14 +65,14 @@ export function ProviderTopicPdfUploadWidget({
 
     try {
       // Step 1: Get presigned URL and PDF page count
-      const fileName = `topic-${topicId}-${Date.now()}.pdf`;
+      // Pass original filename, backend will handle timestamping/sanitization
 
       const presignedResponse = await apiCallForSpaHelper({
         method: 'POST',
         url: `/api/workspaces/provider/${workspaceId}/topics/upload-pdf`,
         body: {
           topicId,
-          fileName,
+          fileName: selectedFile.name,
           fileType: 'application/pdf'
         }
       });
@@ -81,13 +81,12 @@ export function ProviderTopicPdfUploadWidget({
         throw new Error('Failed to get upload URL');
       }
 
-      const { presignedUrl, pdfKey } = presignedResponse.data;
+      const { presignedUrl, generatedFileName } = presignedResponse.data;
 
       // Step 2: Upload file to S3 using presigned URL
       await axios.put(presignedUrl, selectedFile, {
         headers: {
           'Content-Type': 'application/pdf',
-          'x-amz-acl': 'public-read'
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.lengthComputable && progressEvent.total) {
@@ -100,12 +99,12 @@ export function ProviderTopicPdfUploadWidget({
       // Step 3: Get PDF metadata (page count)
       const pdfMetadata = await getPdfPageCount(selectedFile);
 
-      // Step 4: Update topic with PDF information
+      // Step 4: Update topic with PDF information (Store Filename Only)
       await apiCallForSpaHelper({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/topics/update/${topicId}`,
         body: {
-          pdf_s3_key: pdfKey,
+          pdf_s3_key: generatedFileName, // User Requirement: Store Filename
           total_pdf_pages: pdfMetadata.pageCount
         }
       });
@@ -115,7 +114,7 @@ export function ProviderTopicPdfUploadWidget({
       setUploadProgress(0);
 
       // Notify parent component
-      onUploadSuccess?.(pdfKey, pdfMetadata.pageCount);
+      onUploadSuccess?.(generatedFileName, pdfMetadata.pageCount);
 
       // Reset file input
       if (fileInputRef.current) {

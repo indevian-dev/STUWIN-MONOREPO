@@ -92,13 +92,12 @@ export function SubjectMediaLibrarySection({
         throw new Error(response.data?.error || "Failed to get upload URL");
       }
 
-      const { presignedUrl, pdfKey } = response.data;
+      const { presignedUrl, generatedFileName } = response.data;
 
       // Step 2: Upload file to S3 (using axios for progress tracking)
       await axios.put(presignedUrl, selectedFile, {
         headers: {
           "Content-Type": "application/pdf",
-          "x-amz-acl": "public-read",
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.lengthComputable && progressEvent.total) {
@@ -115,7 +114,7 @@ export function SubjectMediaLibrarySection({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/save`,
         method: "POST",
         body: {
-          pdfKey: pdfKey,
+          pdfFileName: generatedFileName,
           fileName: selectedFile.name,
           name: pdfName || selectedFile.name,
           language: pdfLanguage,

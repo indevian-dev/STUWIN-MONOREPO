@@ -93,7 +93,17 @@ export class LearningService extends BaseService {
     async getSubjectPdfs(subjectId: string) {
         try {
             const pdfs = await this.repository.listPdfsBySubject(subjectId);
-            return { success: true, data: pdfs };
+            const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
+
+            // Reconstruct URL if stored as filename only
+            const processedPdfs = pdfs.map(pdf => ({
+                ...pdf,
+                pdfUrl: pdf.pdfUrl && !pdf.pdfUrl.startsWith('http')
+                    ? `${s3Prefix}subjects/pdfs/${subjectId}/${pdf.pdfUrl}`
+                    : pdf.pdfUrl
+            }));
+
+            return { success: true, data: processedPdfs };
         } catch (error) {
             this.handleError(error, "getSubjectPdfs");
             return { success: false, error: "Failed to load subject PDFs" };
@@ -105,7 +115,7 @@ export class LearningService extends BaseService {
      */
     async saveSubjectPdf(params: {
         subjectId: string;
-        pdfUrl: string;
+        pdfFileName: string;
         uploadAccountId: string;
         workspaceId: string;
         name?: string;
@@ -114,7 +124,7 @@ export class LearningService extends BaseService {
         try {
             const newPdf = await this.repository.createSubjectPdf({
                 providerSubjectId: params.subjectId,
-                pdfUrl: params.pdfUrl,
+                pdfUrl: params.pdfFileName, // Storing only filename
                 uploadAccountId: params.uploadAccountId,
                 workspaceId: params.workspaceId,
                 name: params.name,
@@ -746,8 +756,8 @@ export class LearningService extends BaseService {
             const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
             const s3Client = new S3Client({
-                region: process.env.AWS_S3_REGION || "global",
-                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                region: process.env.AWS_S3_REGION || "",
+                endpoint: process.env.AWS_S3_ENDPOINT || "",
                 credentials: {
                     accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
                     secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
@@ -756,7 +766,8 @@ export class LearningService extends BaseService {
 
             const timestamp = Date.now();
             const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const coverKey = `subjects/covers/${subjectId}/${timestamp}-${sanitizedFileName}`;
+            const generatedFileName = `${timestamp}-${sanitizedFileName}`;
+            const coverKey = `subjects/covers/${subjectId}/${generatedFileName}`;
 
             const s3Params = {
                 Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -766,11 +777,13 @@ export class LearningService extends BaseService {
 
             const command = new PutObjectCommand(s3Params);
             const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
-            const publicUrl = `${process.env.NEXT_PUBLIC_S3_PREFIX || ""}${coverKey}`;
+
+            const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
+            const publicUrl = `${s3Prefix.replace(/\/$/, "")}/${coverKey.startsWith("/") ? coverKey.substring(1) : coverKey}`;
 
             return {
                 success: true,
-                data: { presignedUrl, coverKey, publicUrl, fileName: sanitizedFileName }
+                data: { presignedUrl, coverKey, publicUrl, fileName: sanitizedFileName, generatedFileName }
             };
         } catch (error) {
             this.handleError(error, "getSubjectCoverUploadUrl");
@@ -788,17 +801,19 @@ export class LearningService extends BaseService {
             const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
             const s3Client = new S3Client({
-                region: process.env.AWS_S3_REGION || "global",
-                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                region: process.env.AWS_S3_REGION || "auto",
+                endpoint: process.env.AWS_S3_ENDPOINT || "",
                 credentials: {
                     accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
                     secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
                 },
+                forcePathStyle: true,
             });
 
             const timestamp = Date.now();
             const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const pdfKey = `subjects/pdfs/${subjectId}/${timestamp}-${sanitizedFileName}`;
+            const generatedFileName = `${timestamp}-${sanitizedFileName}`;
+            const pdfKey = `subjects/pdfs/${subjectId}/${generatedFileName}`;
 
             const s3Params = {
                 Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -811,7 +826,7 @@ export class LearningService extends BaseService {
 
             return {
                 success: true,
-                data: { presignedUrl, pdfKey, fileName: sanitizedFileName }
+                data: { presignedUrl, pdfKey, fileName: sanitizedFileName, generatedFileName }
             };
         } catch (error) {
             this.handleError(error, "getSubjectPdfUploadUrl");
@@ -832,17 +847,19 @@ export class LearningService extends BaseService {
             const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
             const s3Client = new S3Client({
-                region: process.env.AWS_S3_REGION || "global",
-                endpoint: process.env.AWS_S3_ENDPOINT || "https://s3.tebi.io",
+                region: process.env.AWS_S3_REGION || "auto",
+                endpoint: process.env.AWS_S3_ENDPOINT || "",
                 credentials: {
                     accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
                     secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
                 },
+                forcePathStyle: true,
             });
 
             const timestamp = Date.now();
             const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const s3Key = `topics/pdfs/${topicId}/${timestamp}-${sanitizedFileName}`;
+            const generatedFileName = `${timestamp}-${sanitizedFileName}`;
+            const s3Key = `topics/pdfs/${topicId}/${generatedFileName}`;
 
             const s3Params = {
                 Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -851,11 +868,18 @@ export class LearningService extends BaseService {
             };
 
             const command = new PutObjectCommand(s3Params);
-            const uploadURL = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+            const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
 
             return {
                 success: true,
-                data: { uploadURL, s3Key, fileName: sanitizedFileName }
+                data: {
+                    presignedUrl,
+                    uploadURL: presignedUrl, // Backwards compat
+                    s3Key,
+                    pdfKey: s3Key, // alias
+                    fileName: sanitizedFileName,
+                    generatedFileName
+                }
             };
         } catch (error) {
             this.handleError(error, "getTopicMediaUploadUrl");
