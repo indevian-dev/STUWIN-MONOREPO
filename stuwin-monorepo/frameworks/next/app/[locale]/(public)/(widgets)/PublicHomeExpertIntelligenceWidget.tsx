@@ -2,8 +2,12 @@
 
 import { PiTerminalFill, PiShieldCheckeredFill, PiFadersFill, PiCodeBlockBold } from "react-icons/pi";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 export function PublicHomeExpertIntelligenceWidget() {
+    const t = useTranslations('PublicHomeExpertIntelligenceWidget');
+    const features = t.raw('features');
+
     return (
         <section id="expert-intelligence" className="relative py-24 lg:py-40 bg-white">
 
@@ -17,19 +21,19 @@ export function PublicHomeExpertIntelligenceWidget() {
                 <div className="flex flex-col gap-16 text-center items-center">
                     <div className="w-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand/100 border border-brand-secondary/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
                         <PiCodeBlockBold />
-                        <span>Pedagogical Governance</span>
+                        <span>{t('badge')}</span>
                     </div>
                     {/* Full Width Header */}
                     <div className="space-y-8">
 
 
                         <h2 className="text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
-                            Expert-Governed <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-brand">Intelligence.</span>
+                            {t('headline_start')} <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-brand">{t('headline_end')}</span>
                         </h2>
 
                         <p className="text-2xl text-slate-600 leading-relaxed font-medium max-w-4xl mx-auto">
-                            Randomness is the enemy of education. STUWIN’s central AI Lab ensures every interaction is governed by expert-tuned pedagogical prompts, maintaining absolute integrity at scale.
+                            {t('body')}
                         </p>
                     </div>
 
@@ -41,13 +45,13 @@ export function PublicHomeExpertIntelligenceWidget() {
                                 <div className="w-3 h-3 rounded-full bg-red-500" />
                                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                                <span className="ml-4 text-slate-500 tracking-widest uppercase">STUWIN-AI-LAB v4.2</span>
+                                <span className="ml-4 text-slate-500 tracking-widest uppercase">{t('terminal.version')}</span>
                             </div>
                             <div className="space-y-2 text-white">
-                                <p>{'>'} INITIALIZING FLOW: STUDENT_QUIZ_SUMMARY</p>
-                                <p>{'>'} INJECTING CONTEXT: GEOMETRY_HURDLES_V2</p>
-                                <p>{'>'} CALIBRATING EMPATHY_THRESHOLD: 0.95</p>
-                                <p className="text-brand">{'>'} SYSTEM READY. PEDAGOGICAL LAYER ACTIVE.</p>
+                                <p>{'>'} {t('terminal.init_flow')}</p>
+                                <p>{'>'} {t('terminal.inject_context')}</p>
+                                <p>{'>'} {t('terminal.calibrate')}</p>
+                                <p className="text-brand">{'>'} {t('terminal.ready')}</p>
                                 <p className="animate-pulse">_</p>
                             </div>
 
@@ -68,41 +72,23 @@ export function PublicHomeExpertIntelligenceWidget() {
 
                     {/* 3 Features in a Row */}
                     <div className="grid md:grid-cols-3 gap-8 w-full text-left">
-                        <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-                            <div className="p-4 rounded-2xl bg-brand/10 text-brand">
-                                <PiTerminalFill size={28} />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">Flow Precision</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    Specific AI behavior models for Homework Help, Quiz Analysis, and Concept Exploration, tuned by master educators.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-                            <div className="p-4 rounded-2xl bg-brand/10 text-brand">
-                                <PiFadersFill size={28} />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">Real-time Tuning</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    Update platform-wide AI logic in milliseconds via our centralized Command Lab. No redeployments required.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-                            <div className="p-4 rounded-2xl bg-brand/10 text-brand">
-                                <PiShieldCheckeredFill size={28} />
-                            </div>
-                            <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">Deterministic Quality</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    Ensuring AI stays within academic guardrails while providing the deep, empathetic support students need.
-                                </p>
-                            </div>
-                        </div>
+                        {features.map((feature: any, idx: number) => {
+                            const Icons = [PiTerminalFill, PiFadersFill, PiShieldCheckeredFill];
+                            const Icon = Icons[idx];
+                            return (
+                                <div key={idx} className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
+                                    <div className="p-4 rounded-2xl bg-brand/10 text-brand">
+                                        <Icon size={28} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">{feature.title}</h3>
+                                        <p className="text-slate-600 text-sm leading-relaxed">
+                                            {feature.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
 
                 </div>

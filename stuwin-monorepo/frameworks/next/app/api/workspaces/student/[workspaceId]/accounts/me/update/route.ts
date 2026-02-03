@@ -21,8 +21,7 @@ export const PATCH = unifiedApiHandler(async (request: NextRequest, { module, au
     const result = await module.auth.updateProfile(userId, {
       firstName: user.name || user.firstName,
       lastName: user.last_name || user.lastName,
-      phone: user.phone,
-      avatarBase64: user.avatar_base64 || user.avatarBase64
+      phone: user.phone
     });
 
     if (!result.success || !result.data) {

@@ -1,0 +1,25 @@
+{
+    "badge": "Our Pedagogical Vision",
+    "headline_start": "Built for",
+    "headline_end": "Character,",
+    "headline_extra": "Not just Scores.",
+    "body": "At STUWIN, we believe education should build trust, not anxiety. Our platform is engineered to protect the parent-child relationship while maximizing student autonomy.",
+    "vision_points": [
+        {
+            "title": "The Trust-First Reporting Model",
+            "description": "We don't show raw scores to parents. We report exclusively on 'Work Done on Mistakes'. By focusing on effort over failure, we eliminate the child's urge to hide results and prevent parent-child tension."
+        },
+        {
+            "title": "Micro-Block Interactive Flow",
+            "description": "Learning is delivered in small, high-intensity blocks. This keeps sessions interactive, reduces cognitive load, and makes 'skipping' almost impossible through engagement."
+        },
+        {
+            "title": "Guided Navigation vs. Output",
+            "description": "Our AI is a navigator, not a solver. It will never finish homework for a student. Instead, it guides them through the Socratic method so they achieve the solution themselves."
+        },
+        {
+            "title": "Motivation Over Output",
+            "description": "A student motivated to work on their weak points is a student destined for success."
+        }
+    ]
+}

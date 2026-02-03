@@ -38,7 +38,6 @@ interface GlobalAuthProfileContextType {
     phone: string | null;
     emailVerified: boolean;
     phoneVerified: boolean;
-    avatarUrl: string | null;
     subscriptionType: string | null;
     subscribedUntil: string | null;
     isLoading: boolean;
@@ -77,7 +76,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
     const [phone, setPhone] = useState<string | null>(null);
     const [emailVerified, setEmailVerified] = useState<boolean>(false);
     const [phoneVerified, setPhoneVerified] = useState<boolean>(false);
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [subscriptionType, setSubscriptionType] = useState<string | null>(null);
     const [subscribedUntil, setSubscribedUntil] = useState<string | null>(null);
     const [subscriptions, setSubscriptions] = useState<ActiveSubscription[]>([]);
@@ -112,7 +110,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             setPhone(initialState.phone);
             setEmailVerified(initialState.emailVerified || false);
             setPhoneVerified(initialState.phoneVerified || false);
-            setAvatarUrl(initialState.avatarUrl || null);
             setSubscriptionType(initialState.subscriptionType || null);
             setSubscribedUntil(initialState.subscribedUntil || null);
             setSubscriptions(initialState.subscriptions || []);
@@ -127,7 +124,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         setPhone(null);
         setEmailVerified(false);
         setPhoneVerified(false);
-        setAvatarUrl(null);
         setSubscriptionType(null);
         setSubscribedUntil(null);
         setSubscriptions([]);
@@ -135,10 +131,10 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
     }, []);
 
     // Create a ref to always have the latest state values without triggering dependency updates
-    const stateRef = React.useRef({ userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions });
+    const stateRef = React.useRef({ userId, firstName, lastName, email, phone, subscriptionType, subscribedUntil, subscriptions });
     useEffect(() => {
-        stateRef.current = { userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions };
-    }, [userId, firstName, lastName, email, phone, avatarUrl, subscriptionType, subscribedUntil, subscriptions]);
+        stateRef.current = { userId, firstName, lastName, email, phone, subscriptionType, subscribedUntil, subscriptions };
+    }, [userId, firstName, lastName, email, phone, subscriptionType, subscribedUntil, subscriptions]);
 
     const updateFromAuthPayload = useCallback((payload: AuthContextPayload) => {
         try {
@@ -156,7 +152,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             const newPhone = payload.user?.phone || null;
             const newEmailVerified = payload.user?.emailVerified || false;
             const newPhoneVerified = payload.user?.phoneVerified || false;
-            const newAvatarUrl = payload.user?.avatarUrl || null;
             const newSubscribedUntil = (payload.account as any)?.subscribedUntil || (payload.account as any)?.workspaceSubscribedUntil || null;
             const newSubscriptionType = (payload.account as any)?.subscriptionType || (payload.account as any)?.workspaceSubscriptionType || null;
             const newSubscriptions = (payload as any).subscriptions || [];
@@ -168,7 +163,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
             if (newPhone) setPhone(newPhone);
             setEmailVerified(newEmailVerified);
             setPhoneVerified(newPhoneVerified);
-            setAvatarUrl(newAvatarUrl);
             setSubscribedUntil(newSubscribedUntil);
             setSubscriptionType(newSubscriptionType);
             setSubscriptions(newSubscriptions);
@@ -182,7 +176,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
                 phone: newPhone || stateRef.current.phone,
                 emailVerified: newEmailVerified,
                 phoneVerified: newPhoneVerified,
-                avatarUrl: newAvatarUrl || stateRef.current.avatarUrl,
                 subscriptionType: newSubscriptionType || stateRef.current.subscriptionType,
                 subscribedUntil: newSubscribedUntil || stateRef.current.subscribedUntil,
                 subscriptions: newSubscriptions.length > 0 ? newSubscriptions : stateRef.current.subscriptions,
@@ -271,7 +264,6 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
         phone,
         emailVerified,
         phoneVerified,
-        avatarUrl,
         subscriptionType,
         subscribedUntil,
         subscriptions,

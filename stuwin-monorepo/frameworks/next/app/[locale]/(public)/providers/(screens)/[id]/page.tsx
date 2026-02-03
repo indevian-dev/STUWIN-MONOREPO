@@ -1,3 +1,4 @@
+import { getS3Url } from '@/lib/utils/s3Utility';
 import { PublicSingleProviderWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicSingleProviderWidget';
 import { PublicRelatedProvidersWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicRelatedProvidersWidget';
 import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
@@ -87,7 +88,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/providers/${id}`,
       ...(Provider.logo && {
         images: [{
-          url: `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
+          url: getS3Url(`providers/${Provider.id}/${Provider.logo}`)
         }]
       })
     },

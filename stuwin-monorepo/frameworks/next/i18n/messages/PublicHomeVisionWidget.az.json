@@ -1,0 +1,25 @@
+{
+    "badge": "Pedaqoji Vizyonumuz",
+    "headline_start": "Yalnız ballar üçün deyil,",
+    "headline_end": "Xarakter",
+    "headline_extra": "üçün yaradılmışdır.",
+    "body": "STUWIN-də biz inanırıq ki, təhsil narahatlıq deyil, etibar yaratmalıdır. Platformamız tələbə müstəqilliyini maksimallaşdırarkən valideyn-uşaq münasibətlərini qorumaq üçün hazırlanmışdır.",
+    "vision_points": [
+        {
+            "title": "Öncə Etibar Hesabat Modeli",
+            "description": "Valideynlərə hamı üçün açıq balları göstərmirik. Biz yalnız 'Səhvlər Üzərində Görülən İşlər' haqqında hesabat veririk. Uğursuzluq əvəzinə səyə diqqət yetirməklə, uşağın nəticələri gizlətmək istəyini aradan qaldırırıq və valideyn-uşaq gərginliyinin qarşısını alırıq."
+        },
+        {
+            "title": "Mikro-Bloklu İnteraktiv Axın",
+            "description": "Öyrənmə kiçik, yüksək intensivlikli bloklarda çatdırılır. Bu, sessiyaları interaktiv saxlayır, koqnitiv yükü azaldır və cəlb olunma vasitəsilə 'atlamağı' demək olar ki, qeyri-mümkün edir."
+        },
+        {
+            "title": "Yönləndirilmiş Naviqasiya vs Nəticə",
+            "description": "Bizim Süni İntellektimiz həll edən deyil, naviqatordur. O, heç vaxt tələbənin əvəzinə ev tapşırığını bitirməz. Bunun əvəzinə, onlara Sokratik metodla rəhbərlik edir ki, həllinə özləri nail olsunlar."
+        },
+        {
+            "title": "Nəticədən Öncə Motivasiya",
+            "description": "Zəif nöqtələri üzərində işləməyə motivasiya olan tələbə uğura imza atmağa namizəddir."
+        }
+    ]
+}

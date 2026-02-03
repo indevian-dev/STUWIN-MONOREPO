@@ -11,7 +11,11 @@ export const GET = unifiedApiHandler(async (request, { module, authData }) => {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const result = await module.auth.getAvatarUploadUrl(authData.user.id);
+        const { searchParams } = new URL(request.url);
+        const fileName = searchParams.get("fileName") || "avatar.webp";
+        const contentType = searchParams.get("contentType") || "image/webp";
+
+        const result = await module.auth.getAvatarUploadUrl(authData.user.id, contentType, fileName);
 
         if (!result.success) {
             return NextResponse.json(

@@ -1,0 +1,27 @@
+{
+    "badge": "Pedaqoji İdarəetmə",
+    "headline_start": "Ekspert tərəfindən idarə olunan",
+    "headline_end": "İntellekt.",
+    "body": "Təsadüfiliyin təhsildə yeri yoxdur. STUWIN-in mərkəzi AI Laboratoriyası hər bir qarşılıqlı əlaqənin ekspertlər tərəfindən tənzimlənmiş pedaqoji göstərişlərlə (prompts) idarə olunmasını təmin edir və geniş miqyasda mütləq dürüstlüyü qoruyur.",
+    "terminal": {
+        "version": "STUWIN-AI-LAB v4.2",
+        "init_flow": "PROSES BAŞLAYIR: TƏLƏBƏ_KVİZ_XÜLASƏSİ",
+        "inject_context": "KONTEKST DAXİL EDİLİR: HƏNDƏSƏ_MANEƏLƏR_V2",
+        "calibrate": "KALİBRASİYA: EMPATİYA_HƏDDİ: 0.95",
+        "ready": "SİSTEM HAZIRDIR. PEDAQOJİ QAT AKTİVDİR."
+    },
+    "features": [
+        {
+            "title": "Proses Dəqiqliyi",
+            "description": "Ev tapşırığı köməyi, Kviz analizi və Konsept araşdırması üçün ustad müəllimlər tərəfindən tənzimlənən xüsusi süni intellekt davranış modelləri."
+        },
+        {
+            "title": "Real Zamanlı Tənzimləmə",
+            "description": "Mərkəzi Komanda Laboratoriyamız vasitəsilə platforma miqyasında süni intellekt məntiqini millisaniyələr ərzində yeniləyin. Yenidən quraşdırma (re-deployment) tələb olunmur."
+        },
+        {
+            "title": "Deterministik Keyfiyyət",
+            "description": "Süni İntellektin akademik çərçivədə qalmasını təmin edərkən, tələbələrin ehtiyac duyduğu dərin və empatik dəstəyi təmin edirik."
+        }
+    ]
+}

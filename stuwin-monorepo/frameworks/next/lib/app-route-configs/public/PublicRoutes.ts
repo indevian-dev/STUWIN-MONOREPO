@@ -38,6 +38,7 @@ export const publicEndpoints: EndpointsMap = {
   "/api/blogs/:id": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/cards/search": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/webhooks/payments/epoint": createEndpoint({ method: "POST", authRequired: false, type: "api" }),
+  "/api/docs": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
 
   // ============================================
   // Public Pages (Non-Auth)

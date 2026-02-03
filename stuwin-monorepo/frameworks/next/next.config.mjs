@@ -14,13 +14,13 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: 'stuwin.s3.tebi.io',
+                hostname: 's3.stuwin.ai',
                 port: '',
                 pathname: '/**',
             },
             {
                 protocol: 'https',
-                hostname: 's3.stuwin.ai',
+                hostname: 'r2.stuwin.ai',
                 port: '',
                 pathname: '/**',
             },

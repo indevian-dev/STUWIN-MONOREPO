@@ -130,31 +130,7 @@ export const workspacesRootEndpoints: EndpointsMap = {
     type: "page",
   }),
 
-  "/api/workspaces/root/billing": createRootEndpoint({
-    method: "GET",
-    authRequired: true,
-    type: "api",
-  }),
-
-  "/api/workspaces/root/billing/tiers": createRootEndpoint({
-    method: "GET",
-    authRequired: true,
-    type: "api",
-  }),
-
-  "/api/workspaces/root/billing/pay": createRootEndpoint({
-    method: "POST",
-    authRequired: true,
-    type: "api",
-  }),
-
-  "/api/workspaces/root/billing/coupon": createRootEndpoint({
-    method: "POST",
-    authRequired: true,
-    type: "api",
-  }),
-
-  // New Billing Endpoints (Transactions & Subscriptions)
+  // New Billing Endpoints (Transactions, Subscriptions, Payments)
   "/api/workspaces/billing/subscriptions": createRootEndpoint({
     method: "GET",
     authRequired: true,
@@ -165,7 +141,22 @@ export const workspacesRootEndpoints: EndpointsMap = {
     authRequired: true,
     type: "api",
   }),
+  "/api/workspaces/billing/tiers": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "api",
+  }),
+  "/api/workspaces/billing/coupon": createRootEndpoint({
+    method: "POST",
+    authRequired: true,
+    type: "api",
+  }),
   "/api/workspaces/billing/initiate": createRootEndpoint({
+    method: "POST",
+    authRequired: true,
+    type: "api",
+  }),
+  "/api/workspaces/billing/verify/:transactionId": createRootEndpoint({
     method: "POST",
     authRequired: true,
     type: "api",

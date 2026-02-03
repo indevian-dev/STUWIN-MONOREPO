@@ -2,31 +2,26 @@
 
 import { PiBrainDuotone, PiChartLineUpBold, PiPulseFill, PiLightbulbFill } from "react-icons/pi";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
-const features = [
-    {
-        icon: <PiPulseFill className="text-3xl text-brand" />,
-        title: "Real-Time Neural Mapping",
-        description: "Our AI monitors cognitive patterns during every assessment to map exactly how you process information."
-    },
-    {
-        icon: <PiChartLineUpBold className="text-3xl text-brand" />,
-        title: "Precision Gap Detection",
-        description: "Beyond right or wrong—we identify the invisible conceptual hurdles blocking your next level of mastery."
-    },
-    {
-        icon: <PiLightbulbFill className="text-3xl text-brand" />,
-        title: "Adaptive Method Optimization",
-        description: "AI identifies which learning style—visual, Socratic, or active recall—unlocks your peak performance."
-    },
-    {
-        icon: <PiChartLineUpBold className="text-3xl text-brand" />,
-        title: "Exam-Readiness Analytics",
-        description: "Precision estimation of student readiness for specific exams based on historical knowledge hub density."
-    }
-];
+// Features will be mapped from translations inside the component
 
 export function PublicHomeCognitiveAnalysisWidget() {
+    const t = useTranslations('PublicHomeCognitiveAnalysisWidget');
+    const featuresTranslations = t.raw('features');
+
+    const featureIcons = [
+        <PiPulseFill className="text-3xl text-brand" />,
+        <PiChartLineUpBold className="text-3xl text-brand" />,
+        <PiLightbulbFill className="text-3xl text-brand" />,
+        <PiChartLineUpBold className="text-3xl text-brand" />
+    ];
+
+    const features = featuresTranslations.map((f: any, idx: number) => ({
+        ...f,
+        icon: featureIcons[idx]
+    }));
+
     return (
         <section id="cognitive-analysis" className="relative py-24 lg:py-32 bg-white overflow-hidden">
             {/* Background Ambience */}
@@ -43,15 +38,15 @@ export function PublicHomeCognitiveAnalysisWidget() {
                         <div className="lg:col-span-8 space-y-8">
                             <div className="w-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
                                 <PiBrainDuotone />
-                                <span>Cognitive Intelligence</span>
+                                <span>{t('badge')}</span>
                             </div>
 
                             <h2 className="text-5xl lg:text-7xl font-black text-slate-900 leading-tight tracking-tighter">
-                                The MRI of <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">Knowledge.</span>
+                                {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span>
                             </h2>
 
                             <p className="text-xl text-slate-600 leading-relaxed font-medium max-w-3xl">
-                                STUWIN doesn’t just grade your work. It performs a deep structural analysis of your cognitive performance, identifying the exact neural pathways for growth, detecting your best learning methods, and estimating your exam readiness.
+                                {t('body')}
                             </p>
                         </div>
 
@@ -77,9 +72,8 @@ export function PublicHomeCognitiveAnalysisWidget() {
                         </div>
                     </div>
 
-                    {/* Features Grid (2x2) */}
                     <div className="grid md:grid-cols-2 gap-6 pb-8">
-                        {features.map((feature, idx) => (
+                        {features.map((feature: any, idx: number) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}

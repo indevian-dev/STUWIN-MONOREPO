@@ -2,6 +2,10 @@
 
 @import "tailwindcss";
 
+@plugin "tailwind-scrollbar";
+@plugin "tailwindcss-animated";
+@plugin "@tailwindcss/typography";
+
 @theme {
   /* Primary brand colors */
   --color-brand: #7ee30f;

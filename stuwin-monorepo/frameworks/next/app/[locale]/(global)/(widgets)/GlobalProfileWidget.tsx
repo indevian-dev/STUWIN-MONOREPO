@@ -3,18 +3,23 @@
 
 import React from 'react';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 
 export function GlobalProfileWidget() {
+    const t = useTranslations('GlobalProfileWidget');
     const {
         userId,
         firstName,
         lastName,
         loading,
-        avatarUrl,
         getInitials
     } = useGlobalAuthProfileContext();
+
+    const avatarUrl = userId ? `${process.env.NEXT_PUBLIC_S3_PREFIX}${userId}/avatar/avatar.webp` : null;
+
+    const [imageError, setImageError] = React.useState(false);
 
     if (loading || !userId) {
         return (
@@ -30,16 +35,23 @@ export function GlobalProfileWidget() {
         );
     }
 
-    const fullName = `${firstName || ''} ${lastName || ''}`.trim() || 'User';
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim() || t('fallback_name');
 
     return (
         <Link
-            href="/workspaces/profile"
+            href="/workspaces"
             className="flex items-center space-x-3 p-4 bg-light rounded-md hover:bg-white transition-all group mb-4"
         >
             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm transition-transform group-hover:scale-105">
-                {avatarUrl ? (
-                    <Image src={avatarUrl} alt={fullName} fill className="object-cover" />
+                {avatarUrl && !imageError ? (
+                    <Image
+                        src={avatarUrl}
+                        alt={fullName}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        onError={() => setImageError(true)}
+                    />
                 ) : (
                     <div className="w-full h-full bg-brand text-white flex items-center justify-center font-bold text-lg">
                         {getInitials(fullName)}
@@ -51,7 +63,7 @@ export function GlobalProfileWidget() {
                     {fullName}
                 </h3>
                 <p className="text-[10px] text-dark/40 truncate uppercase tracking-wider font-medium">
-                    View Profile
+                    {t('view_workspace')}
                 </p>
             </div>
         </Link>

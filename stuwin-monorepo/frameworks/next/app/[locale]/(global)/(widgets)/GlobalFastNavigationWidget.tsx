@@ -32,6 +32,7 @@ export function GlobalFastNavigationWidget({
   const avatarRef = useRef<HTMLButtonElement>(null);
   const { userId } = useGlobalAuthProfileContext();
   const { fastNavLinks, domain } = config;
+  const showLabels = fastNavLinks.length <= 2;
 
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
@@ -54,11 +55,11 @@ export function GlobalFastNavigationWidget({
           {fastNavLinks.map((link: any, index: number) => {
             const Icon = link.icon;
             const variantClasses =
-              link.variant === 'secondary'
-                ? 'bg-brand text-brand-secondary px-4 py-2 shadow-md hover:shadow-lg'
-                : link.variant === 'primary'
-                  ? 'border border-bglight bg-white px-3 py-2 shadow-sm'
-                  : 'bg-light text-dark px-3 py-2';
+              link.variant === 'primary'
+                ? 'bg-brand-secondary text-brand px-4 py-2'
+                : link.variant === 'secondary'
+                  ? 'text-brand-secondary bg-brand px-3 py-2'
+                  : 'bg-brand text-brand-secondary px-3 py-2';
 
             return (
               <Link
@@ -68,7 +69,7 @@ export function GlobalFastNavigationWidget({
                 aria-label={t(link.label)}
               >
                 <Icon className="text-2xl" />
-                <span className="hidden lg:flex font-bold text-sm">
+                <span className={`${showLabels ? 'flex' : 'hidden lg:flex'} font-bold text-sm text-nowrap`}>
                   {t(link.label)}
                 </span>
               </Link>
@@ -113,7 +114,7 @@ export function GlobalFastNavigationWidget({
               aria-label={t(link.label)}
             >
               <Icon className="text-2xl" />
-              <span className="hidden lg:flex flex-nowrap font-bold text-sm">
+              <span className={`${showLabels ? 'flex' : 'hidden lg:flex'} flex-nowrap font-bold text-sm`}>
                 {t(link.label)}
               </span>
             </Link>

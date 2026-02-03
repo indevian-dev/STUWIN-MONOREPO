@@ -1,5 +1,5 @@
 import { withPageAuth } from '@/lib/app-access-control/interceptors';
-import { AuthProfileEditWidget } from './(widgets)/AuthProfileEditWidget';
+import { WorkspaceProfileEditWidget } from './(widgets)/WorkspaceProfileEditWidget';
 
 interface ProfilePageProps {
     params: Promise<{
@@ -14,7 +14,7 @@ interface ProfilePageProps {
 async function ProfilePage({ params }: ProfilePageProps) {
     await params;
 
-    return <AuthProfileEditWidget />;
+    return <WorkspaceProfileEditWidget />;
 }
 
 export default withPageAuth(ProfilePage, {

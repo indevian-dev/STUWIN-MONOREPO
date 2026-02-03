@@ -2,7 +2,7 @@ import { StaffDocEditWidget } from '@/app/[locale]/workspaces/staff/[workspaceId
 import { withPageAuth } from '@/lib/app-access-control/interceptors';
 
 function StaffPrivacyEditPage() {
-  return <StaffDocEditWidget title="Privacy" />;
+  return <StaffDocEditWidget title="Privacy" type="privacy" />;
 }
 
 export default withPageAuth(

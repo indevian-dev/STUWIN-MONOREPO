@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { getS3Url } from '@/lib/utils/s3Utility';;
 
 import {
   useState,
@@ -49,7 +50,7 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
   }
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
+    ? getS3Url(`providers/${Provider.id}/${Provider.logo}`)
     : '/placeholder-Provider.png';
 
   return (

@@ -325,16 +325,7 @@ export const studentEndpoints: EndpointsMap = {
     authRequired: true,
     type: "page",
   }),
-  "/workspaces/student/:workspaceId/conversations": createStudentEndpoint({
-    method: "GET",
-    authRequired: true,
-    type: "page",
-  }),
-  "/workspaces/student/:workspaceId/conversations/:id": createStudentEndpoint({
-    method: "GET",
-    authRequired: true,
-    type: "page",
-  }),
+
 
   // ============================================
   // Student - Notifications APIs

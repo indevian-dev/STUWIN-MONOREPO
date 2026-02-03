@@ -352,17 +352,16 @@ export const users = pgTable("users", {
 	phone: varchar(),
 	emailIsVerified: boolean("email_is_verified").default(false),
 	phoneIsVerified: boolean("phone_is_verified").default(false),
-	avatarUrl: text("avatar_url"),
 	firstName: text("first_name"),
 	lastName: text("last_name"),
-	avatarBase64: varchar("avatar_base64"),
-	sessions: json(),
 	twoFactorAuthEmailExpireAt: time("two_factor_auth_email_expire_at"),
 	twoFactorAuthPhoneExpireAt: time("two_factor_auth_phone_expire_at"),
 	fin: varchar(),
+	sessionsGroupId: varchar("sessions_group_id"),
 }, (table) => [
 	unique("users_email_unique").on(table.email),
 	unique("users_fin_unique").on(table.fin),
+	unique("users_sessions_group_id_unique").on(table.sessionsGroupId),
 ]);
 
 export const workspaceAccesses = pgTable("workspace_accesses", {

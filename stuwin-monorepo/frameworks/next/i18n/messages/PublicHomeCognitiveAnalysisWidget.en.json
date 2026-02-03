@@ -1,0 +1,24 @@
+{
+    "badge": "Cognitive Intelligence",
+    "headline_start": "The MRI of",
+    "headline_end": "Knowledge.",
+    "body": "STUWIN doesn’t just grade your work. It performs a deep structural analysis of your cognitive performance, identifying the exact neural pathways for growth, detecting your best learning methods, and estimating your exam readiness.",
+    "features": [
+        {
+            "title": "Real-Time Neural Mapping",
+            "description": "Our AI monitors cognitive patterns during every assessment to map exactly how you process information."
+        },
+        {
+            "title": "Precision Gap Detection",
+            "description": "Beyond right or wrong—we identify the invisible conceptual hurdles blocking your next level of mastery."
+        },
+        {
+            "title": "Adaptive Method Optimization",
+            "description": "AI identifies which learning style—visual, Socratic, or active recall—unlocks your peak performance."
+        },
+        {
+            "title": "Exam-Readiness Analytics",
+            "description": "Precision estimation of student readiness for specific exams based on historical knowledge hub density."
+        }
+    ]
+}

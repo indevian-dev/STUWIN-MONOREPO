@@ -1,3 +1,4 @@
+import { getS3Url } from '@/lib/utils/s3Utility';
 /**
  * Public Providers Service
  * Utility functions for fetching and managing educational organizations data
@@ -191,7 +192,7 @@ export function getProviderLogoUrl(Provider?: Provider): string {
     return '/placeholder-Provider.png';
   }
 
-  return `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`;
+  return getS3Url(`providers/${Provider.id}/${Provider.logo}`);
 }
 
 /**

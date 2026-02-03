@@ -8,7 +8,8 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY!,
   },
   region: process.env.AWS_S3_REGION!,
-  endpoint: "https://s3.tebi.io",
+  endpoint: process.env.AWS_S3_ENDPOINT,
+  forcePathStyle: true, // Often needed for R2/Minio
 });
 
 export default s3;

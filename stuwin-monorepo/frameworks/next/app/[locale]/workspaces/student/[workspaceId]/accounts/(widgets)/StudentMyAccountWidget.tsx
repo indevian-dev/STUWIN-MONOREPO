@@ -7,12 +7,11 @@ import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface UserData {
+    id: string;
     name: string;
     last_name: string;
     email: string;
     phone: string;
-    avatar_base64: string;
-    avatar_url?: string;
 }
 
 interface SessionData {
@@ -29,11 +28,11 @@ export default function MyAccount() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [error, setError] = useState('');
     const [user, setUser] = useState<UserData>({
+        id: '',
         name: '',
         last_name: '',
         email: '',
         phone: '',
-        avatar_base64: '',
     });
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [sessions, setSessions] = useState<SessionData[]>([]);
@@ -148,11 +147,6 @@ export default function MyAccount() {
                 // Convert to base64
                 const resizedImage = canvas.toDataURL(file.type);
                 setAvatarPreview(resizedImage);
-                setUser(prev => ({
-                    ...prev,
-                    avatar_base64: resizedImage,
-                    avatar_url: resizedImage
-                }));
             };
 
             if (event.target && event.target.result && typeof event.target.result === 'string') {
@@ -176,7 +170,6 @@ export default function MyAccount() {
                         name: user.name,
                         last_name: user.last_name,
                         phone: user.phone,
-                        avatar_base64: user.avatar_base64, // Include the avatar base64 data
                     }
                 })
             });
@@ -295,18 +288,22 @@ export default function MyAccount() {
                     <div className="space-y-6">
                         <div className="flex flex-col md:flex-row gap-6">
                             <div className="w-full md:w-1/4">
-                                <div className="aspect-square rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                    {user.avatar_base64 ? (
-                                        <img
-                                            src={user.avatar_base64}
-                                            alt={`${user.name}'s avatar`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="text-6xl text-gray-400">
-                                            {user.name?.[0]?.toUpperCase() || '?'}
-                                        </div>
-                                    )}
+                                <div className="aspect-square rounded-full bg-gray-200 flex items-center justify-center overflow-hidden relative">
+                                    <img
+                                        src={`${process.env.NEXT_PUBLIC_S3_PREFIX}${user.id}/avatar/avatar.webp`}
+                                        alt={`${user.name}'s avatar`}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                            const parent = (e.target as HTMLImageElement).parentElement;
+                                            if (parent) {
+                                                const initials = document.createElement('div');
+                                                initials.className = "text-6xl text-gray-400";
+                                                initials.innerText = user.name?.[0]?.toUpperCase() || '?';
+                                                parent.appendChild(initials);
+                                            }
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div className="w-full md:w-3/4 space-y-4">
@@ -417,18 +414,24 @@ export default function MyAccount() {
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
                             <div className="flex items-center space-x-6">
-                                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                    {avatarPreview || user.avatar_url || user.avatar_base64 ? (
-                                        <img
-                                            src={avatarPreview || user.avatar_url || user.avatar_base64}
-                                            alt={`${user.name}'s avatar`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="text-3xl text-gray-400">
-                                            {user.name?.[0]?.toUpperCase() || '?'}
-                                        </div>
-                                    )}
+                                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden relative">
+                                    <img
+                                        src={avatarPreview || `${process.env.NEXT_PUBLIC_S3_PREFIX}${user.id}/avatar/avatar.webp`}
+                                        alt={`${user.name}'s avatar`}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            if (!avatarPreview) {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                const parent = (e.target as HTMLImageElement).parentElement;
+                                                if (parent) {
+                                                    const initials = document.createElement('div');
+                                                    initials.className = "text-3xl text-gray-400";
+                                                    initials.innerText = user.name?.[0]?.toUpperCase() || '?';
+                                                    parent.appendChild(initials);
+                                                }
+                                            }
+                                        }}
+                                    />
                                 </div>
                                 <div>
                                     <label className="cursor-pointer bg-bl text-bd px-4 py-2 rounded-md hover:bg-bl/90 transition-colors">

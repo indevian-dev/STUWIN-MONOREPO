@@ -13,12 +13,10 @@ export namespace User {
         phone?: string;
         emailVerified: boolean;
         phoneVerified: boolean;
-        avatarUrl?: string;
         provider?: string;
         fullName: string;
         isActive: boolean;
         twoFactorEnabled: boolean;
-        sessions: Session[];
     }
 
     export interface Profile {
@@ -27,7 +25,6 @@ export namespace User {
         firstName?: string;
         lastName?: string;
         fullName?: string;
-        avatarUrl?: string;
         phone?: string;
         lastSeenAt?: string;
         createdAt?: string;

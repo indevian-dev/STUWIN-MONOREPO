@@ -1,0 +1,27 @@
+{
+    "badge": "Pedagogical Governance",
+    "headline_start": "Expert-Governed",
+    "headline_end": "Intelligence.",
+    "body": "Randomness is the enemy of education. STUWIN’s central AI Lab ensures every interaction is governed by expert-tuned pedagogical prompts, maintaining absolute integrity at scale.",
+    "terminal": {
+        "version": "STUWIN-AI-LAB v4.2",
+        "init_flow": "INITIALIZING FLOW: STUDENT_QUIZ_SUMMARY",
+        "inject_context": "INJECTING CONTEXT: GEOMETRY_HURDLES_V2",
+        "calibrate": "CALIBRATING EMPATHY_THRESHOLD: 0.95",
+        "ready": "SYSTEM READY. PEDAGOGICAL LAYER ACTIVE."
+    },
+    "features": [
+        {
+            "title": "Flow Precision",
+            "description": "Specific AI behavior models for Homework Help, Quiz Analysis, and Concept Exploration, tuned by master educators."
+        },
+        {
+            "title": "Real-time Tuning",
+            "description": "Update platform-wide AI logic in milliseconds via our centralized Command Lab. No redeployments required."
+        },
+        {
+            "title": "Deterministic Quality",
+            "description": "Ensuring AI stays within academic guardrails while providing the deep, empathetic support students need."
+        }
+    ]
+}

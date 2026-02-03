@@ -24,7 +24,6 @@ interface User {
     last_name: string | null;
     email: string;
     phone: string | null;
-    avatar_url: string | null;
     email_is_verified: boolean;
     phone_is_verified: boolean;
     created_at: string;
@@ -576,9 +575,14 @@ export function StaffUsersListWidget() {
                 {users.map((user) => (
                     <div key={user.id} className="bg-light rounded p-4 grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-1 items-center w-full">
-                            {user.avatar_url && (
-                                <img className="h-12 w-12 rounded-full" src={user.avatar_url} alt="" />
-                            )}
+                            <img
+                                className="h-12 w-12 rounded-full object-cover bg-gray-200"
+                                src={`${process.env.NEXT_PUBLIC_S3_PREFIX}${user.id}/avatar/avatar.webp`}
+                                alt=""
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.visibility = 'hidden';
+                                }}
+                            />
                             <div className="flex items-center gap-2">
                                 <h3 className="text-lg font-bold text-gray-900">
                                     {user.name ? user.name : 'N/A'} {user.last_name ? user.last_name : ''}

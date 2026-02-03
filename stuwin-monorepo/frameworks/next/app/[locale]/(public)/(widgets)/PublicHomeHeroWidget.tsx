@@ -9,10 +9,10 @@ import {
 import Image from 'next/image';
 
 const publicHeroHighlights = [
-  { Icon: PiChatsCircleFill },
-  { Icon: PiClipboardTextFill },
-  { Icon: PiBookBookmarkFill },
-  { Icon: PiGraduationCapFill }
+  { Icon: PiChatsCircleFill, href: "#expert-intelligence" },
+  { Icon: PiClipboardTextFill, href: "#curriculum" },
+  { Icon: PiBookBookmarkFill, href: "#cognitive-analysis" },
+  { Icon: PiGraduationCapFill, href: "#vision" }
 ];
 
 export function PublicHomeHeroWidget() {
@@ -53,7 +53,7 @@ export function PublicHomeHeroWidget() {
               {t('cta_primary')}
             </Link>
             <Link
-              href="#cognitive-analysis"
+              href="#vision"
               className="inline-flex items-center justify-center px-12 py-5 rounded-2xl bg-brand-secondary border border-white/20 text-white font-black hover:bg-white/20 active:scale-95 transition-all duration-300 shadow-lg"
             >
               {t('cta_secondary')}
@@ -61,18 +61,19 @@ export function PublicHomeHeroWidget() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 pt-8">
-            {publicHeroHighlights.map(({ Icon }, idx) => (
-              <div
+            {publicHeroHighlights.map(({ Icon, href }, idx) => (
+              <Link
                 key={idx}
-                className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-white shadow-xl hover:border-white/30 transition-all duration-500"
+                href={href}
+                className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-white shadow-xl hover:border-brand/30 hover:shadow-brand/20 hover:-translate-y-1 transition-all duration-500"
               >
-                <div className="p-2 rounded-xl bg-white text-brand-secondary group-hover:bg-white group-hover:text-brand transition-all duration-300">
+                <div className="p-2 rounded-xl bg-white text-brand-secondary group-hover:bg-brand group-hover:text-white transition-all duration-300">
                   <Icon className="text-2xl" />
                 </div>
                 <span className="text-sm font-black tracking-wide text-brand-secondary uppercase">
                   {highlightLabels[idx]}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { getS3Url } from '@/lib/utils/s3Utility';;
 
 import Image
   from 'next/image';
@@ -33,7 +34,7 @@ export function PublicProviderCardTile({ Provider, compact = false }: PublicProv
   if (!Provider) return null;
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
+    ? getS3Url(`providers/${Provider.id}/${Provider.logo}`)
     : '/placeholder-Provider.png';
 
   if (compact) {

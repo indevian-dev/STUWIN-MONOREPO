@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import Image from 'next/image';
-import supabase from '@/lib/integrations/supabasePublicRoleClient';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface AboutPageData {
@@ -19,27 +18,19 @@ export function PublicAboutWidget() {
     useEffect(() => {
         async function fetchAbout() {
             try {
-                const { data, error } = await supabase
-                    .from('docs')
-                    .select('*')
-                    .eq('type', 'about')
-                    .single();
+                const res = await fetch(`/api/docs?type=about`);
+                const data = await res.json();
 
-                if (error) {
-                    ConsoleLogger.error('error', error);
-                    return;
-                }
-
-                if (data && data.localizedContent) {
-                    const localized = data.localizedContent[locale] || {};
+                if (data.success && data.doc) {
+                    const localized = data.doc.localizedContent[locale] || {};
                     setAbout({
                         title: localized.title,
                         content: localized.content,
-                        cover: data.cover // Assuming cover is shared, otherwise it might be inside localizedContent too
+                        cover: data.doc.cover
                     });
                 }
             } catch (error) {
-                ConsoleLogger.error(error);
+                ConsoleLogger.error("Failed to fetch about content", error);
             }
         }
 

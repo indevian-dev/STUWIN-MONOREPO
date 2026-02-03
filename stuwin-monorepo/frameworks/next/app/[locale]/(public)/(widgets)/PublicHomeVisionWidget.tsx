@@ -2,31 +2,26 @@
 
 import { PiHandHeartFill, PiGameControllerFill, PiNavigationArrowFill, PiShieldCheckeredFill, PiStudentFill } from "react-icons/pi";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
-const visionPoints = [
-    {
-        icon: <PiHandHeartFill className="text-4xl text-brand-secondary" />,
-        title: "The Trust-First Reporting Model",
-        description: "We don't show raw scores to parents. We report exclusively on 'Work Done on Mistakes'. By focusing on effort over failure, we eliminate the child's urge to hide results and prevent parent-child tension."
-    },
-    {
-        icon: <PiGameControllerFill className="text-4xl text-brand-secondary" />,
-        title: "Micro-Block Interactive Flow",
-        description: "Learning is delivered in small, high-intensity blocks. This keeps sessions interactive, reduces cognitive load, and makes 'skipping' almost impossible through engagement."
-    },
-    {
-        icon: <PiNavigationArrowFill className="text-4xl text-brand-secondary" />,
-        title: "Guided Navigation vs. Output",
-        description: "Our AI is a navigator, not a solver. It will never finish homework for a student. Instead, it guides them through the Socratic method so they achieve the solution themselves."
-    },
-    {
-        icon: <PiStudentFill className="text-4xl text-brand-secondary" />,
-        title: "Motivation Over Output",
-        description: "A student motivated to work on their weak points is a student destined for success."
-    }
-];
+// Vision points will be mapped from translations inside the component
 
 export function PublicHomeVisionWidget() {
+    const t = useTranslations('PublicHomeVisionWidget');
+    const pointsTranslations = t.raw('vision_points');
+
+    const pointIcons = [
+        <PiHandHeartFill className="text-4xl text-brand-secondary" />,
+        <PiGameControllerFill className="text-4xl text-brand-secondary" />,
+        <PiNavigationArrowFill className="text-4xl text-brand-secondary" />,
+        <PiStudentFill className="text-4xl text-brand-secondary" />
+    ];
+
+    const visionPoints = pointsTranslations.map((p: any, idx: number) => ({
+        ...p,
+        icon: pointIcons[idx]
+    }));
+
     return (
         <section id="vision" className="relative py-24 lg:py-32 bg-white overflow-hidden">
             {/* Soft Glows for trust/calm atmosphere */}
@@ -40,21 +35,20 @@ export function PublicHomeVisionWidget() {
                     <div className="space-y-8 max-w-4xl mx-auto">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
                             <PiShieldCheckeredFill className="text-brand" />
-                            <span>Our Pedagogical Vision</span>
+                            <span>{t('badge')}</span>
                         </div>
 
                         <h2 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
-                            Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">Character,</span> Not just Scores.
+                            {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span> {t('headline_extra')}
                         </h2>
 
                         <p className="text-xl text-slate-600 leading-relaxed font-medium">
-                            At STUWIN, we believe education should build trust, not anxiety. Our platform is engineered to protect the parent-child relationship while maximizing student autonomy.
+                            {t('body')}
                         </p>
                     </div>
 
-                    {/* Points Grid (2 Rows) */}
                     <div className="grid md:grid-cols-2 gap-8 w-full text-left">
-                        {visionPoints.slice(0, 4).map((point, idx) => (
+                        {visionPoints.slice(0, 4).map((point: any, idx: number) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}

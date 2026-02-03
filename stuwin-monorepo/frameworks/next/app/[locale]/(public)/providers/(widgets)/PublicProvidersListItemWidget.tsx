@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { getS3Url } from '@/lib/utils/s3Utility';;
 
 import React from 'react';
 import Image
@@ -31,7 +32,7 @@ export function PublicProvidersListItemWidget({ Provider }: PublicProvidersListI
   if (!Provider) return null;
 
   const logoUrl = Provider.logo
-    ? `https://s3.tebi.io/stuwin.ai/providers/${Provider.id}/${Provider.logo}`
+    ? getS3Url(`providers/${Provider.id}/${Provider.logo}`)
     : '/placeholder-Provider.png';
 
   return (

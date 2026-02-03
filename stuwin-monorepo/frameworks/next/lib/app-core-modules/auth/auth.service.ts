@@ -19,7 +19,7 @@ import { sendMail } from '@/lib/integrations/mailService';
 import { generateVerificationOtpEmail } from '@/lib/app-infrastructure/notificators/mail/mailGenerator';
 import { sendOtpSmsPlus } from '@/lib/integrations/smsService';
 import s3 from "@/lib/integrations/awsClient";
-import { GetObjectCommand, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export interface LoginParams {
@@ -528,7 +528,6 @@ export class AuthService extends BaseService {
                     email: data.user?.email,
                     name: data.user?.firstName,
                     last_name: data.user?.lastName,
-                    avatar_url: await this.getAvatarUrl(data.user!.id),
                     phone: data.user?.phone,
                     email_is_verified: data.user?.emailIsVerified,
                     phone_is_verified: data.user?.phoneIsVerified,
@@ -671,7 +670,6 @@ export class AuthService extends BaseService {
                         phone: user.phone,
                         emailVerified: user.emailIsVerified,
                         phoneVerified: user.phoneIsVerified,
-                        avatarUrl: await this.getAvatarUrl(user.id),
                     },
                     account: {
                         id: account.id,
@@ -687,7 +685,7 @@ export class AuthService extends BaseService {
         }
     }
 
-    async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarBase64?: string }): Promise<AuthResult> {
+    async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string }): Promise<AuthResult> {
         try {
             const updatedUser = await this.repository.updateUser(userId, data);
             if (!updatedUser) {
@@ -703,8 +701,7 @@ export class AuthService extends BaseService {
                         id: updatedUser.id,
                         firstName: updatedUser.firstName,
                         lastName: updatedUser.lastName,
-                        phone: updatedUser.phone,
-                        avatarBase64: updatedUser.avatarBase64
+                        phone: updatedUser.phone
                     }
                 }
             };
@@ -714,23 +711,28 @@ export class AuthService extends BaseService {
         }
     }
 
-    async getAvatarUploadUrl(userId: string): Promise<AuthResult> {
+    async getAvatarUploadUrl(userId: string, contentType: string = "image/webp", fileName: string = "avatar.webp"): Promise<AuthResult> {
         try {
             const bucket = process.env.AWS_S3_BUCKET_NAME!;
-            const key = `${userId}/avatar/avatar.webp`;
+            const key = `${userId}/avatar/${fileName}`;
 
             const command = new PutObjectCommand({
                 Bucket: bucket,
                 Key: key,
-                ContentType: "image/webp",
+                ContentType: contentType,
             });
 
-            const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+            // Basic signed URL without extra options that might trigger unexpected SDK behavior
+            const uploadUrl = await getSignedUrl(s3, command, {
+                expiresIn: 3600
+            });
+
+            console.log("[AuthService] Generated upload URL for key:", key);
 
             return {
                 success: true,
                 status: 200,
-                data: { uploadUrl }
+                data: { uploadUrl, key }
             };
         } catch (error) {
             console.error("[AuthService] getAvatarUploadUrl error:", error);
@@ -738,34 +740,4 @@ export class AuthService extends BaseService {
         }
     }
 
-    private async getAvatarUrl(userId: string): Promise<string | null> {
-        try {
-            const bucket = process.env.AWS_S3_BUCKET_NAME!;
-            const key = `${userId}/avatar/avatar.webp`;
-
-            // Check if object exists
-            try {
-                await s3.send(new HeadObjectCommand({
-                    Bucket: bucket,
-                    Key: key,
-                }));
-            } catch (err: any) {
-                if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
-                    return null;
-                }
-                // For other errors, we might still want to try to return a URL if it's just a permission issue on HeadObject
-                // but usually NotFound is what we care about
-            }
-
-            const command = new GetObjectCommand({
-                Bucket: bucket,
-                Key: key,
-            });
-
-            return await getSignedUrl(s3, command, { expiresIn: 86400 }); // 24 hours
-        } catch (error) {
-            // Silently fail and return null for avatar if there's an issue
-            return null;
-        }
-    }
 }

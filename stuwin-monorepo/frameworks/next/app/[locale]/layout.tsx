@@ -1,6 +1,7 @@
 
 
 import 'react-toastify/dist/ReactToastify.css';
+import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { GlobalToastProvider } from '@/app/[locale]/(global)/(providers)/GlobalToastProvider';

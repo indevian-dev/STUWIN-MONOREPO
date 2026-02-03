@@ -1,0 +1,28 @@
+{
+    "badge": "Kurikulum Mühərriki",
+    "headline_start": "Avtonom",
+    "headline_end": "Bilik Mühəndisliyi.",
+    "body": "Dərslik yükləyin. Kurikulum qurun. Saniyələr ərzində avtonom mühərrikimiz mürəkkəb PDF-ləri strukturlaşdırılmış öyrənmə yollarına və ekspert səviyyəli qiymətləndirmələrə çevirir.",
+    "pipeline": {
+        "ingest": "Yükləmə",
+        "structure": "Strukturlaşdırma",
+        "synthesize": "Sintez"
+    },
+    "steps": {
+        "ingest": {
+            "title": "Kütləvi Məlumat Qəbulu",
+            "description": "Minlərlə səhifədən ibarət xammal akademik məzmunu təhvil verin. Mühərrikimiz bütün kitabxanaları klinik dəqiqliklə həzm edir.",
+            "phase": "Mərhələ 01"
+        },
+        "structure": {
+            "title": "Struktur Çıxarılması",
+            "description": "Süni İntellekt mövzuları müəyyənləşdirir, əsas anlayışları ümumiləşdirir və səhifə əlaqələrini avtomatik xəritələyir.",
+            "phase": "Mərhələ 02"
+        },
+        "synthesize": {
+            "title": "Qiymətləndirmə Sintezi",
+            "description": "Yeni strukturlaşdırılmış kurikulumunuza uyğunlaşdırılmış minlərlə yüksək dəqiqlikli sualları dərhal yaradın.",
+            "phase": "Mərhələ 03"
+        }
+    }
+}

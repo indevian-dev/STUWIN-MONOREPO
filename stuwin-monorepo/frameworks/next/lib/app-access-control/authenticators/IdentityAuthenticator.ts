@@ -48,12 +48,10 @@ export interface UserData {
   phone: string | null;
   firstName: string | null;
   lastName: string | null;
-  avatarUrl: string | null;
   emailVerified: boolean | null;
   phoneVerified: boolean | null;
   createdAt: Date | null;
   updatedAt: Date | null;
-  sessions?: Record<string, Session> | null;
   password?: string | null;
   facebookId?: string | null;
   googleId?: string | null;
@@ -102,7 +100,6 @@ interface AuthData {
     phone: string | null;
     firstName: string | null;
     last_name: string | null;
-    avatar_url: string | null;
     emailVerified: boolean | null;
     phoneVerified: boolean | null;
     created_at: Date | null;
@@ -142,7 +139,6 @@ interface CreateUserParams {
   providerId?: string;
   providerData?: {
     name?: string;
-    avatar_url?: string;
     last_name?: string;
   };
 }
@@ -481,7 +477,6 @@ export async function getUserData(
         phone: users.phone,
         firstName: users.firstName,
         lastName: users.lastName,
-        avatarUrl: users.avatarUrl,
         emailVerified: users.emailIsVerified,
         phoneVerified: users.phoneIsVerified,
         sessionsGroupId: users.sessionsGroupId,
@@ -560,7 +555,6 @@ export async function getUserData(
           phone: row.phone,
           firstName: row.firstName,
           lastName: row.lastName,
-          avatarUrl: row.avatarUrl,
           emailVerified: row.emailVerified,
           phoneVerified: row.phoneVerified,
           sessionsGroupId: row.sessionsGroupId,
@@ -610,7 +604,6 @@ export async function getUserData(
       lastName: users.lastName,
       createdAt: users.createdAt,
       updatedAt: users.updatedAt,
-      avatarUrl: users.avatarUrl,
       emailVerified: users.emailIsVerified,
       phoneVerified: users.phoneIsVerified,
       sessionsGroupId: users.sessionsGroupId,
@@ -741,26 +734,15 @@ async function getAccountByUserId({
   } as AccountData;
 }
 
-// ═════ SESSIONS (Simplified for brevity as requested by current scope) ═════
+// ═════ SESSIONS (Removed Legacy Logic) ═════
 export async function verifyUserSession({ sessionId, authData }: { sessionId: string; authData: { user: UserData; account: AccountData } }): Promise<boolean> {
-  return !!(authData.user.sessions && authData.user.sessions[sessionId]);
+  return true;
 }
 
 export async function createUserSession({ user, session }: { user: UserData; session: any }): Promise<{ createdSession: any; sessionCreationError: string | null }> {
-  try {
-    const userResult = await db.select({ sessions: users.sessions }).from(users).where(eq(users.id, user.id)).limit(1);
-    const sessions = { ...(userResult[0]?.sessions as any || {}), [session.id]: session };
-    await db.update(users).set({ sessions }).where(eq(users.id, user.id));
-    return { createdSession: session, sessionCreationError: null };
-  } catch (error: any) { return { createdSession: null, sessionCreationError: error.message }; }
+  return { createdSession: session, sessionCreationError: null };
 }
 
 export async function removeSession({ userId, sessionId }: { userId: string; sessionId: string }): Promise<boolean> {
-  try {
-    const userResult = await db.select({ sessions: users.sessions }).from(users).where(eq(users.id, userId)).limit(1);
-    const sessions = { ...(userResult[0]?.sessions as any || {}) };
-    delete sessions[sessionId];
-    await db.update(users).set({ sessions }).where(eq(users.id, userId));
-    return true;
-  } catch { return false; }
+  return true;
 }

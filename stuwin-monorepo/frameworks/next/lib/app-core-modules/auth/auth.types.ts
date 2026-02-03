@@ -35,11 +35,9 @@ export namespace User {
         phone?: string;
         emailVerified: boolean;
         phoneVerified: boolean;
-        avatarUrl?: string;
         provider?: string;
         fullName: string;
         isActive: boolean;
-        sessions: Session[];
     }
 
     export interface CreateInput {

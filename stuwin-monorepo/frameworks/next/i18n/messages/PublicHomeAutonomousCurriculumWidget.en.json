@@ -1,0 +1,28 @@
+{
+    "badge": "Curriculum Engine",
+    "headline_start": "Autonomous",
+    "headline_end": "Knowledge Engineering.",
+    "body": "Upload a textbook. Deploy a curriculum. In seconds, our autonomous engine transforms dense PDFs into structured learning paths and expert-grade assessments.",
+    "pipeline": {
+        "ingest": "Ingest",
+        "structure": "Structure",
+        "synthesize": "Synthesize"
+    },
+    "steps": {
+        "ingest": {
+            "title": "Massive Ingestion",
+            "description": "Hand over thousands of pages of raw academic content. Our engine digests entire libraries with clinical precision.",
+            "phase": "Phase 01"
+        },
+        "structure": {
+            "title": "Structural Extraction",
+            "description": "AI identifies topics, summarizes core concepts, and maps page relationships automatically.",
+            "phase": "Phase 02"
+        },
+        "synthesize": {
+            "title": "Assessment Synthesis",
+            "description": "Instantly generate thousands of high-fidelity questions tailored to your newly structured curriculum.",
+            "phase": "Phase 03"
+        }
+    }
+}

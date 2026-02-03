@@ -85,9 +85,6 @@ export const POST = unifiedApiHandler(async (req: NextRequest, { params }: any) 
       userData.email = emailByOAuthProvider;
     }
 
-    // Normalize avatar URL field
-    const avatarUrl = userData.avatarUrl || userData.picture || userData.avatar_url || null;
-
     const { existingUser } = await verifyUserExists({
       email: userData.email,
       phone: undefined
@@ -107,8 +104,7 @@ export const POST = unifiedApiHandler(async (req: NextRequest, { params }: any) 
         provider: provider,
         providerId: userData.id,
         providerData: {
-          name: userData.name,
-          avatar_url: avatarUrl ?? undefined
+          name: userData.name
         }
       });
 
@@ -128,8 +124,7 @@ export const POST = unifiedApiHandler(async (req: NextRequest, { params }: any) 
         provider: provider,
         providerId: userData.id,
         providerData: {
-          name: userData.name,
-          avatar_url: avatarUrl ?? undefined
+          name: userData.name
         }
       });
 

@@ -6,6 +6,7 @@ import React, {
     useRef
 } from 'react';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
+import Image from 'next/image';
 import { PiSignInLight } from "react-icons/pi";
 
 interface GlobalProfileAvatarTileProps {
@@ -15,7 +16,10 @@ interface GlobalProfileAvatarTileProps {
 export function GlobalProfileAvatarTile({ variant = 'dark' }: GlobalProfileAvatarTileProps) {
     const { userId, firstName, lastName, loading, getInitials } = useGlobalAuthProfileContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const avatarRef = useRef<HTMLButtonElement>(null);
+
+    const avatarUrl = userId ? `${process.env.NEXT_PUBLIC_S3_PREFIX}${userId}/avatar/avatar.webp` : null;
 
     // Color classes based on variant
     const colorClasses = variant === 'light'
@@ -58,18 +62,29 @@ export function GlobalProfileAvatarTile({ variant = 'dark' }: GlobalProfileAvata
         );
     }
 
-    // Authenticated state - show initials avatar
+    // Authenticated state - show image if available, else initials
     return (
         <>
             <button
                 ref={avatarRef}
                 onClick={() => setIsModalOpen(true)}
                 key={userId || 'no-profile'} // Force re-render on user change
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${colorClasses.bg} transition-colors overflow-hidden border-2 ${colorClasses.border}`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${colorClasses.bg} transition-colors overflow-hidden border-2 ${colorClasses.border} relative`}
             >
-                <span className={`${colorClasses.text} text-xs font-semibold select-none`}>
-                    {getInitials(fullName)}
-                </span>
+                {avatarUrl && !imageError ? (
+                    <Image
+                        src={avatarUrl}
+                        alt={fullName}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    <span className={`${colorClasses.text} text-xs font-semibold select-none`}>
+                        {getInitials(fullName)}
+                    </span>
+                )}
             </button>
         </>
     );

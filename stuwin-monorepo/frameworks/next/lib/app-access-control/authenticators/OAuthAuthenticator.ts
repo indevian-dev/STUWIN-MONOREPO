@@ -120,7 +120,6 @@ const PROVIDER_COLUMN_MAP: Record<OAuthProvider, "googleId" | "facebookId" | "ap
 interface ProviderData {
   name?: string;
   last_name?: string;
-  avatar_url?: string;
 }
 
 export async function linkOAuthProvider({
@@ -192,7 +191,6 @@ export async function linkOAuthProvider({
     };
     if (providerData.name) userUpdates.firstName = providerData.name;
     if (providerData.last_name) userUpdates.lastName = providerData.last_name;
-    if (providerData.avatar_url) userUpdates.avatarUrl = providerData.avatar_url;
 
     await db.update(users)
       .set(userUpdates)

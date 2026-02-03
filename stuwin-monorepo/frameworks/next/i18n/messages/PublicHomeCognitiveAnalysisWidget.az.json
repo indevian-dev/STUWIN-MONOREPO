@@ -1,0 +1,24 @@
+{
+    "badge": "Koqnitiv İntellekt",
+    "headline_start": "Biliyin",
+    "headline_end": "MRT-si.",
+    "body": "STUWIN sadəcə işinizi qiymətləndirmir. O, koqnitiv performansınızın dərin struktur analizini həyata keçirir, inkişaf üçün dəqiq neyron yollarını müəyyənləşdirir, ən yaxşı öyrənmə metodlarınızı aşkar edir və imtahana hazırlığınızı qiymətləndirir.",
+    "features": [
+        {
+            "title": "Real Zamanlı Neyron Xəritələmə",
+            "description": "Süni intellektimiz hər bir qiymətləndirmə zamanı koqnitiv nümunələri izləyir və məlumatı tam olaraq necə emal etdiyinizi xəritələyir."
+        },
+        {
+            "title": "Dəqiq Boşluq Təsbiti",
+            "description": "Düzgün və ya yanlışdan kənarda — biz növbəti ustalıq səviyyənizə mane olan görünməz konseptual maneələri müəyyənləşdiririk."
+        },
+        {
+            "title": "Adaptiv Metod Optimizasiyası",
+            "description": "Süni İntellekt hansı öyrənmə tərzinin — vizual, Sokratik və ya aktiv xatırlama — sizin yüksək performansınızı açdığını müəyyən edir."
+        },
+        {
+            "title": "İmtahan Hazırlığı Analitikası",
+            "description": "Tarixi bilik mərkəzi sıxlığına əsaslanaraq tələbənin xüsusi imtahanlara hazırlığının dəqiq qiymətləndirilməsi."
+        }
+    ]
+}

@@ -1,4 +1,5 @@
-'use client';
+'use client'
+import { getS3Url } from '@/lib/utils/s3Utility';;
 
 import { Link } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
@@ -76,7 +77,7 @@ export function PublicBreadCrumbsTile({ categories, breadcrumbs }: PublicBreadCr
           <div>
             {/* Render the category with a link */}
             <div className="flex items-center space-x-1 relative rounded">
-              <img src={`https://s3.tebi.io/stuwin.ai/icons/categories/${category.icon}`} alt="" className="h-4" />
+              <img src={getS3Url(`icons/categories/${category.icon}`)} alt="" className="h-4" />
               <Link href={`/${category.slug}-${category.id}c`} passHref locale={locale}>
                 <span className="text-sm font-semibold text-dark/50 hover:underline cursor-pointer">
                   {category.title}

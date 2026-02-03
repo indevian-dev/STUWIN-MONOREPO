@@ -33,7 +33,7 @@ export function CheckoutPageClient() {
                 // For root workspace billing, we use the root endpoint
                 const response = await apiCallForSpaHelper({
                     method: 'GET',
-                    url: `/api/workspaces/root/billing/tiers`
+                    url: `/api/workspaces/billing/tiers`
                 });
 
                 if (response.data && Array.isArray(response.data)) {
@@ -64,7 +64,7 @@ export function CheckoutPageClient() {
             setActionLoading('coupon');
             const response = await apiCallForSpaHelper({
                 method: 'POST',
-                url: `/api/workspaces/root/billing/coupon`,
+                url: `/api/workspaces/billing/coupon`,
                 body: { code: couponCode }
             });
             if (response.data) {
@@ -84,7 +84,7 @@ export function CheckoutPageClient() {
             setActionLoading('pay');
             const response = await apiCallForSpaHelper({
                 method: 'POST',
-                url: `/api/workspaces/root/billing/pay`,
+                url: `/api/workspaces/billing/initiate`,
                 body: {
                     tierId: tier.id,
                     couponCode: appliedCoupon?.code,

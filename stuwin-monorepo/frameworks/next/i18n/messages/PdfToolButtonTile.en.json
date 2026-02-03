@@ -1,0 +1,10 @@
+{
+    "header": "PDF Tools",
+    "description": "Create, convert, and manage PDF files with our comprehensive PDF toolkit. Upload existing PDFs, convert images to PDF, or create PDFs from text content.",
+    "features": [
+        "Upload and process existing PDF files",
+        "Convert multiple images into a single PDF",
+        "Create PDFs from rich text content"
+    ],
+    "cta": "Open PDF Tools"
+}

@@ -50,7 +50,7 @@ export async function uploadFile({
     await new Promise<void>((resolve, reject) => {
       axios.put(presignedUrl, uploadFile, {
         headers: {
-          'Content-Type': 'application/pdf',
+          'Content-Type': contentType,
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.lengthComputable && progressEvent.total) {
