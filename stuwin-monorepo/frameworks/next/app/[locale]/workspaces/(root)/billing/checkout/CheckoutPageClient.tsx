@@ -104,11 +104,7 @@ export function CheckoutPageClient() {
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center min-h-[50vh]">
-            <PiArrowsClockwiseBold className="text-4xl text-brand-primary animate-spin" />
-        </div>
-    );
+    if (loading || isLoading) return <GlobalLoaderTile />;
 
     if (!tierId || !tier) return (
         <div className="max-w-2xl mx-auto p-8 text-center">

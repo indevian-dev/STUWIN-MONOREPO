@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AuthLoginWidget } from '@/app/[locale]/auth/login/(widgets)/AuthLoginWidget';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useRouter } from 'next/navigation';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 const AuthLoginPage = () => {
   const router = useRouter();
@@ -38,11 +39,7 @@ const AuthLoginPage = () => {
   };
 
   if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <GlobalLoaderTile fullPage={true} message="Authenticating..." />;
   }
 
   return (

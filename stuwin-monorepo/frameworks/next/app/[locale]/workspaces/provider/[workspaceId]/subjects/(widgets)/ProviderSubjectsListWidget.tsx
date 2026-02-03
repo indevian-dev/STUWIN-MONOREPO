@@ -6,6 +6,7 @@ import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { useTranslations } from "next-intl";
 import { PiPlus, PiX, PiBook } from "react-icons/pi";
 import { toast } from "react-toastify";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface Subject {
   id: number;
@@ -99,11 +100,7 @@ export function ProviderSubjectsListWidget() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[300px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <GlobalLoaderTile />;
   }
 
   if (error) {

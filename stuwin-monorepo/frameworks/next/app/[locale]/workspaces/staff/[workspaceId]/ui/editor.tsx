@@ -640,12 +640,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
         className="rounded-md bg-white min-h-[400px] focus-within:border-blue-500 transition-colors editor-container"
         style={{ minHeight: height }}
       />
-      {isLoading && (
-        <div className="text-sm text-gray-500 mt-2 flex items-center">
-          <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-          Loading editor tools...
-        </div>
-      )}
+      {(loading || isLoading) && <GlobalLoaderTile message="Loading editor tools..." />}
       {isReady && (
         <div className="text-sm text-green-600 mt-2 flex items-center">
           <span className="mr-2">🎉</span>

@@ -226,7 +226,7 @@ export function StaffProvidersListWidget() {
                 </div>
             </form>
 
-            {loading && <div className="my-4 text-center">Loading educational organizations...</div>}
+            {loading && <GlobalLoaderTile message="Loading educational organizations..." />}
 
             {/* Providers List */}
             <div className="grid grid-cols-1 gap-4">

@@ -14,6 +14,7 @@ import {
 } from "react-icons/pi";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import axios from "axios";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface ProviderBulkTopicUploadWidgetProps {
   isOpen: boolean;
@@ -460,36 +461,16 @@ export function ProviderBulkTopicUploadWidget({
 
           {/* Stage: Uploading */}
           {stage === "uploading" && (
-            <div className="text-center py-12">
-              <PiUpload className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-pulse" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Uploading PDF...
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Please wait while we upload your file
-              </p>
-              <div className="w-full max-w-md mx-auto bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-purple-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-sm text-gray-600 mt-2">{uploadProgress}%</p>
-            </div>
+            <GlobalLoaderTile
+              message="Uploading PDF..."
+              showProgress={true}
+              progress={uploadProgress}
+            />
           )}
 
           {/* Stage: Analyzing */}
           {stage === "analyzing" && (
-            <div className="text-center py-12">
-              <PiSpinner className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-spin" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Analyzing PDF with AI...
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Gemini AI is extracting topics and page numbers
-              </p>
-              <p className="text-xs text-gray-500">This may take 30-60 seconds</p>
-            </div>
+            <GlobalLoaderTile message="Analyzing PDF with AI..." />
           )}
 
           {/* Stage: Review Topics */}
@@ -611,23 +592,11 @@ export function ProviderBulkTopicUploadWidget({
 
           {/* Stage: Creating Topics */}
           {stage === "creating" && (
-            <div className="text-center py-12">
-              <PiSpinner className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-spin" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Creating Topics...
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Creating topic {currentTopicIndex + 1} of {extractedTopics.length}
-              </p>
-              <div className="w-full max-w-md mx-auto bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-purple-500 h-3 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${((currentTopicIndex + 1) / extractedTopics.length) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
+            <GlobalLoaderTile
+              message="Creating Topics..."
+              showProgress={true}
+              progress={Math.round(((currentTopicIndex + 1) / extractedTopics.length) * 100)}
+            />
           )}
 
           {/* Stage: Complete */}

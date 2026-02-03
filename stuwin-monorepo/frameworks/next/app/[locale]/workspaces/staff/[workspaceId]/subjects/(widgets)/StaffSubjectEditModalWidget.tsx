@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { BaseModalProps } from '@/types';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface Subject {
@@ -126,7 +127,7 @@ export function StaffSubjectEditModalWidget({
         )}
 
         {loading && !subject.title ? (
-          <p className='my-20 py-20 text-center'>Loading...</p>
+          <GlobalLoaderTile />
         ) : (
           <div className="space-y-4">
             <div>

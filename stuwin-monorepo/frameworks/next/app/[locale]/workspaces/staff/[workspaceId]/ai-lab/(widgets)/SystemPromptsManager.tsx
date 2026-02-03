@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { fetchPrompts, createPrompt, updatePrompt, deletePrompt, SystemPrompt } from '@/lib/utils/staffAiLabApiHelper';
 import { FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiXCircle, FiRefreshCw } from 'react-icons/fi';
 import { PiSpinner } from 'react-icons/pi';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function SystemPromptsManager() {
     const params = useParams();
@@ -99,7 +100,7 @@ export function SystemPromptsManager() {
                 </button>
             </div>
 
-            {loading && <div className="flex justify-center"><PiSpinner className="animate-spin text-2xl" /></div>}
+            {loading && <GlobalLoaderTile />}
 
             {error && <div className="text-red-500">{error}</div>}
 

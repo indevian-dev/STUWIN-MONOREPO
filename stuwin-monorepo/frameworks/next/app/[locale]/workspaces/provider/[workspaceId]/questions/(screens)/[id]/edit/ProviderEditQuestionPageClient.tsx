@@ -89,18 +89,7 @@ export default function ProviderEditQuestionPageClient() {
     router.push('/provider/questions');
   };
 
-  if (loading) {
-    return (
-      <div className='w-full min-h-screen bg-gray-50 p-6'>
-        <div className='max-w-4xl mx-auto'>
-          <div className='flex justify-center items-center py-12'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
-            <span className='ml-3 text-gray-600'>Loading question...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile message="Loading question..." />;
 
   if (!question) {
     return (

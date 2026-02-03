@@ -449,7 +449,7 @@ export function StaffUsersListWidget() {
                 </div>
             </form>
 
-            {loading && <div className="my-4">Searching...</div>}
+            {loading && <GlobalLoaderTile message="Searching..." />}
 
             {/* Role Assignment Modal */}
             {isRoleModalOpen && (

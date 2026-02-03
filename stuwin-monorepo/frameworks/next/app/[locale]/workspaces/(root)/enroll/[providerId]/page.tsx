@@ -171,13 +171,7 @@ export default function EnrollmentPage() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-                <div className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (loading || isLoading) return <GlobalLoaderTile />;
 
     if (!provider) {
         return (

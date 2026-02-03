@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useTranslations } from 'next-intl';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface Quiz {
@@ -101,12 +102,7 @@ export function StudentQuizHistoryListWidget() {
         Start New Quiz
       </Link>
       {/* Loading State */}
-      {loading && (
-        <div className='flex justify-center items-center py-12'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand'></div>
-          <span className='ml-3 text-gray-600'>Loading quiz history...</span>
-        </div>
-      )}
+      {loading && <GlobalLoaderTile message="Loading quiz history..." />}
 
       {/* Quizzes List */}
       {!loading && (

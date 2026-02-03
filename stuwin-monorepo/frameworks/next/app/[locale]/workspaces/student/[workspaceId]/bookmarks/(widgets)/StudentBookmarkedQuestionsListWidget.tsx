@@ -108,12 +108,7 @@ export function StudentBookmarkedQuestionsListWidget() {
         <p className="text-gray-600">Manage your favorite cards</p>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
-          <span className="ml-3 text-lg text-gray-600">Loading favorites...</span>
-        </div>
-      ) : favorites.length === 0 ? (
+      {loading ? <GlobalLoaderTile message="Loading favorites..." /> : favorites.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">❤️</div>
           <h2 className="text-2xl font-semibold text-gray-600 mb-2">No favorites yet</h2>

@@ -101,13 +101,7 @@ export function StudentHomeworkDetailWidget() {
     router.push(`/workspaces/student/${workspaceId}/homeworks/${homeworkId}/edit`);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile />;
 
   if (error || !homework) {
     return (

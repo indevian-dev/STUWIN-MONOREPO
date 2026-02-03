@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import type { JobStatsResponse } from '@/lib/app-core-modules/jobs/jobs.types';
 import { FiActivity, FiCheckCircle, FiClock, FiLayers } from 'react-icons/fi';
 import { fetchJobStats } from '@/lib/utils/staffJobsApiHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function StaffJobStatsWidget() {
   const [stats, setStats] = useState<JobStatsResponse | null>(null);
@@ -46,18 +47,7 @@ export function StaffJobStatsWidget() {
   };
 
   if (loading && !stats) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <GlobalLoaderTile />;
   }
 
   if (error) {
@@ -235,10 +225,10 @@ export function StaffJobStatsWidget() {
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${activity.status === 'completed'
-                              ? 'bg-green-100 text-green-800'
-                              : activity.status === 'failed'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-blue-100 text-blue-800'
+                            ? 'bg-green-100 text-green-800'
+                            : activity.status === 'failed'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-blue-100 text-blue-800'
                             }`}
                         >
                           {activity.status}

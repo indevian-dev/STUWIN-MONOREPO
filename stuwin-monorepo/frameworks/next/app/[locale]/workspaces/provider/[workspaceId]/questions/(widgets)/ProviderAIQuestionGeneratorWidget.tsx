@@ -10,6 +10,7 @@ import { ProviderGradeLevelSelectorWidget } from './ProviderGradeLevelSelectorWi
 import { ProviderComplexitySelectorWidget } from './ProviderComplexitySelectorWidget';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import {
   Question,
   QuestionComplexity,
@@ -127,6 +128,7 @@ export function ProviderAIQuestionGeneratorWidget({
 
   return (
     <div className="space-y-6">
+      {loading && <GlobalLoaderTile fullPage={true} message="Generating Questions..." />}
       <form onSubmit={handleGenerate} className="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
         <div className="border-b pb-4">
           <h3 className="text-lg font-semibold text-gray-900">AI Question Generator</h3>
@@ -236,12 +238,6 @@ export function ProviderAIQuestionGeneratorWidget({
             disabled={loading}
             className="px-6 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
-            {loading && (
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            )}
             {loading ? 'Generating...' : 'Generate Questions'}
           </button>
         </div>

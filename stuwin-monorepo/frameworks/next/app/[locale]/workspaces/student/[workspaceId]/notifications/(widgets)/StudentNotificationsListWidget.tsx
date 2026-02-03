@@ -155,13 +155,7 @@ function NotificationsList() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile />;
 
   return (
     <div className="bg-white rounded-lg shadow-sm">

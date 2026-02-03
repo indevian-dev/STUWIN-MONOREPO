@@ -12,6 +12,7 @@ import { ProviderComplexitySelectorWidget } from './ProviderComplexitySelectorWi
 import { ProviderAnswersEditorWidget } from './ProviderAnswersEditorWidget';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { BaseFormProps, FormMode } from '@/types';
 import { Question as QuestionType, QuestionComplexity } from '@/types/resources/questions';
 import { ApiResponse } from '@/types';
@@ -198,115 +199,111 @@ export function ProviderQuestionFormWidget({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-gray-200">
-      {/* Question Body */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 mb-1'>
-          Question <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          value={formData.body}
-          onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-          rows={4}
-          className={`w-full px-3 py-2 border ${errors.body ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-          placeholder="Enter the question text"
-        />
-        {errors.body && (
-          <p className="mt-1 text-sm text-red-600">{errors.body}</p>
-        )}
-      </div>
-
-      {/* Subject, Grade Level, Complexity in a grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ProviderSubjectSelectorWidget
-          selectedSubjectId={formData.subjectId}
-          onSubjectSelect={(value) => setFormData({ ...formData, subjectId: value })}
-          error={errors.subjectId}
-        />
-
-        <ProviderGradeLevelSelectorWidget
-          selectedGradeLevel={formData.gradeLevel}
-          onGradeLevelSelect={(value) => setFormData({ ...formData, gradeLevel: value })}
-          error={errors.gradeLevel}
-        />
-
-        <ProviderComplexitySelectorWidget
-          selectedComplexity={formData.complexity}
-          onComplexitySelect={(value) => setFormData({ ...formData, complexity: value })}
-          error={errors.complexity}
-        />
-      </div>
-
-      {/* Answers Editor */}
-      <ProviderAnswersEditorWidget
-        answers={formData.answers}
-        correctAnswer={formData.correctAnswer}
-        onAnswersChange={(answers) => setFormData({ ...formData, answers })}
-        onCorrectAnswerChange={(answer) => setFormData({ ...formData, correctAnswer: answer })}
-        errors={errors}
-      />
-
-      {/* Explanation Guide (optional) */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 mb-1'>
-          Explanation Guide (JSON format, optional)
-        </label>
-        <textarea
-          value={formData.explanationGuide}
-          onChange={(e) => setFormData({ ...formData, explanationGuide: e.target.value })}
-          rows={3}
-          className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm'
-          placeholder='{"hint": "Explanation text", "resources": ["link1", "link2"]}'
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Enter a JSON object with explanation details (optional)
-        </p>
-      </div>
-
-      {/* AI Assistant Crib */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 mb-1'>
-          AI Assistant Crib (Context for AI Tutor)
-        </label>
-        <textarea
-          value={formData.aiAssistantCrib}
-          onChange={(e) => setFormData({ ...formData, aiAssistantCrib: e.target.value })}
-          rows={3}
-          className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm'
-          placeholder="Special instructions or hints for the AI when helping students with this question"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          This content will be passed to the AI Tutor to provide specific context or hints.
-        </p>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end space-x-3 pt-4 border-t">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            className="px-6 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
-        )}
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-        >
-          {loading && (
-            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+    <>
+      {loading && <GlobalLoaderTile fullPage={true} message="Saving Question..." />}
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-gray-200">
+        {/* Question Body */}
+        <div>
+          <label className='block text-sm font-medium text-gray-700 mb-1'>
+            Question <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            value={formData.body}
+            onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+            rows={4}
+            className={`w-full px-3 py-2 border ${errors.body ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+            placeholder="Enter the question text"
+          />
+          {errors.body && (
+            <p className="mt-1 text-sm text-red-600">{errors.body}</p>
           )}
-          {loading ? 'Saving...' : (mode === 'edit' ? 'Update Question' : 'Create Question')}
-        </button>
-      </div>
-    </form>
+        </div>
+
+        {/* Subject, Grade Level, Complexity in a grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ProviderSubjectSelectorWidget
+            selectedSubjectId={formData.subjectId}
+            onSubjectSelect={(value) => setFormData({ ...formData, subjectId: value })}
+            error={errors.subjectId}
+          />
+
+          <ProviderGradeLevelSelectorWidget
+            selectedGradeLevel={formData.gradeLevel}
+            onGradeLevelSelect={(value) => setFormData({ ...formData, gradeLevel: value })}
+            error={errors.gradeLevel}
+          />
+
+          <ProviderComplexitySelectorWidget
+            selectedComplexity={formData.complexity}
+            onComplexitySelect={(value) => setFormData({ ...formData, complexity: value })}
+            error={errors.complexity}
+          />
+        </div>
+
+        {/* Answers Editor */}
+        <ProviderAnswersEditorWidget
+          answers={formData.answers}
+          correctAnswer={formData.correctAnswer}
+          onAnswersChange={(answers) => setFormData({ ...formData, answers })}
+          onCorrectAnswerChange={(answer) => setFormData({ ...formData, correctAnswer: answer })}
+          errors={errors}
+        />
+
+        {/* Explanation Guide (optional) */}
+        <div>
+          <label className='block text-sm font-medium text-gray-700 mb-1'>
+            Explanation Guide (JSON format, optional)
+          </label>
+          <textarea
+            value={formData.explanationGuide}
+            onChange={(e) => setFormData({ ...formData, explanationGuide: e.target.value })}
+            rows={3}
+            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm'
+            placeholder='{"hint": "Explanation text", "resources": ["link1", "link2"]}'
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Enter a JSON object with explanation details (optional)
+          </p>
+        </div>
+
+        {/* AI Assistant Crib */}
+        <div>
+          <label className='block text-sm font-medium text-gray-700 mb-1'>
+            AI Assistant Crib (Context for AI Tutor)
+          </label>
+          <textarea
+            value={formData.aiAssistantCrib}
+            onChange={(e) => setFormData({ ...formData, aiAssistantCrib: e.target.value })}
+            rows={3}
+            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm'
+            placeholder="Special instructions or hints for the AI when helping students with this question"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            This content will be passed to the AI Tutor to provide specific context or hints.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              className="px-6 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            {loading ? 'Saving...' : (mode === 'edit' ? 'Update Question' : 'Create Question')}
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
-

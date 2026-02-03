@@ -58,20 +58,7 @@ export function StudentQuizReportWidget({ quizId, onBack }: StudentQuizReportWid
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                <div className="relative">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand"></div>
-                    <PiRobot className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-brand text-2xl" />
-                </div>
-                <div className="text-center">
-                    <h3 className="text-lg font-bold text-gray-900">Generating Learning Report</h3>
-                    <p className="text-sm text-gray-500">Our AI is analyzing your results to provide personalized insights...</p>
-                </div>
-            </div>
-        );
-    }
+    if (loading || isLoading) return <GlobalLoaderTile message="Generating Learning Report" />;
 
     if (!report) return null;
 

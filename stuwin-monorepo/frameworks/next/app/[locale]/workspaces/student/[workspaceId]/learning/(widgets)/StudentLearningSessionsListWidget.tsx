@@ -124,13 +124,7 @@ export function StudentLearningSessionsListWidget() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile />;
 
   return (
     <div className="space-y-6">

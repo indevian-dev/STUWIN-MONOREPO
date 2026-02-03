@@ -267,13 +267,7 @@ export default function MyAccount() {
         return `${deviceType} (${os})`;
     };
 
-    if (isFetching) {
-        return (
-            <div className="w-full h-64 flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-bl border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isFetching) return <GlobalLoaderTile />;
 
     return (
         <div className="bg-white rounded-lg shadow-md px-4 md:px-8 w-full mx-auto">

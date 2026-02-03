@@ -54,9 +54,9 @@ export function GlobalFastNavigationWidget({
           {fastNavLinks.map((link: any, index: number) => {
             const Icon = link.icon;
             const variantClasses =
-              link.variant === 'primary'
+              link.variant === 'secondary'
                 ? 'bg-brand text-brand-secondary px-4 py-2 shadow-md hover:shadow-lg'
-                : link.variant === 'secondary'
+                : link.variant === 'primary'
                   ? 'border border-bglight bg-white px-3 py-2 shadow-sm'
                   : 'bg-light text-dark px-3 py-2';
 

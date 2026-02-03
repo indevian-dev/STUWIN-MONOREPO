@@ -142,17 +142,7 @@ export default function AuthOAuthCallbackPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mb-4"></div>
-          <h2 className="text-xl font-semibold">Completing login...</h2>
-          <p className="text-gray-500">Please wait while we authenticate you</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile message="Please wait while we authenticate you" />;
 
   if (needEmail) {
     return (

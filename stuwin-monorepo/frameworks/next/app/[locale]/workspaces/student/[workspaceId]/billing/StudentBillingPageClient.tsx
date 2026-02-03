@@ -84,11 +84,7 @@ export function StudentBillingPageClient() {
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center p-24">
-            <PiArrowsClockwiseBold className="text-4xl text-brand-primary animate-spin" />
-        </div>
-    );
+    if (loading || isLoading) return <GlobalLoaderTile />;
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8">

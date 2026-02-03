@@ -50,14 +50,7 @@ export default function StudentQuizResultsPageClient() {
     setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <div className='flex justify-center items-center py-12'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand'></div>
-        <span className='ml-3 text-gray-600'>Loading results...</span>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile message="Loading results..." />;
 
   if (!quiz) {
     return (

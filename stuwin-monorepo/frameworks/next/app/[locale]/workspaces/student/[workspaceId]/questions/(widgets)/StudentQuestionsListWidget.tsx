@@ -78,12 +78,7 @@ export function StudentQuestionsListWidget() {
   return (
     <div className='w-full'>
       {/* Loading State */}
-      {loading && (
-        <div className='flex justify-center items-center py-12'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand'></div>
-          <span className='ml-3 text-gray-600'>Loading questions...</span>
-        </div>
-      )}
+      {loading && <GlobalLoaderTile message="Loading questions..." />}
 
       {/* Questions List */}
       {!loading && (

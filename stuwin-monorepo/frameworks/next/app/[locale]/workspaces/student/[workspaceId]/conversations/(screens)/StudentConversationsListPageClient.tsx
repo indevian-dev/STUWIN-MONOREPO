@@ -68,13 +68,7 @@ export default function StudentConversationsListPageClient() {
     return message.length > maxLength ? message.substring(0, maxLength) + '...' : message;
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  if (loading || isLoading) return <GlobalLoaderTile />;
 
   if (error) {
     return (

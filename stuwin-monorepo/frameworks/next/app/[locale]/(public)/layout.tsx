@@ -6,9 +6,11 @@ import {
   PiBookBookmarkLight,
   PiExamLight,
   PiHouseLine,
-  PiEnvelopeSimple,
+  PiSignIn,
+  PiUserPlus,
+  PiFilePdf,
   PiStorefront,
-  PiFilePdf
+  PiEnvelopeSimple
 } from 'react-icons/pi';
 import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
 import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
@@ -39,14 +41,14 @@ function PublicLayout({ children }: PublicLayoutProps) {
     fastNavLinks: [
       {
         href: '/auth/login',
-        icon: PiHouseLine,
+        icon: PiSignIn,
         label: 'login',
         variant: 'secondary',
         showOnMobile: true
       },
       {
         href: '/auth/register',
-        icon: PiEnvelopeSimple,
+        icon: PiUserPlus,
         label: 'register',
         variant: 'primary',
         showOnMobile: true

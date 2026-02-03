@@ -5,6 +5,7 @@ import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
 import { PiUpload, PiFilePdf, PiX, PiCheck } from 'react-icons/pi';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 interface ProviderTopicPdfUploadWidgetProps {
   topicId: number;
@@ -239,18 +240,11 @@ export function ProviderTopicPdfUploadWidget({
 
       {/* Upload Progress */}
       {uploading && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-700">Uploading...</span>
-            <span className="text-sm font-medium text-gray-900">{uploadProgress}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-        </div>
+        <GlobalLoaderTile
+          message="Uploading PDF..."
+          showProgress={true}
+          progress={uploadProgress}
+        />
       )}
 
       {/* Error Message */}

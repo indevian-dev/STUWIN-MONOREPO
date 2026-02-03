@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import type { JobLog, LogJobType, LogStatus, JobLogsResponse } from '@/lib/app-core-modules/jobs/jobs.types';
 import { FiFilter, FiSearch, FiChevronDown, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
 import { fetchJobLogs } from '@/lib/utils/staffJobsApiHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function StaffJobLogsWidget() {
   const [logs, setLogs] = useState<JobLog[]>([]);
@@ -208,10 +209,7 @@ export function StaffJobLogsWidget() {
       {/* Logs Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading logs...</p>
-          </div>
+          <GlobalLoaderTile message="Loading logs..." />
         ) : error ? (
           <div className="p-8 text-center text-red-600">{error}</div>
         ) : logs.length === 0 ? (
