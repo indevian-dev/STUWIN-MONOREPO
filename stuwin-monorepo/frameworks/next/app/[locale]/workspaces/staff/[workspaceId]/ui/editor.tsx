@@ -1,5 +1,6 @@
 'use client'
 
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 
 import React, {
@@ -126,13 +127,13 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
       ConsoleLogger.log('No valid HTML content provided');
       return [];
     }
-    
+
     ConsoleLogger.log('Converting HTML to EditorJS blocks:', html);
-    
+
     const blocks: EditorJSBlock[] = [];
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html.trim();
-    
+
     // Function to process text nodes and inline elements
     const processTextContent = (element: HTMLElement): string | null => {
       // If element has only text content or simple inline elements, treat as paragraph
@@ -160,7 +161,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
       const element = node as HTMLElement;
       const tagName = element.tagName.toLowerCase();
-      
+
       switch (tagName) {
         case 'h1':
         case 'h2':
@@ -170,9 +171,9 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
         case 'h6':
           blocks.push({
             type: 'header',
-            data: { 
-              text: element.textContent?.trim() || '', 
-              level: parseInt(tagName.charAt(1)) 
+            data: {
+              text: element.textContent?.trim() || '',
+              level: parseInt(tagName.charAt(1))
             }
           });
           break;
@@ -192,7 +193,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
         case 'blockquote':
           blocks.push({
             type: 'quote',
-            data: { 
+            data: {
               text: element.textContent?.trim() || '',
               caption: ''
             }
@@ -213,7 +214,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           break;
         case 'table':
           const rows = Array.from(element.querySelectorAll('tr'));
-          const content = rows.map((row) => 
+          const content = rows.map((row) =>
             Array.from(row.querySelectorAll('td, th')).map((cell) => cell.textContent?.trim() || '')
           ).filter(row => row.length > 0);
           if (content.length > 0) {
@@ -258,7 +259,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
     // Process all child nodes
     Array.from(tempDiv.childNodes).forEach(processNode);
-    
+
     // If no blocks were created but there's content, create a default paragraph
     if (blocks.length === 0 && tempDiv.textContent.trim()) {
       blocks.push({
@@ -266,7 +267,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
         data: { text: tempDiv.innerHTML.trim() }
       });
     }
-    
+
     ConsoleLogger.log('Converted blocks:', blocks);
     return blocks;
   };
@@ -274,7 +275,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
   // Convert Editor.js blocks to HTML with better list handling
   const convertEditorJSToHTML = (data: EditorJSData): string => {
     if (!data || !data.blocks) return '';
-    
+
     return data.blocks.map((block: EditorJSBlock) => {
       switch (block.type) {
         case 'paragraph':
@@ -285,21 +286,21 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           const tag = block.data.style === 'ordered' ? 'ol' : 'ul';
           const items = (block.data.items || []).map((item: any) => {
             ConsoleLogger.log('List item structure:', item, typeof item); // Debug log
-            
+
             // Handle different possible structures for list items
             let itemText = '';
-            
+
             if (typeof item === 'string') {
               itemText = item;
             } else if (typeof item === 'object' && item !== null) {
               // Try different possible properties
-              itemText = item.content || item.text || item.value || item.innerHTML || 
-                        (item.data ? item.data.text : '') || 
-                        JSON.stringify(item); // fallback to show structure
+              itemText = item.content || item.text || item.value || item.innerHTML ||
+                (item.data ? item.data.text : '') ||
+                JSON.stringify(item); // fallback to show structure
             } else {
               itemText = String(item || '');
             }
-            
+
             return `<li>${itemText}</li>`;
           }).join('');
           return `<${tag}>${items}</${tag}>`;
@@ -312,7 +313,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           return '<hr>';
         case 'table':
           if (block.data.content) {
-            const rows = block.data.content.map((row: any[]) => 
+            const rows = block.data.content.map((row: any[]) =>
               `<tr>${row.map((cell: any) => `<td>${cell}</td>`).join('')}</tr>`
             ).join('');
             return `<table class="border-collapse border border-gray-300"><tbody>${rows}</tbody></table>`;
@@ -325,7 +326,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
         case 'embed':
           return `<div class="embed-container">${block.data.embed || ''}</div>`;
         case 'checklist':
-          const checkItems = (block.data.items || []).map((item: any) => 
+          const checkItems = (block.data.items || []).map((item: any) =>
             `<li><input type="checkbox" ${item.checked ? 'checked' : ''} disabled> ${item.text}</li>`
           ).join('');
           return `<ul class="checklist">${checkItems}</ul>`;
@@ -349,10 +350,10 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           ConsoleLogger.log('🔄 Setting initial content after editor ready (ONCE):', initialContent);
           setIsUpdatingContent(true);
           initialContentLoadedRef.current = true;
-          
+
           const blocks = convertHTMLToEditorJS(initialContent);
           ConsoleLogger.log('📄 Converted initial blocks:', blocks);
-          
+
           if (blocks.length > 0) {
             await editorInstanceRef.current.render({ blocks });
             lastContentRef.current = initialContent;
@@ -539,16 +540,16 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           data: initialData,
           onChange: async (api, event) => {
             if (isUpdatingContent) return;
-            
+
             if (changeTimeoutRef.current) {
               clearTimeout(changeTimeoutRef.current);
             }
-            
+
             changeTimeoutRef.current = setTimeout(async () => {
               try {
                 const data = await api.saver.save();
                 const htmlContent = convertEditorJSToHTML(data);
-                
+
                 if (htmlContent !== lastContentRef.current) {
                   ConsoleLogger.log('Content changed, updating...');
                   lastContentRef.current = htmlContent;
@@ -623,8 +624,8 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
       <div className="border border-red-300 rounded-md bg-red-50 p-4 min-h-[400px] flex flex-col items-center justify-center">
         <div className="text-red-600 mb-2">Error loading editor:</div>
         <div className="text-red-500 text-sm font-mono">{error}</div>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Reload Page
@@ -635,12 +636,12 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
   return (
     <div {...props}>
-      <div 
+      <div
         id={editorId}
         className="rounded-md bg-white min-h-[400px] focus-within:border-blue-500 transition-colors editor-container"
         style={{ minHeight: height }}
       />
-      {(loading || isLoading) && <GlobalLoaderTile message="Loading editor tools..." />}
+      {(isLoading) && <GlobalLoaderTile message="Loading editor tools..." />}
       {isReady && (
         <div className="text-sm text-green-600 mt-2 flex items-center">
           <span className="mr-2">🎉</span>
@@ -650,7 +651,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
           </div>
         </div>
       )}
-      
+
       {/* EditorJS Custom Styles */}
       <style>{`
         .editor-container .ce-toolbar__plus {

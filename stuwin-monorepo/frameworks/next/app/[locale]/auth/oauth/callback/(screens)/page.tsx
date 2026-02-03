@@ -10,7 +10,7 @@ import {
 } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
-
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface OAuthData {
   code: string;
@@ -142,7 +142,7 @@ export default function AuthOAuthCallbackPage() {
     }
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile message="Please wait while we authenticate you" />;
+  if (isLoading) return <GlobalLoaderTile message="Please wait while we authenticate you" />;
 
   if (needEmail) {
     return (

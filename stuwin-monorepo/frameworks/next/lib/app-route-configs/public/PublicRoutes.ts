@@ -46,6 +46,7 @@ export const publicEndpoints: EndpointsMap = {
   "/product-audit": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/homepage": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/contact": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/not-found": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/forbidden": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/search": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
@@ -64,14 +65,11 @@ export const publicEndpoints: EndpointsMap = {
   "/questions/:id": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
 
   // Static pages
-  "/pages": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/:slug": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/rules": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/privacy": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/terms": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/contact": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/about": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
-  "/pages/faq": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/docs/rules": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/docs/privacy": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/docs/terms": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/docs/about": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/docs/faq": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
 
   // Other public
   "/cities": createEndpoint({ method: "GET", authRequired: false, type: "page" }),

@@ -15,6 +15,7 @@ import { PiStorefront } from 'react-icons/pi';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 import Link
   from 'next/link';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 interface Conversation {
   id: number;
@@ -68,7 +69,7 @@ export default function StudentConversationsListPageClient() {
     return message.length > maxLength ? message.substring(0, maxLength) + '...' : message;
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   if (error) {
     return (

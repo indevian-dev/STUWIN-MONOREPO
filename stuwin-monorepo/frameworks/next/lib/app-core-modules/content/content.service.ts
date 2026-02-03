@@ -114,27 +114,33 @@ export class ContentService extends BaseService {
         try {
             // 1. Find page by type
             const page = await this.repository.findPageByType(type);
-            if (!page) return { success: false, error: "Page not found", code: 404 };
 
             // 2. Build update object
             const updateData: any = {};
             if (data.type !== undefined) updateData.type = data.type;
-            if (data.contentAz !== undefined) updateData.contentAz = data.contentAz;
-            if (data.contentRu !== undefined) updateData.contentRu = data.contentRu;
-            if (data.contentEn !== undefined) updateData.contentEn = data.contentEn;
-            if (data.metaTitle !== undefined) updateData.metaTitle = data.metaTitle;
 
-            // Handle legacy field names if coming from body
-            if (data.content_az !== undefined) updateData.contentAz = data.content_az;
-            if (data.content_ru !== undefined) updateData.contentRu = data.content_ru;
-            if (data.content_en !== undefined) updateData.contentEn = data.content_en;
-            if (data.meta_title !== undefined) updateData.metaTitle = data.meta_title;
+            // Support both direct localizedContent and legacy field mapping if needed
+            if (data.localizedContent !== undefined) {
+                updateData.localizedContent = data.localizedContent;
+            }
 
             if (Object.keys(updateData).length === 0) {
                 return { success: false, error: "No fields to update", code: 400 };
             }
 
-            // 3. Update if type updated (check uniqueness)
+            // 3. Handle Upsert
+            if (!page) {
+                const created = await this.repository.createPage({
+                    type: type,
+                    localizedContent: data.localizedContent || {},
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    ...updateData
+                });
+                return { success: true, data: created };
+            }
+
+            // 4. Update if type updated (check uniqueness)
             if (updateData.type && updateData.type !== type) {
                 const existing = await this.repository.findPageByType(updateData.type);
                 if (existing) return { success: false, error: "Page type already exists", code: 409 };
@@ -147,6 +153,7 @@ export class ContentService extends BaseService {
             return { success: false, error: "Failed to update page" };
         }
     }
+
 
     async managePrompts(options: { page?: number; limit?: number; search?: string }) {
         try {

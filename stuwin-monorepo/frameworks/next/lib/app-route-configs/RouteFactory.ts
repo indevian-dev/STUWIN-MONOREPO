@@ -4,7 +4,7 @@ import type { EndpointConfig } from '@/types';
  * Common endpoint configuration options
  */
 export interface EndpointConfigOptions {
-  method: string;
+  method: string | string[];
   authRequired: boolean;
   permission?: string;
   needEmailVerification?: boolean;
@@ -29,7 +29,7 @@ export const createRouteFactory = (defaults: {
   needPhoneVerification?: boolean;
 }) => {
   return (config: EndpointConfigOptions): EndpointConfig & Record<string, any> => ({
-    method: config.method,
+    method: config.method as any,
     authRequired: config.authRequired,
     permission: config.permission,
     needEmailVerification: config.needEmailVerification ?? defaults.needEmailVerification ?? false,

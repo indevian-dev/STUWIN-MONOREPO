@@ -14,6 +14,7 @@ import { ProviderStudentsListWidget } from './(widgets)/ProviderStudentsListWidg
 import type { User } from '@/types/resources';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 export default function ProviderStudentsPageClient() {
   const [students, setStudents] = useState<import('@/types').User.Profile[]>([]);
   const [loading, setLoading] = useState(true);

@@ -5,7 +5,7 @@
 
 export interface EndpointConfig {
   path?: string;
-  method: string;
+  method: string | string[];
   authRequired: boolean;
   permission?: string;
   requiresTwoFactor?: boolean;

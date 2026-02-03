@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { PiArrowLeft, PiCheckCircleBold, PiBuildingsBold, PiCreditCardBold, PiLightningBold, PiStudentBold } from "react-icons/pi";
 import { toast } from "react-toastify";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 export default function EnrollmentPage() {
     const router = useRouter();
@@ -171,7 +172,7 @@ export default function EnrollmentPage() {
         }
     };
 
-    if (loading || isLoading) return <GlobalLoaderTile />;
+    if (loading) return <GlobalLoaderTile />;
 
     if (!provider) {
         return (

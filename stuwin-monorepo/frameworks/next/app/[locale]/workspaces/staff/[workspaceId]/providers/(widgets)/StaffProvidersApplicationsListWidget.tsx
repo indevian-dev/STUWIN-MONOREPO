@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface Application {
   id: number;
   Provider_name: string;

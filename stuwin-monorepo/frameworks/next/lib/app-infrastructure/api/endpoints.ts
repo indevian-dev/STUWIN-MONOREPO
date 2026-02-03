@@ -5,7 +5,7 @@
 
 export interface EndpointConfig {
   path: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: ('GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH') | ('GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')[];
   authRequired: boolean;
   permission?: string;
   requiresTwoFactor?: boolean;

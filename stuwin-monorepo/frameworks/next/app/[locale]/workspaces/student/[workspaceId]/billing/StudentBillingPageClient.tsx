@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { PiCheckCircleFill, PiCrownBold, PiLightningBold, PiStarBold, PiArrowsClockwiseBold, PiCheckBold } from 'react-icons/pi';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function StudentBillingPageClient() {
     const t = useTranslations('StudentBillingPage');
@@ -84,7 +85,7 @@ export function StudentBillingPageClient() {
         }
     };
 
-    if (loading || isLoading) return <GlobalLoaderTile />;
+    if (loading) return <GlobalLoaderTile />;
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8">
@@ -151,8 +152,8 @@ export function StudentBillingPageClient() {
                                 onClick={() => handleUpgrade(tier.id)}
                                 disabled={isCurrent || !!actionLoading}
                                 className={`w-full py-4 rounded-2xl font-black transition-all mb-8 ${isCurrent
-                                        ? 'bg-emerald-50 text-emerald-600 cursor-default'
-                                        : 'bg-slate-900 text-white hover:bg-brand-primary hover:text-slate-900'
+                                    ? 'bg-emerald-50 text-emerald-600 cursor-default'
+                                    : 'bg-slate-900 text-white hover:bg-brand-primary hover:text-slate-900'
                                     }`}
                             >
                                 {actionLoading === tier.id ? (

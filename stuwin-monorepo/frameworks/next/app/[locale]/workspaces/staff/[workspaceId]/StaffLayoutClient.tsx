@@ -77,11 +77,11 @@ export function StaffLayoutClient({
         label: 'content_management',
         items: [
           { href: `/workspaces/staff/${workspaceId}/blogs`, icon: PiArticle, label: 'blogs' },
-          { href: `/workspaces/staff/${workspaceId}/pages/faq`, icon: PiFile, label: 'faq' },
-          { href: `/workspaces/staff/${workspaceId}/pages/terms`, icon: PiFile, label: 'terms_of_service' },
-          { href: `/workspaces/staff/${workspaceId}/pages/privacy`, icon: PiFile, label: 'privacy_policy' },
-          { href: `/workspaces/staff/${workspaceId}/pages/about`, icon: PiFile, label: 'about_us' },
-          { href: `/workspaces/staff/${workspaceId}/pages/rules`, icon: PiFile, label: 'rules' }
+          { href: `/workspaces/staff/${workspaceId}/docs/faq`, icon: PiFile, label: 'faq' },
+          { href: `/workspaces/staff/${workspaceId}/docs/terms`, icon: PiFile, label: 'terms_of_service' },
+          { href: `/workspaces/staff/${workspaceId}/docs/privacy`, icon: PiFile, label: 'privacy_policy' },
+          { href: `/workspaces/staff/${workspaceId}/docs/about`, icon: PiFile, label: 'about_us' },
+          { href: `/workspaces/staff/${workspaceId}/docs/rules`, icon: PiFile, label: 'rules' }
         ]
       },
       access_management: {

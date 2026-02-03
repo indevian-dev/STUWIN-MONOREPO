@@ -13,7 +13,6 @@ import {
   FiGlobe,
   FiCheckCircle
 } from 'react-icons/fi';
-import { PublicSingleMarkerMapWidget } from '@/app/[locale]/(public)/(widgets)/PublicSingleMarkerMapWidget';
 
 interface ProviderLocation {
   address?: string | null;
@@ -224,17 +223,6 @@ export function PublicSingleProviderWidget({ Provider }: PublicSingleProviderWid
                   <FiMapPin className="flex-shrink-0 mt-1" size={18} />
                   <span>{Provider.location.address}</span>
                 </p>
-              )}
-
-              {Provider.location.latitude && Provider.location.longitude && (
-                <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
-                  <PublicSingleMarkerMapWidget
-                    location={{
-                      lat: Provider.location.latitude,
-                      lng: Provider.location.longitude
-                    }}
-                  />
-                </div>
               )}
             </div>
           )}

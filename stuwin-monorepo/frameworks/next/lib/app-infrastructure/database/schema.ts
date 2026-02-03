@@ -520,7 +520,7 @@ export const blogs = pgTable("blogs", {
     createdBy: varchar("created_by"), // FK to accounts.id
 });
 
-export const pages = pgTable("pages", {
+export const docs = pgTable("docs", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     type: varchar("type").unique(),

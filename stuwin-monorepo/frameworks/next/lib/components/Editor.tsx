@@ -36,24 +36,54 @@ interface EditorJSInstance {
 }
 
 export interface EditorProps {
-    onChange?: (content: string) => void;
-    initialContent?: string;
+    onChange?: (content: any) => void;
+    initialContent?: string | Record<string, { title: string, content?: string }>;
     placeholder?: string;
     height?: string;
+    isLocalized?: boolean;
+    withTitle?: boolean;
     [key: string]: any;
 }
 
+
+
 export interface EditorRef {
     getEditor: () => EditorJSInstance | undefined;
-    getContent: () => Promise<string>;
-    setContent: (newContent: string) => Promise<void>;
+    getContent: () => Promise<string | Record<string, { title: string, content?: string }>>;
+    setContent: (newContent: string | Record<string, { title: string, content?: string }>) => Promise<void>;
     getJSON: () => Promise<EditorJSData>;
     setJSON: (data: EditorJSData) => Promise<void>;
 }
 
-const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, placeholder, height = '400px', ...props }, ref) => {
+
+const SUPPORTED_LOCALES = ['az', 'ru', 'en'];
+
+const Editor = forwardRef<EditorRef, EditorProps>(({
+    onChange,
+    initialContent,
+    placeholder,
+    height = '400px',
+    isLocalized = false,
+    withTitle = true,
+    ...props
+}, ref) => {
     const editorInstanceRef = useRef<EditorJSInstance | undefined>(undefined);
     const [content, setContent] = useState('');
+    const [localizedContent, setLocalizedContent] = useState<Record<string, { title: string, content?: string }>>(() => {
+        if (isLocalized) {
+            if (typeof initialContent === 'object' && initialContent !== null) {
+                return initialContent as Record<string, { title: string, content?: string }>;
+            }
+            return {
+                az: { title: '' },
+                ru: { title: '' },
+                en: { title: '' }
+            };
+        }
+        return {};
+    });
+
+    const [activeLocale, setActiveLocaleState] = useState('az');
     const [isClient, setIsClient] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -64,9 +94,48 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
     const initialContentLoadedRef = useRef(false);
     const lastContentRef = useRef('');
 
+    // Refs to track state inside closures
+    const localizedContentRef = useRef(localizedContent);
+    const activeLocaleRef = useRef(activeLocale);
+
+    // Helpers to keep refs and state in sync
+    const setActiveLocale = (locale: string) => {
+        setActiveLocaleState(locale);
+        activeLocaleRef.current = locale;
+    };
+
+    const updateLocalizedContent = (newContent: Record<string, { title: string, content?: string }>) => {
+        setLocalizedContent(newContent);
+        localizedContentRef.current = newContent;
+    };
+
+    // Update ref when prop changes (if controlled)
+    // Note: This relies on initialContent creating the initial state correctly
+    // If external code updates state via other means, this ref might desync if we rely solely on this helper.
+    // However, since we are the source of truth mostly, calling updateLocalizedContent is the way.
+
+
     useImperativeHandle(ref, () => ({
         getEditor: () => editorInstanceRef.current,
         getContent: async () => {
+            if (isLocalized) {
+                if (editorInstanceRef.current) {
+                    try {
+                        const outputData = await editorInstanceRef.current.save();
+                        const htmlContent = convertEditorJSToHTML(outputData);
+                        return {
+                            ...localizedContent,
+                            [activeLocale]: {
+                                ...localizedContent[activeLocale],
+                                content: htmlContent
+                            }
+                        };
+                    } catch (e) {
+                        return localizedContent;
+                    }
+                }
+                return localizedContent;
+            }
             if (editorInstanceRef.current) {
                 try {
                     const outputData = await editorInstanceRef.current.save();
@@ -78,20 +147,39 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
             }
             return content;
         },
-        setContent: async (newContent: string) => {
-            if (editorInstanceRef.current && isReady && !isUpdatingContent) {
-                try {
-                    setIsUpdatingContent(true);
-                    const blocks = convertHTMLToEditorJS(newContent);
-                    await editorInstanceRef.current.render({ blocks });
-                    lastContentRef.current = newContent;
-                } catch (error) {
-                    ConsoleLogger.error('Error setting content:', error);
-                } finally {
-                    setIsUpdatingContent(false);
+        setContent: async (newContent: string | Record<string, { title: string, content?: string }>) => {
+            if (typeof newContent === 'object' && isLocalized) {
+                updateLocalizedContent(newContent as Record<string, { title: string, content?: string }>);
+                const activeData = (newContent as Record<string, { title: string, content?: string }>)[activeLocaleRef.current];
+                const activeContent = activeData?.content || '';
+                if (editorInstanceRef.current && isReady && !isUpdatingContent) {
+                    try {
+                        setIsUpdatingContent(true);
+                        const blocks = convertHTMLToEditorJS(activeContent);
+                        await editorInstanceRef.current.render({ blocks });
+                        lastContentRef.current = activeContent;
+                    } catch (error) {
+                        ConsoleLogger.error('Error setting content:', error);
+                    } finally {
+                        setIsUpdatingContent(false);
+                    }
+                }
+            } else if (typeof newContent === 'string' && !isLocalized) {
+                if (editorInstanceRef.current && isReady && !isUpdatingContent) {
+                    try {
+                        setIsUpdatingContent(true);
+                        const blocks = convertHTMLToEditorJS(newContent as string);
+                        await editorInstanceRef.current.render({ blocks });
+                        lastContentRef.current = newContent as string;
+                    } catch (error) {
+                        ConsoleLogger.error('Error setting content:', error);
+                    } finally {
+                        setIsUpdatingContent(false);
+                    }
                 }
             }
         },
+
         getJSON: async () => {
             if (editorInstanceRef.current) {
                 try {
@@ -116,6 +204,68 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
             }
         }
     }));
+
+    // Handle locale switch
+    const handleLocaleSwitch = async (newLocale: string) => {
+        if (newLocale === activeLocaleRef.current) return;
+
+        if (editorInstanceRef.current && isReady) {
+            try {
+                setIsUpdatingContent(true);
+                // 1. Save current locale content
+                const outputData = await editorInstanceRef.current.save();
+                const currentHtml = convertEditorJSToHTML(outputData);
+
+                const currentLocalized = localizedContentRef.current;
+                const currentLocale = activeLocaleRef.current;
+
+                const updatedLocalized = {
+                    ...currentLocalized,
+                    [currentLocale]: {
+                        ...currentLocalized[currentLocale],
+                        content: currentHtml
+                    }
+                };
+                updateLocalizedContent(updatedLocalized);
+
+                // 2. Switch locale
+                setActiveLocale(newLocale);
+
+                // 3. Load new locale content
+                const newHtml = updatedLocalized[newLocale]?.content || '';
+                const blocks = convertHTMLToEditorJS(newHtml);
+                await editorInstanceRef.current.render({ blocks });
+                lastContentRef.current = newHtml;
+
+            } catch (error) {
+                ConsoleLogger.error('Error switching locale:', error);
+            } finally {
+                setIsUpdatingContent(false);
+            }
+        } else {
+            setActiveLocale(newLocale);
+        }
+    };
+
+    const handleTitleChange = (newTitle: string) => {
+        if (!isLocalized) return;
+        const currentLocalized = localizedContentRef.current;
+        const currentLocale = activeLocaleRef.current;
+
+        const updatedLocalized = {
+            ...currentLocalized,
+            [currentLocale]: {
+                ...currentLocalized[currentLocale],
+                title: newTitle
+            }
+        };
+        updateLocalizedContent(updatedLocalized);
+        if (onChange) {
+            onChange(updatedLocalized);
+        }
+    };
+
+
 
     // Improved HTML to Editor.js blocks conversion
     const convertHTMLToEditorJS = (html: string): EditorJSBlock[] => {
@@ -347,12 +497,23 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
                     setIsUpdatingContent(true);
                     initialContentLoadedRef.current = true;
 
-                    const blocks = convertHTMLToEditorJS(initialContent);
+                    let contentToConvert = '';
+                    if (isLocalized && typeof initialContent === 'object' && initialContent !== null) {
+                        contentToConvert = (initialContent as Record<string, { title: string, content?: string }>)[activeLocale]?.content || '';
+                    } else if (typeof initialContent === 'string') {
+                        contentToConvert = initialContent;
+                    } else if (typeof initialContent === 'object' && !isLocalized) {
+                        // Attempt to extract string if object provided but localization disabled
+                        contentToConvert = (initialContent as any)?.content || (initialContent as any)?.text || '';
+                    }
+
+                    const blocks = convertHTMLToEditorJS(contentToConvert);
                     ConsoleLogger.log('📄 Converted initial blocks:', blocks);
 
-                    if (blocks.length > 0) {
+                    // Allow empty blocks if content is empty string, to clear editor or show placeholder
+                    if (blocks.length > 0 || !contentToConvert) {
                         await editorInstanceRef.current.render({ blocks });
-                        lastContentRef.current = initialContent;
+                        lastContentRef.current = contentToConvert;
                         ConsoleLogger.log('✅ Initial content set successfully');
                     }
                 } catch (error) {
@@ -549,9 +710,26 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
                                 if (htmlContent !== lastContentRef.current) {
                                     ConsoleLogger.log('Content changed, updating...');
                                     lastContentRef.current = htmlContent;
-                                    setContent(htmlContent);
-                                    if (onChange) {
-                                        onChange(htmlContent);
+
+                                    if (isLocalized) {
+                                        const currentLocalized = localizedContentRef.current;
+                                        const currentLocale = activeLocaleRef.current;
+                                        const updatedLocalized = {
+                                            ...currentLocalized,
+                                            [currentLocale]: {
+                                                ...currentLocalized[currentLocale],
+                                                content: htmlContent
+                                            }
+                                        };
+                                        updateLocalizedContent(updatedLocalized);
+                                        if (onChange) {
+                                            onChange(updatedLocalized);
+                                        }
+                                    } else {
+                                        setContent(htmlContent);
+                                        if (onChange) {
+                                            onChange(htmlContent);
+                                        }
                                     }
                                 } else {
                                     ConsoleLogger.log('Content unchanged, skipping update');
@@ -560,6 +738,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
                                 ConsoleLogger.error('Error on change:', error);
                             }
                         }, 300);
+
                     },
                     onReady: () => {
                         ConsoleLogger.log('🎉 Editor.js is ready to work with all tools!');
@@ -632,11 +811,46 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
     return (
         <div {...props}>
+            {isLocalized && (
+                <div className="space-y-4 mb-6">
+                    <div className="flex gap-2 p-1 bg-gray-100/80 backdrop-blur-sm rounded-lg w-fit border border-gray-200">
+                        {SUPPORTED_LOCALES.map((locale) => (
+                            <button
+                                key={locale}
+                                onClick={() => handleLocaleSwitch(locale)}
+                                type="button"
+                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${activeLocale === locale
+                                    ? 'bg-white text-blue-600 shadow-md ring-1 ring-black/5'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                                    }`}
+                            >
+                                {locale.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+
+                    {withTitle && (
+                        <div className="relative group">
+                            <input
+                                type="text"
+                                value={localizedContent[activeLocale]?.title || ''}
+                                onChange={(e) => handleTitleChange(e.target.value)}
+                                placeholder={`Title (${activeLocale.toUpperCase()})`}
+                                className="w-full px-4 py-3 text-lg font-semibold bg-gray-50/50 border-b-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all duration-200 placeholder:text-gray-400"
+                            />
+                            <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-focus-within:w-full" />
+                        </div>
+                    )}
+
+                </div>
+            )}
             <div
                 id={editorId}
-                className="rounded-md bg-white min-h-[400px] focus-within:border-blue-500 transition-colors editor-container"
+                className="rounded-xl bg-white min-h-[400px] border border-gray-200 focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 editor-container shadow-sm"
                 style={{ minHeight: height }}
             />
+
+
             {isLoading && (
                 <div className="text-sm text-gray-500 mt-2 flex items-center">
                     <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>

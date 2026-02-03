@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { StudentPageTitleWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget';
 import { StudentQuizResultsWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/quizzes/(widgets)/StudentQuizResultsWidget';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export default function StudentQuizResultsPageClient() {
   const params = useParams();
@@ -50,7 +51,7 @@ export default function StudentQuizResultsPageClient() {
     setLoading(false);
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile message="Loading results..." />;
+  if (loading) return <GlobalLoaderTile message="Loading results..." />;
 
   if (!quiz) {
     return (

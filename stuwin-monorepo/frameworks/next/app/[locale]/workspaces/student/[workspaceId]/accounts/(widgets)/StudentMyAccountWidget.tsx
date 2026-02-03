@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface UserData {
     name: string;
     last_name: string;
@@ -53,11 +54,11 @@ export default function MyAccount() {
                     url: '/api/workspaces/dashboard/accounts/me',
                     method: 'GET'
                 });
-                
+
                 if (response.data?.user && response.data?.account) {
                     setUser(response.data.user);
                     setAccountInfo(response.data.account);
-                    
+
                     // Process sessions data if available
                     if (response.data.user.sessions) {
                         const sessionsObj = response.data.user.sessions;
@@ -66,10 +67,10 @@ export default function MyAccount() {
                             ...sessionsObj[sessionId],
                             isCurrentSession: response.data.currentSession === sessionId
                         }));
-                        
+
                         // Sort sessions by last activity (most recent first)
                         sessionsArray.sort((a, b) => b.last_activity - a.last_activity);
-                        
+
                         setSessions(sessionsArray);
                         setCurrentSession(response.data.currentSession);
                     }
@@ -83,7 +84,7 @@ export default function MyAccount() {
                 setIsFetching(false);
             }
         }
-        
+
         fetchUserData();
     }, []);
 
@@ -99,12 +100,12 @@ export default function MyAccount() {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
         if (!file) return;
-        
+
         if (!file.type.startsWith('image/')) {
             setError('Please select an image file');
             return;
         }
-        
+
         const reader = new FileReader();
         reader.onload = (event: ProgressEvent<FileReader>) => {
             const img = new Image();
@@ -112,38 +113,38 @@ export default function MyAccount() {
                 // Create canvas for resizing
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
+
                 if (!ctx) {
                     setError('Failed to create canvas context');
                     return;
                 }
-                
+
                 // Set canvas to square dimensions
                 const size = 300;
                 canvas.width = size;
                 canvas.height = size;
-                
+
                 // Calculate crop dimensions to get the center square
                 let sourceX = 0;
                 let sourceY = 0;
                 let sourceSize = Math.min(img.width, img.height);
-                
+
                 // If width is larger, offset X to center the crop
                 if (img.width > img.height) {
                     sourceX = (img.width - sourceSize) / 2;
-                } 
+                }
                 // If height is larger, offset Y to center the crop
                 else if (img.height > img.width) {
                     sourceY = (img.height - sourceSize) / 2;
                 }
-                
+
                 // Draw the center square of the image onto the canvas
                 ctx.drawImage(
                     img,
                     sourceX, sourceY, sourceSize, sourceSize, // Source crop
                     0, 0, size, size                          // Destination square
                 );
-                
+
                 // Convert to base64
                 const resizedImage = canvas.toDataURL(file.type);
                 setAvatarPreview(resizedImage);
@@ -153,7 +154,7 @@ export default function MyAccount() {
                     avatar_url: resizedImage
                 }));
             };
-            
+
             if (event.target && event.target.result && typeof event.target.result === 'string') {
                 img.src = event.target.result;
             }
@@ -193,7 +194,7 @@ export default function MyAccount() {
             setIsLoading(false);
         }
     };
-    
+
     const handleLogoutSession = async (sessionId: string) => {
         try {
             setIsLoading(true);
@@ -204,16 +205,16 @@ export default function MyAccount() {
                     sessionId
                 })
             });
-            
+
             if (response.status === 200) {
                 // If current session is logged out, redirect to login
                 if (sessionId === currentSession) {
                     router.push('/auth/login');
                     return;
                 }
-                
+
                 // Update sessions list by removing the logged out session
-                setSessions(prevSessions => 
+                setSessions(prevSessions =>
                     prevSessions.filter(session => session.id !== sessionId)
                 );
             } else {
@@ -229,12 +230,12 @@ export default function MyAccount() {
 
     const formatLastActivity = (timestamp: number) => {
         if (!timestamp) return 'Unknown';
-        
+
         const date = new Date(timestamp * 1000);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - date.getTime());
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
+
         if (diffDays === 0) {
             return date.toLocaleTimeString();
         } else if (diffDays === 1) {
@@ -243,27 +244,27 @@ export default function MyAccount() {
             return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString();
         }
     };
-    
+
     const formatDeviceInfo = (userAgent: string) => {
         if (!userAgent) return 'Unknown device';
-        
+
         // Simple user agent parsing - could be enhanced
         const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
         const isTablet = /tablet|ipad/i.test(userAgent);
         const isWindows = /windows/i.test(userAgent);
         const isMac = /macintosh|mac os/i.test(userAgent);
         const isLinux = /linux/i.test(userAgent);
-        
+
         let deviceType = 'Unknown device';
         if (isTablet) deviceType = 'Tablet';
         else if (isMobile) deviceType = 'Mobile';
         else deviceType = 'Desktop';
-        
+
         let os = '';
         if (isWindows) os = 'Windows';
         else if (isMac) os = 'Mac OS';
         else if (isLinux) os = 'Linux';
-        
+
         return `${deviceType} (${os})`;
     };
 
@@ -282,7 +283,7 @@ export default function MyAccount() {
                     </button>
                 ) : null}
             </div>
-            
+
             {error && (
                 <div className="bg-rose-50 text-rose-500 p-4 rounded-md my-4">
                     {error}
@@ -296,9 +297,9 @@ export default function MyAccount() {
                             <div className="w-full md:w-1/4">
                                 <div className="aspect-square rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                     {user.avatar_base64 ? (
-                                        <img 
-                                            src={user.avatar_base64} 
-                                            alt={`${user.name}'s avatar`} 
+                                        <img
+                                            src={user.avatar_base64}
+                                            alt={`${user.name}'s avatar`}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -344,8 +345,8 @@ export default function MyAccount() {
                                 <div>
                                     <p className="text-sm text-gray-500">Status</p>
                                     <p className="text-lg font-medium">
-                                        {accountInfo.suspended ? 
-                                            <span className="text-rose-500">Suspended</span> : 
+                                        {accountInfo.suspended ?
+                                            <span className="text-rose-500">Suspended</span> :
                                             <span className="text-emerald-500">Active</span>
                                         }
                                     </p>
@@ -353,8 +354,8 @@ export default function MyAccount() {
                                 <div>
                                     <p className="text-sm text-gray-500">Approval</p>
                                     <p className="text-lg font-medium">
-                                        {accountInfo.approved ? 
-                                            <span className="text-emerald-500">Approved</span> : 
+                                        {accountInfo.approved ?
+                                            <span className="text-emerald-500">Approved</span> :
                                             <span className="text-rose-500">Pending</span>
                                         }
                                     </p>
@@ -384,7 +385,7 @@ export default function MyAccount() {
                                                         <div className="flex items-center">
                                                             <div className="text-sm font-medium text-gray-900">
                                                                 {formatDeviceInfo(session.user_agent)}
-                                                                {session.isCurrentSession && 
+                                                                {session.isCurrentSession &&
                                                                     <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                                                                         Current
                                                                     </span>
@@ -418,9 +419,9 @@ export default function MyAccount() {
                             <div className="flex items-center space-x-6">
                                 <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                     {avatarPreview || user.avatar_url || user.avatar_base64 ? (
-                                        <img 
-                                            src={avatarPreview || user.avatar_url || user.avatar_base64} 
-                                            alt={`${user.name}'s avatar`} 
+                                        <img
+                                            src={avatarPreview || user.avatar_url || user.avatar_base64}
+                                            alt={`${user.name}'s avatar`}
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
@@ -432,7 +433,7 @@ export default function MyAccount() {
                                 <div>
                                     <label className="cursor-pointer bg-bl text-bd px-4 py-2 rounded-md hover:bg-bl/90 transition-colors">
                                         Upload New Photo
-                                        <input 
+                                        <input
                                             type="file"
                                             accept="image/*"
                                             onChange={handleAvatarChange}

@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { StudentPageTitleWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget";
 import { PiPlus, PiTrash, PiArrowRight } from "react-icons/pi";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface LearningSession {
   id: string;
@@ -124,7 +125,7 @@ export function StudentLearningSessionsListWidget() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (isLoading) return <GlobalLoaderTile />;
 
   return (
     <div className="space-y-6">

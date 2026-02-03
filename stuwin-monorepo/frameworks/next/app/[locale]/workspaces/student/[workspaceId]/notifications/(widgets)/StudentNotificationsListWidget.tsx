@@ -15,6 +15,7 @@ import {
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 // Type definitions
 interface Notification {
   id: number;
@@ -155,7 +156,7 @@ function NotificationsList() {
     }
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -194,8 +195,8 @@ function NotificationsList() {
               key={key}
               onClick={() => setFilter(key)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filter === key
-                  ? 'bg-brand text-white'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'bg-brand text-white'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
             >
               {label} ({count})
@@ -262,8 +263,8 @@ function NotificationsList() {
                 <button
                   onClick={() => markAsRead(notification.id, notification.mark_as_read)}
                   className={`p-2 rounded-md transition-colors ${!notification.mark_as_read
-                      ? 'text-brand hover:bg-brand hover:text-white'
-                      : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                    ? 'text-brand hover:bg-brand hover:text-white'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
                     }`}
                   title={notification.mark_as_read ? 'Mark as unread' : 'Mark as read'}
                 >

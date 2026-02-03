@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiPlusBold, PiTrashBold, PiToggleLeftFill, PiToggleRightFill, PiArrowsClockwiseBold, PiCheckCircleFill, PiTicketBold } from 'react-icons/pi';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function StaffCouponManagementClient() {
     const t = useTranslations('StaffCouponManagement');
@@ -101,7 +102,7 @@ export function StaffCouponManagementClient() {
         }
     };
 
-    if (loading || isLoading) return <GlobalLoaderTile />;
+    if (loading) return <GlobalLoaderTile />;
 
     return (
         <div className="p-4 md:p-8">

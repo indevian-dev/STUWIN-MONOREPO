@@ -10,6 +10,7 @@ import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useTranslations } from 'next-intl';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface Question {
   id: string;
   body: string;

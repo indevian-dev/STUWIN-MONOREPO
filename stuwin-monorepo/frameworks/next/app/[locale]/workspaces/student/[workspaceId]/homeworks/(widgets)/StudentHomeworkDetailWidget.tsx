@@ -7,6 +7,7 @@ import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { StudentPageTitleWidget } from "../../(widgets)/StudentPageTitleWidget";
 import { PiArrowLeft, PiPencil, PiTrash, PiDownload, PiRobot } from "react-icons/pi";
 import { StudentHomeworkAiSidebarWidget } from "./StudentHomeworkAiSidebarWidget";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface HomeworkDetail {
   id: string;
@@ -101,7 +102,7 @@ export function StudentHomeworkDetailWidget() {
     router.push(`/workspaces/student/${workspaceId}/homeworks/${homeworkId}/edit`);
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (isLoading) return <GlobalLoaderTile />;
 
   if (error || !homework) {
     return (

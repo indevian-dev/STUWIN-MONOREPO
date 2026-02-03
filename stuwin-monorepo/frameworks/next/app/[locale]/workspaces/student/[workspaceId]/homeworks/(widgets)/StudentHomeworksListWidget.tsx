@@ -8,6 +8,7 @@ import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { StudentPageTitleWidget } from "../../(widgets)/StudentPageTitleWidget";
 import { StudentAddHomeworkModalWidget } from "./StudentAddHomeworkModalWidget";
 import { PiPlus, PiTrash, PiPencil } from "react-icons/pi";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface Homework {
   id: string;
@@ -116,7 +117,7 @@ export function StudentHomeworksListWidget() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   return (
     <div className="space-y-6">

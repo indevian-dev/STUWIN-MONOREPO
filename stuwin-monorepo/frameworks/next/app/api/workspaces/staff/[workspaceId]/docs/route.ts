@@ -13,16 +13,15 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { authData, mo
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
     }
 
-    const page = await module.content.getPage(type);
-
-    if (!page) {
-      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+    const result = await module.content.getPage(type);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: (result as any).code || 404 });
     }
 
-    return NextResponse.json({ doc: page, success: true });
+    return NextResponse.json({ doc: result.data, success: true });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch page';
-    if (log) log.error("Failed to fetch page", error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch doc';
+    if (log) log.error("Failed to fetch doc", error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });

@@ -14,6 +14,7 @@ import { ProviderStudentDetailWidget } from './(widgets)/ProviderStudentDetailWi
 import type { User } from '@/types/resources';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface ProviderStudentDetailPageClientProps {
   studentId: string;
 }
@@ -55,7 +56,7 @@ export default function ProviderStudentDetailPageClient({
     }
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   if (!student) {
     return (

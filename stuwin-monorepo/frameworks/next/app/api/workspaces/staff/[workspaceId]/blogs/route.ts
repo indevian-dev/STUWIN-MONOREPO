@@ -27,41 +27,30 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   return NextResponse.json(result.data, { status: 200 });
 });
 
-export const POST = unifiedApiHandler(async (request, { module, auth }) => {
+export const POST = unifiedApiHandler(async (request, { module }) => {
   try {
     const body = await request.json();
     const {
-      titleAz,
-      titleEn,
-      metaTitleAz,
-      metaTitleEn,
-      metaDescriptionAz,
-      metaDescriptionEn,
-      contentAz,
-      contentEn,
+      localizedContent,
       cover,
       isActive = true,
       isFeatured = false
     } = body;
 
-    if (!titleAz && !titleEn) {
+    if (!localizedContent || Object.keys(localizedContent).length === 0) {
       return NextResponse.json(
-        { error: 'At least one title (AZ or EN) is required' },
+        { error: 'Localized content is required' },
         { status: 400 }
       );
     }
 
-    const slug = slugify(titleAz || titleEn || '', { lower: true, strict: true });
+    // Use AZ title for slug if available, otherwise any available title
+    const firstLocale = localizedContent.az || Object.values(localizedContent)[0] as any;
+    const slugBase = firstLocale?.title || 'blog';
+    const slug = slugify(slugBase, { lower: true, strict: true }) + '-' + Math.random().toString(36).substr(2, 5);
 
     const insertData: any = {
-      titleAz,
-      titleEn,
-      metaTitleAz,
-      metaTitleEn,
-      metaDescriptionAz,
-      metaDescriptionEn,
-      contentAz,
-      contentEn,
+      localizedContent,
       slug,
       isActive,
       isFeatured,
@@ -77,3 +66,4 @@ export const POST = unifiedApiHandler(async (request, { module, auth }) => {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
+

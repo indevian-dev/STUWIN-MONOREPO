@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
 
-export const PATCH = unifiedApiHandler(async (request: NextRequest, { authData, module }) => {
+export const PUT = unifiedApiHandler(async (request: NextRequest, { authData, module }) => {
   if (!authData) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -10,7 +10,7 @@ export const PATCH = unifiedApiHandler(async (request: NextRequest, { authData, 
   const type = searchParams.get('type');
 
   if (!type) {
-    return NextResponse.json({ error: 'Valid page type is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Valid doc type is required' }, { status: 400 });
   }
 
   const body = await request.json();
@@ -21,7 +21,7 @@ export const PATCH = unifiedApiHandler(async (request: NextRequest, { authData, 
   }
 
   return NextResponse.json({
-    message: 'Page updated successfully',
+    message: 'Doc updated successfully',
     doc: result.data
   });
 });

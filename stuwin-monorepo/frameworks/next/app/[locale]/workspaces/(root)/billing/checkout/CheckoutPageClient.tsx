@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { PiCheckCircleFill, PiArrowsClockwiseBold, PiArrowLeftBold } from 'react-icons/pi';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import Link from 'next/link';
 
 export function CheckoutPageClient() {
@@ -104,7 +105,7 @@ export function CheckoutPageClient() {
         }
     };
 
-    if (loading || isLoading) return <GlobalLoaderTile />;
+    if (loading) return <GlobalLoaderTile />;
 
     if (!tierId || !tier) return (
         <div className="max-w-2xl mx-auto p-8 text-center">

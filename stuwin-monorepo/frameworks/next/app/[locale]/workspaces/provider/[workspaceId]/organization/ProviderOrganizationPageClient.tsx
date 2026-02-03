@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { Link } from '@/i18n/routing';
 import { ProviderOrganizationWidget } from './(widgets)/ProviderOrganizationWidget';
 import type { Provider } from '@/types/resources';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 export default function ProviderOrganizationPageClient() {
@@ -46,7 +47,7 @@ export default function ProviderOrganizationPageClient() {
     }
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   return (
     <div className="container mx-auto px-4 py-6">

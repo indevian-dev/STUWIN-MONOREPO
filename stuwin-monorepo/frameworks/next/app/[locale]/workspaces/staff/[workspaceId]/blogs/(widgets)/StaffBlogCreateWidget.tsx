@@ -1,124 +1,102 @@
 "use client";
 
 import {
-  ChangeEvent,
   FormEvent,
   useState
 } from 'react';
-import Link
-  from 'next/link';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
-
-interface BlogContent {
-  content: string;
-}
-
-interface BlogFormData {
-  title?: BlogContent;
-  meta_title?: BlogContent;
-  meta_description?: BlogContent;
-  description?: BlogContent;
-  [key: string]: BlogContent | undefined;
-}
+import Editor from '@/lib/components/Editor';
 
 export default function StaffBlogCreateWidget() {
-  const [formData, setFormData] = useState<BlogFormData>({});
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
+
+  const [localizedContent, setLocalizedContent] = useState<any>({
+    az: { title: '', content: '' },
+    en: { title: '', content: '' },
+    ru: { title: '', content: '' }
+  });
+  const [saving, setSaving] = useState(false);
 
   const router = useRouter();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: { content: value } });
-  };
-
-  const handleChangeText = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: { content: value } });
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!workspaceId) return;
+
+    // Basic validation
+    const hasTitle = Object.values(localizedContent).some((l: any) => l.title?.trim());
+    if (!hasTitle) {
+      toast.error("Please provide at least one localized title");
+      return;
+    }
+
+    setSaving(true);
     try {
       const response = await apiCallForSpaHelper({
         method: 'POST',
-        url: '/api/workspaces/staff/blogs/create',
-        headers: {
-          'Content-Type': 'application/json',
+        url: `/api/workspaces/staff/${workspaceId}/blogs`,
+        body: {
+          localizedContent,
+          isActive: true,
+          isFeatured: false
         },
-        body: formData,
       });
 
       if (response.status !== 200 && response.status !== 201) {
-        toast.error(`Error: ${response.data?.message || 'Failed to create blog'}`);
+        toast.error(`Error: ${response.data?.error || 'Failed to create blog'}`);
         return;
       }
 
-      router.push(`/staff/blogs`);
-
       toast.success('Blog Created!');
+      router.push(`/workspaces/staff/${workspaceId}/blogs`);
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error('Error: ' + error.message);
-      } else {
-        toast.error('An unknown error occurred');
-      }
+      toast.error('An unknown error occurred');
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="px-4 py-8 my-20 mx-5 text-gray-900 bg-white shadow-md rounded-md">
-      <h1 className="text-indigo-700 text-xl font-bold mb-4">Create a new blog post</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="px-6 py-8 my-10 mx-5 text-gray-900 bg-white shadow-xl rounded-xl border border-gray-100">
+      <div className="flex justify-between items-center mb-8 pb-6 border-b border-gray-100">
         <div>
-          <label htmlFor="title" className="text-indigo-700 block font-medium">Title:</label>
-          <input
-            type="text"
-            id="title"
-            name='title'
-            value={formData.title?.content ? formData.title.content : ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:border-indigo-500"
-          />
+          <h1 className="text-2xl font-bold text-gray-800">Create New Blog Post</h1>
+          <p className="text-gray-500 text-sm mt-1">Fill in the localized content for your new blog post</p>
         </div>
-        <div>
-          <label htmlFor="meta_title" className="text-indigo-700 block font-medium">Meta Title:</label>
-          <input
-            type="text"
-            id="meta_title"
-            name='meta_title'
-            value={formData.meta_title?.content ? formData.meta_title.content : ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:border-indigo-500"
-          />
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="px-8 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 active:transform active:scale-95 transition-all shadow-md shadow-indigo-500/20 disabled:bg-gray-400 disabled:shadow-none flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Creating...
+              </>
+            ) : 'Create Blog'}
+          </button>
         </div>
-        <div>
-          <label htmlFor="meta_description" className="text-indigo-700 block font-medium">Meta Description:</label>
-          <textarea
-            rows={3}
-            id="meta_description"
-            name='meta_description'
-            value={formData.meta_description?.content ? formData.meta_description.content : ''}
-            onChange={handleChangeText}
-            className="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="description" className="text-indigo-700 block font-medium">Description:</label>
-          <textarea
-            rows={3}
-            id="description"
-            name="description"
-            value={formData.description?.content ? formData.description.content : ''}
-            onChange={handleChangeText}
-            className="block p-2.5 w-full text-sm text-gray-900 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-        <button type="submit" className="w-full bg-indigo-800 text-white font-medium py-2 rounded-md hover:bg-indigo-600 transition duration-300">Submit</button>
-      </form>
-      <Link href="/admin/blogs/content" className="block mt-4 text-sm text-indigo-500 hover:text-indigo-600 transition duration-300">Edit Content</Link>
-    </div>
+      </div>
 
+      <div className="w-full">
+        <Editor
+          isLocalized={true}
+          initialContent={localizedContent}
+          onChange={setLocalizedContent}
+          height="600px"
+        />
+      </div>
+    </div>
   );
 }

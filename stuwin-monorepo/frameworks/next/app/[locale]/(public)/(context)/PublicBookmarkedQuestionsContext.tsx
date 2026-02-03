@@ -13,7 +13,6 @@ import {
 import { toast } from 'react-toastify';
 import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
-import { PublicBookmarksLimitsModalWidget } from '@/app/[locale]/(public)/(widgets)/PublicBookmarksLimitsModalWidget';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 interface PublicBookmarkedQuestionsContextType {
@@ -252,11 +251,6 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
   return (
     <PublicBookmarkedQuestionsContext.Provider value={value}>
       {children}
-      <PublicBookmarksLimitsModalWidget
-        isOpen={showLimitModal}
-        onClose={() => setShowLimitModal(false)}
-        maxFavorites={MAX_FAVORITES}
-      />
     </PublicBookmarkedQuestionsContext.Provider>
   );
 };

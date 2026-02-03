@@ -25,6 +25,7 @@ import { StudentConversationChatInputWidget } from '@/app/[locale]/workspaces/st
 import { StudentTypingIndicatorWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/conversations/(widgets)/StudentTypingIndicatorWidget';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface Conversation {
   id: number;
   card_images?: string[];
@@ -110,7 +111,7 @@ export default function StudentConversationPageClient() {
     sendTypingIndicator(isTyping);
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   if (error) {
     return (

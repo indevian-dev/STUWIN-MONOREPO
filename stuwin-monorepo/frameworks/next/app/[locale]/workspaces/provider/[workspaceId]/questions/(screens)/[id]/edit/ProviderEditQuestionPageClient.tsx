@@ -15,6 +15,7 @@ import { apiCallForSpaHelper } from '@/lib/helpers/apiCallForSpaHelper';
 import { toast } from 'react-toastify';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 interface Question {
   id: string;
   createdAt: string;
@@ -89,7 +90,7 @@ export default function ProviderEditQuestionPageClient() {
     router.push('/provider/questions');
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile message="Loading question..." />;
+  if (loading) return <GlobalLoaderTile message="Loading question..." />;
 
   if (!question) {
     return (

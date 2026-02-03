@@ -12,6 +12,7 @@ import { ProviderOrganizationEditWidget } from '../(widgets)/ProviderOrganizatio
 import type { Provider } from '@/types/resources';
 
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 export default function ProviderOrganizationEditPageClient() {
   const [organization, setOrganization] = useState<Provider.PrivateAccess | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ export default function ProviderOrganizationEditPageClient() {
     router.push(`/workspaces/provider/${workspaceId}/organization`);
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   if (!organization) {
     return (

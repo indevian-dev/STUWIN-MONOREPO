@@ -1,6 +1,6 @@
 
 import { eq, desc, and, ilike, or, count, sql } from "drizzle-orm";
-import { blogs, pages, systemPrompts } from "@/lib/app-infrastructure/database/schema";
+import { blogs, docs, systemPrompts } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -88,7 +88,7 @@ export class ContentRepository extends BaseRepository {
 
     async findPageByType(type: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(pages).where(eq(pages.type, type)).limit(1);
+        const result = await client.select().from(docs).where(eq(docs.type, type)).limit(1);
         return result[0] || null;
     }
 
@@ -171,16 +171,22 @@ export class ContentRepository extends BaseRepository {
 
     async findPageById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(pages).where(eq(pages.id, id)).limit(1);
+        const result = await client.select().from(docs).where(eq(docs.id, id)).limit(1);
         return result[0] || null;
     }
 
-    async updatePage(id: string, data: Partial<typeof pages.$inferInsert>, tx?: DbClient) {
+    async createPage(data: typeof docs.$inferInsert, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client.insert(docs).values(data).returning();
+        return result[0];
+    }
+
+    async updatePage(id: string, data: Partial<typeof docs.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
         return await client
-            .update(pages)
+            .update(docs)
             .set({ ...data, updatedAt: new Date() })
-            .where(eq(pages.id, id))
+            .where(eq(docs.id, id))
             .returning();
     }
 }

@@ -6,7 +6,7 @@ interface BlogEditPageProps {
 }
 
 async function BlogEditPage({ params }: BlogEditPageProps) {
-  return <BlogEdit params={params} />;
+  return <BlogEdit />;
 }
 
 export default withPageAuth(

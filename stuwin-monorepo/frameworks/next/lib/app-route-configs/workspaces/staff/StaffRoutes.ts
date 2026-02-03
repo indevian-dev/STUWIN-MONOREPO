@@ -741,31 +741,20 @@ export const staffEndpoints: EndpointsMap = {
   // ============================================
   // Staff - Pages/Docs APIs
   // ============================================
-  "/api/workspaces/staff/:workspaceId/pages": createStaffEndpoint({
+  "/api/workspaces/staff/:workspaceId/docs": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_READ",
     type: "api",
   }),
-  "/api/workspaces/staff/:workspaceId/pages/update": createStaffEndpoint({
+
+
+  "/api/workspaces/staff/:workspaceId/docs/update": createStaffEndpoint({
     method: "PUT",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",
     type: "api",
   }),
-  "/api/workspaces/staff/:workspaceId/docs": createStaffEndpoint({
-    method: "GET",
-    authRequired: true,
-    permission: "STAFF_DOCS_READ",
-    type: "api",
-  }),
-  "/api/workspaces/staff/:workspaceId/docs/update": createStaffEndpoint({
-    method: "PATCH",
-    authRequired: true,
-    permission: "STAFF_DOCS_UPDATE",
-    type: "api",
-  }),
-
   // ============================================
   // Staff - Blogs Pages
   // ============================================
@@ -780,7 +769,7 @@ export const staffEndpoints: EndpointsMap = {
   // Staff - Blogs APIs
   // ============================================
   "/api/workspaces/staff/:workspaceId/blogs": createStaffEndpoint({
-    method: "GET",
+    method: ["GET", "POST"],
     authRequired: true,
     permission: "STAFF_PAGE_READ",
     type: "api",
@@ -789,6 +778,18 @@ export const staffEndpoints: EndpointsMap = {
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_READ",
+    type: "api",
+  }),
+  "/api/workspaces/staff/:workspaceId/blogs/update/:id": createStaffEndpoint({
+    method: "PUT",
+    authRequired: true,
+    permission: "STAFF_PAGE_UPDATE",
+    type: "api",
+  }),
+  "/api/workspaces/staff/:workspaceId/blogs/delete/:id": createStaffEndpoint({
+    method: "DELETE",
+    authRequired: true,
+    permission: "STAFF_PAGE_UPDATE",
     type: "api",
   }),
 
@@ -949,37 +950,37 @@ export const staffEndpoints: EndpointsMap = {
     permission: "STAFF_CITY_DELETE",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_READ",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages/faq": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs/faq": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages/terms": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs/terms": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages/privacy": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs/privacy": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages/about": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs/about": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",
     type: "page",
   }),
-  "/workspaces/staff/:workspaceId/pages/rules": createStaffEndpoint({
+  "/workspaces/staff/:workspaceId/docs/rules": createStaffEndpoint({
     method: "GET",
     authRequired: true,
     permission: "STAFF_PAGE_UPDATE",

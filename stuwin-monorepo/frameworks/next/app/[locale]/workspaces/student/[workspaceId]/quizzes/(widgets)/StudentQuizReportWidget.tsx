@@ -6,6 +6,7 @@ import { apiCallForSpaHelper } from "@/lib/helpers/apiCallForSpaHelper";
 import { toast } from "react-toastify";
 import { PiCheckCircle, PiWarningCircle, PiLightbulb, PiChartLine, PiArrowLeft, PiRobot } from "react-icons/pi";
 import ReactMarkdown from "react-markdown";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface QuizReport {
     id: string;
@@ -58,7 +59,7 @@ export function StudentQuizReportWidget({ quizId, onBack }: StudentQuizReportWid
         }
     };
 
-    if (loading || isLoading) return <GlobalLoaderTile message="Generating Learning Report" />;
+    if (isLoading) return <GlobalLoaderTile message="Generating Learning Report" />;
 
     if (!report) return null;
 

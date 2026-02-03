@@ -8,6 +8,7 @@ import { Topic } from "@/types";
 import { SubjectInfoSection } from "./ProviderSubjectInfoSection";
 import { SubjectMediaLibrarySection } from "./ProviderSubjectMediaLibrarySection";
 import { SubjectTopicsSection } from "./ProviderSubjectTopicsSection";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface ProviderSubjectDetailWidgetProps {
   subjectId: string;
@@ -208,7 +209,7 @@ export function ProviderSubjectDetailWidget({
     }
   };
 
-  if (loading || isLoading) return <GlobalLoaderTile />;
+  if (loading) return <GlobalLoaderTile />;
 
   if (error || !subject) {
     return (
