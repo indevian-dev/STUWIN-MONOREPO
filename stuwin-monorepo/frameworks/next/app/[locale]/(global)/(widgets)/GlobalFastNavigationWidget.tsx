@@ -65,7 +65,7 @@ export function GlobalFastNavigationWidget({
               <Link
                 key={index}
                 href={link.href}
-                className={`inline-flex items-center gap-2 rounded hover:-translate-y-0.5 transition ${variantClasses}`}
+                className={`inline-flex items-center gap-2 rounded hover:scale-110 hover:bg-brand-secondary hover:text-brand transition ${variantClasses}`}
                 aria-label={t(link.label)}
               >
                 <Icon className="text-2xl" />
@@ -78,13 +78,13 @@ export function GlobalFastNavigationWidget({
 
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="inline-flex items-center gap-2 bg-light text-dark rounded px-3 py-2 hover:-translate-y-0.5 transition"
+            className="inline-flex items-center gap-2 bg-light text-dark rounded px-3 py-2 hover:scale-110 hover:bg-brand-secondary hover:text-brand transition group"
             aria-label={t('menu')}
           >
             {isMenuOpen ? (
-              <PiXLight className="text-dark text-2xl" />
+              <PiXLight className="text-brand-secondary group-hover:text-brand text-2xl" />
             ) : (
-              <FiMenu className="text-dark text-2xl" />
+              <FiMenu className="text-brand-secondary group-hover:text-brand text-2xl" />
             )}
           </button>
         </div>

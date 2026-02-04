@@ -65,6 +65,7 @@ export function GlobalFullNavigationWidget({
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.overflow = '@media max-width: 1024px {hidden}';
     } else {
       document.body.style.overflow = 'auto';
     }
@@ -92,7 +93,7 @@ export function GlobalFullNavigationWidget({
     <li className="text-left w-full">
       {disabled ? (
         <span
-          className="text-sm flex items-center rounded text-gray-400 cursor-not-allowed px-3 py-2.5"
+          className="text-lg flex items-center rounded text-gray-400 cursor-not-allowed px-3 py-2.5"
           aria-disabled="true"
         >
           <Icon className="mr-2.5 text-gray-300 text-lg" />
@@ -101,7 +102,7 @@ export function GlobalFullNavigationWidget({
       ) : (
         <Link
           href={href}
-          className="text-sm flex items-center rounded text-dark hover:text-dark hover:bg-light px-3 py-2.5 font-medium transition-all duration-200"
+          className="text-md flex items-center rounded text-dark hover:text-dark hover:bg-brand-secondary/10 px-3 py-2.5 font-medium transition-all duration-200"
           onClick={onClick}
         >
           <Icon className="mr-2.5 text-brand text-lg" />
@@ -126,8 +127,8 @@ export function GlobalFullNavigationWidget({
           key={key}
           className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded"
         >
-          <div className="w-full text-[11px] flex items-center gap-2 font-bold text-ink-muted uppercase tracking-wider px-4 pt-4 pb-2">
-            {group.icon && <group.icon className="text-neutral-900" />}
+          <div className="w-full text-lg flex items-center gap-2 font-black text-brand-secondary/50 uppercase tracking-wider px-4 pt-4 pb-2">
+            {group.icon && <group.icon className="text-brand-secondary" />}
             {t(group.label)}
           </div>
           <ul className="pb-3 px-2 space-y-0.5">
@@ -164,8 +165,8 @@ export function GlobalFullNavigationWidget({
       <>
         {/* Desktop dropdown */}
         {isMenuOpen && (
-          <div className="hidden lg:block overflow-y-scroll overflow-x-hidden transform backdrop-blur-md fixed transition duration-500 ease-in-out top-0 right-0 left-0 text-dark h-screen bg-neutral-900/20 z-10">
-            <ul className="pt-20 pb-40 px-4 text-dark max-w-7xl mx-auto">
+          <div className="hidden lg:block overflow-y-scroll overflow-x-hidden transform backdrop-blur-md fixed transition duration-500 ease-in-out top-0 right-0 left-0 text-dark h-screen bg-white/25 z-10">
+            <ul className="pt-32 pb-40 px-4 text-dark max-w-7xl mx-auto grid grid-flow-col grid-rows-1 bg-white">
               {renderMenuContent()}
             </ul>
           </div>

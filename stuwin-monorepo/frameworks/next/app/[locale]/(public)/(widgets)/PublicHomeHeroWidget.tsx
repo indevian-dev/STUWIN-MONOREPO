@@ -20,17 +20,31 @@ export function PublicHomeHeroWidget() {
   const highlightLabels = t.raw('highlights');
 
   return (
-    <section className="relative overflow-hidden pt-20 pb-16 lg:pt-24 lg:pb-24 bg-gradient-to-r from-brand/30 to-brand-secondary/30">
-      {/* Dynamic Background */}
+    <section className="relative overflow-hidden pt-20 pb-16 lg:pt-24 lg:pb-24 bg-white">
+      {/* Dynamic Background with Grid Lines */}
       <div className="absolute inset-0">
+        {/* Grid pattern overlay */}
         <Image
           src="/hero.png"
           alt="Hero"
           fill
-          className="absolute inset-0 object-cover opacity-10"
+          className="absolute inset-0 object-cover opacity-50 grayscale brightness-75 contrast-125 mix-blend-luminosity"
         />
+
+        <div
+          className="absolute inset-0 opacity-80 z-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(10, 4, 40, 0.3) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(16, 206, 16, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '30px 30px'
+          }}
+        />
+
+
         {/* Subtle Brand Overlay */}
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-brand-secondary/20" />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 text-white text-center">
@@ -41,7 +55,7 @@ export function PublicHomeHeroWidget() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-brand-secondary/80 max-w-3xl mx-auto leading-relaxed font-medium">
+          <p className="text-xl md:text-2xl text-brand-secondary/70 max-w-3xl mx-auto leading-relaxed font-medium">
             {t('body')}
           </p>
 
@@ -65,9 +79,9 @@ export function PublicHomeHeroWidget() {
               <Link
                 key={idx}
                 href={href}
-                className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white border border-white shadow-xl hover:border-brand/30 hover:shadow-brand/20 hover:-translate-y-1 transition-all duration-500"
+                className="group flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl hover:bg-white/10 hover:border-brand/50 hover:-translate-y-1 transition-all duration-500"
               >
-                <div className="p-2 rounded-xl bg-white text-brand-secondary group-hover:bg-brand group-hover:text-white transition-all duration-300">
+                <div className="p-2 rounded-xl bg-brand/10 text-brand-secondary group-hover:bg-brand group-hover:text-brand-secondary transition-all duration-300">
                   <Icon className="text-2xl" />
                 </div>
                 <span className="text-sm font-black tracking-wide text-brand-secondary uppercase">
