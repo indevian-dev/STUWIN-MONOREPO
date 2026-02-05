@@ -19,7 +19,7 @@ export function PublicFooterWidget() {
               <div className="mb-12 max-w-[360px] lg:mb-16">
                 <Link href="/" className="mb-8 inline-block">
                   <Image
-                    src="/logo-w.svg"
+                    src="/stuwinlogowhite.svg"
                     alt="logo"
                     className="w-full block"
                     width={220}

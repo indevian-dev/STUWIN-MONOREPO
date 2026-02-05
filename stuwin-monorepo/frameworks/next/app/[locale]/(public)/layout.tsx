@@ -88,26 +88,24 @@ function PublicLayout({ children }: PublicLayoutProps) {
 
   return (
     <>
-      <div className="min-h-screen bg-section-gradient-brand">
-        <GlobalHeaderWidget
-          config={navConfig}
-          isMenuOpen={isMenuOpen}
-          setIsMenuOpen={setIsMenuOpen}
-        >
-          <GlobalFastNavigationWidget
-            config={navConfig}
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          />
-        </GlobalHeaderWidget>
-        <GlobalFullNavigationWidget
+      <GlobalHeaderWidget
+        config={navConfig}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+      >
+        <GlobalFastNavigationWidget
           config={navConfig}
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
         />
-        <main className="text-dark">{children}</main>
-        <PublicFooterWidget />
-      </div>
+      </GlobalHeaderWidget>
+      <GlobalFullNavigationWidget
+        config={navConfig}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+      />
+      <main className="text-dark min-h-[calc(60vh-100px)]">{children}</main>
+      <PublicFooterWidget />
     </>
   );
 }
