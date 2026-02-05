@@ -1,13 +1,5 @@
 {
-  "navigate_back": "Geriyə keç",
-  "stuwin_ai_home": "stuwin.ai Ana Səhifə",
-  "create_your_account": "Hesabınızı yaradın",
-  "secure_onboarding_description": "Aydın doğrulama və daxili yoxlama ilə sadə, təhlükəsiz qeydiyyat.",
-  "feature_password_strength": "Şifrə gücü göstəriciləri",
-  "feature_phone_formatting": "Azərbaycan üçün lokallaşdırılmış telefon formatı",
-  "feature_email_verification": "E-poçt doğrulamasına keçid",
   "already_have_account": "Hesabınız var?",
-  "go_to_login": "Giriş səhifəsinə keç",
   "already_registered": "Artıq qeydiyyatdan keçmisiz?",
   "create_account": "Hesab yaradın",
   "join_description": "İrəliləyişi saxlamaq, öyrənməni izləmək və cihazlar arasında sinxronlaşdırmaq üçün stuwin.ai-a qoşulun.",

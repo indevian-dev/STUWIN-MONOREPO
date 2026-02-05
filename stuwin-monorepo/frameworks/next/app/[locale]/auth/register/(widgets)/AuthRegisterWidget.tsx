@@ -260,183 +260,162 @@ export default function AuthRegisterWidget() {
 
   return (
     <section className="min-h-screen bg-linear-to-b from-brand/5 via-white to-surface">
-      <div className="max-w-5xl mx-auto px-4 py-10 md:py-14 lg:py-16">
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          <div className="hidden lg:flex flex-col gap-4 rounded-primary bg-linear-to-br from-brand/60 to-brand-dark/40 text-white p-6 shadow-2xl">
-            <Link href="/" className="flex items-center gap-3 text-white hover:text-light">
-              <div>
-                <p className="text-xs uppercase tracking-wide opacity-80">{t('navigate_back')}</p>
-                <p className="text-lg font-semibold">{t('stuwin_ai_home')}</p>
-              </div>
+      <div className="max-w-lg mx-auto px-4 py-10 md:py-14 lg:py-16">
+        <div className="bg-white/90 backdrop-blur rounded-primary border border-border shadow-xl p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-dark hover:text-brand">
+              <GlobalLogoTile width={120} height={40} />
             </Link>
-            <div className="space-y-3 pt-4">
-              <h2 className="text-2xl font-bold">{t('create_your_account')}</h2>
-              <p className="text-sm text-white/80">{t('secure_onboarding_description')}</p>
-              <ul className="space-y-2 text-sm text-white/85">
-                <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-white/70" /> {t('feature_password_strength')}</li>
-                <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-white/70" /> {t('feature_phone_formatting')}</li>
-                <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-white/70" /> {t('feature_email_verification')}</li>
-              </ul>
-            </div>
-            <div className="mt-auto space-y-2">
-              <p className="text-sm text-white/70">{t('already_have_account')}</p>
-              <button
-                type="button"
-                className="w-full rounded-primary bg-white text-brand font-semibold py-3 px-4 hover:bg-light/90 transition"
-                onClick={() => router.push('/auth/login')}
-              >
-                {t('go_to_login')}
-              </button>
-            </div>
+            <Link href="/auth/login" className="text-sm font-semibold text-brand hover:text-brand/80">
+              {t('already_registered')}
+            </Link>
           </div>
 
-          <div className="bg-white rounded-primary shadow-xl p-6 sm:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <Link href="/" className="inline-flex items-center gap-2 text-dark hover:text-brand">
-                <GlobalLogoTile width={120} height={40} />
-              </Link>
-              <Link href="/auth/login" className="text-sm font-semibold text-brand hover:text-brand/80">
-                {t('already_registered')}
-              </Link>
+          <div className="space-y-1 mb-8">
+            <h1 className="text-3xl font-bold text-dark tracking-tight">{t('create_account')}</h1>
+            <p className="text-sm text-body">{t('join_description')}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="name">{t('full_name')}</label>
+              <input
+                className={`w-full rounded-primary border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${errors.name ? 'border-danger ring-danger/10' : 'border-border focus:border-brand'}`}
+                id="name"
+                name="name"
+                type="text"
+                placeholder={t('full_name_placeholder')}
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+              {errors.name && <p className="text-danger text-xs font-semibold ml-1">{errors.name}</p>}
             </div>
 
-            <div className="space-y-1 mb-6">
-              <h1 className="text-3xl font-bold text-dark">{t('create_account')}</h1>
-              <p className="text-sm text-body">{t('join_description')}</p>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="email">{t('email')}</label>
+              <input
+                className={`w-full rounded-primary border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${errors.email ? 'border-danger ring-danger/10' : 'border-border focus:border-brand'}`}
+                id="email"
+                name="email"
+                type="email"
+                placeholder={t('email_placeholder')}
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              {errors.email && <p className="text-danger text-xs font-semibold ml-1">{errors.email}</p>}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark" htmlFor="name">{t('full_name')}</label>
-                <input
-                  className={`w-full rounded-lg bg-white py-3 px-3 text-dark placeholder:text-body focus:outline-none focus:ring-1 ${errors.name ? 'ring-1 ring-danger' : 'focus:ring-brand-soft'}`}
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder={t('full_name_placeholder')}
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.name && <p className="text-danger text-xs font-semibold">{errors.name}</p>}
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="phone">{t('phone_az')}</label>
+              <input
+                className={`w-full rounded-primary border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${errors.phone ? 'border-danger ring-danger/10' : 'border-border focus:border-brand'}`}
+                id="phone"
+                name="phone"
+                type="text"
+                placeholder={t('phone_placeholder')}
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+              {errors.phone && <p className="text-danger text-xs font-semibold ml-1">{errors.phone}</p>}
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark" htmlFor="email">{t('email')}</label>
-                <input
-                  className={`w-full rounded-lg bg-white py-3 px-3 text-dark placeholder:text-body focus:outline-none focus:ring-1 ${errors.email ? 'ring-1 ring-danger' : 'focus:ring-brand-soft'}`}
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder={t('email_placeholder')}
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.email && <p className="text-danger text-xs font-semibold">{errors.email}</p>}
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="password">{t('password')}</label>
+              <input
+                className={`w-full rounded-primary border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${errors.password.length > 0 ? 'border-danger ring-danger/10' : 'border-border focus:border-brand'}`}
+                id="password"
+                name="password"
+                type="password"
+                placeholder={t('password_placeholder')}
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              {errors.password.length > 0 && (
+                <div className="space-y-1 ml-1">
+                  {errors.password.map((error, index) => (
+                    <p key={index} className="text-danger text-xs font-semibold">{error}</p>
+                  ))}
+                </div>
+              )}
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark" htmlFor="phone">{t('phone_az')}</label>
-                <input
-                  className={`w-full rounded-lg bg-white py-3 px-3 text-dark placeholder:text-body focus:outline-none focus:ring-1 ${errors.phone ? 'ring-1 ring-danger' : 'focus:ring-brand-soft'}`}
-                  id="phone"
-                  name="phone"
-                  type="text"
-                  placeholder={t('phone_placeholder')}
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.phone && <p className="text-danger text-xs font-semibold">{errors.phone}</p>}
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="confirmPassword">{t('repeat_password')}</label>
+              <input
+                className={`w-full rounded-primary border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all ${errors.confirmPassword ? 'border-danger ring-danger/10' : 'border-border focus:border-brand'}`}
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder={t('password_placeholder')}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              {errors.confirmPassword && <p className="text-danger text-xs font-semibold ml-1">{errors.confirmPassword}</p>}
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark" htmlFor="password">{t('password')}</label>
-                <input
-                  className={`w-full rounded-lg bg-white py-3 px-3 text-dark placeholder:text-body focus:outline-none focus:ring-1 ${errors.password.length > 0 ? 'ring-1 ring-danger' : 'focus:ring-brand-soft'}`}
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder={t('password_placeholder')}
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.password.length > 0 && (
-                  <div className="space-y-1">
-                    {errors.password.map((error, index) => (
-                      <p key={index} className="text-danger text-xs font-semibold">{error}</p>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div className="rounded-primary border border-border bg-gray-50/50 px-4 py-4 text-xs text-body shadow-inner">
+              <p className="font-semibold text-dark/80 mb-2 uppercase tracking-wider">{t('password_must_contain')}</p>
+              <ul className="space-y-1.5">
+                <li className={`flex items-center gap-2 ${formData.password.length >= 8 ? 'text-success font-semibold' : 'text-body/70'}`}>
+                  <div className={`h-1.5 w-1.5 rounded-full ${formData.password.length >= 8 ? 'bg-success' : 'bg-body/30'}`} />
+                  {t('password_rule_length')}
+                </li>
+                <li className={`flex items-center gap-2 ${/\d/.test(formData.password) ? 'text-success font-semibold' : 'text-body/70'}`}>
+                  <div className={`h-1.5 w-1.5 rounded-full ${/\d/.test(formData.password) ? 'bg-success' : 'bg-body/30'}`} />
+                  {t('password_rule_number')}
+                </li>
+                <li className={`flex items-center gap-2 ${/[A-Z]/.test(formData.password) ? 'text-success font-semibold' : 'text-body/70'}`}>
+                  <div className={`h-1.5 w-1.5 rounded-full ${/[A-Z]/.test(formData.password) ? 'bg-success' : 'bg-body/30'}`} />
+                  {t('password_rule_uppercase')}
+                </li>
+              </ul>
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark" htmlFor="confirmPassword">{t('repeat_password')}</label>
-                <input
-                  className={`w-full rounded-lg bg-white py-3 px-3 text-dark placeholder:text-body focus:outline-none focus:ring-1 ${errors.confirmPassword ? 'ring-1 ring-danger' : 'focus:ring-brand-soft'}`}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder={t('password_placeholder')}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.confirmPassword && <p className="text-danger text-xs font-semibold">{errors.confirmPassword}</p>}
-              </div>
+            <button
+              className="w-full rounded-primary bg-brand hover:bg-brand/90 text-white font-semibold py-3.5 px-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? t('creating_account') : t('create_account')}
+            </button>
+            <p className="text-center text-sm text-body/80 pt-2">
+              {t('already_have_account')} <Link href="/auth/login" className="text-brand font-bold hover:text-brand/80 transition-colors">{t('log_in')}</Link>
+            </p>
+          </form>
 
-              <div className="rounded-lg bg-gray-50 px-3 py-3 text-xs text-body">
-                <p className="font-semibold text-dark mb-1">{t('password_must_contain')}</p>
-                <ul className="space-y-1">
-                  <li className={formData.password.length >= 8 ? 'text-success font-semibold' : ''}>{t('password_rule_length')}</li>
-                  <li className={/\d/.test(formData.password) ? 'text-success font-semibold' : ''}>{t('password_rule_number')}</li>
-                  <li className={/[A-Z]/.test(formData.password) ? 'text-success font-semibold' : ''}>{t('password_rule_uppercase')}</li>
-                </ul>
-              </div>
-
+          <div className="mt-8">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs font-medium uppercase tracking-wider text-body/60">{t('social_login_soon')}</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
               <button
-                className="w-full rounded-primary bg-brand-soft hover:bg-brand/90 text-white font-semibold py-3 px-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                type="submit"
-                disabled={loading}
+                onClick={() => handleOAuthLogin('google')}
+                disabled
+                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
               >
-                {loading ? t('creating_account') : t('create_account')}
+                <Image src={"/google.svg"} alt="Google" width="22" height="22" /> {t('google')}
               </button>
-              <p className="text-center text-sm text-body">
-                {t('already_have_account')} <Link href="/auth/login" className="text-brand font-semibold hover:text-brand/80">{t('log_in')}</Link>
-              </p>
-            </form>
-
-            <div className="mt-6">
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-xs uppercase tracking-wide text-body">{t('social_login_soon')}</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                <button
-                  onClick={() => handleOAuthLogin('google')}
-                  disabled
-                  className="flex items-center justify-center gap-2 rounded-lg bg-white py-2.5 px-3 text-sm font-semibold text-dark disabled:opacity-50 shadow-sm"
-                >
-                  <Image src={"/google.svg"} alt="Google" width="22" height="22" /> {t('google')}
-                </button>
-                <button
-                  onClick={() => handleOAuthLogin('facebook')}
-                  disabled
-                  className="flex items-center justify-center gap-2 rounded-lg bg-white py-2.5 px-3 text-sm font-semibold text-dark disabled:opacity-50 shadow-sm"
-                >
-                  <Image src={"/facebook.svg"} alt="Facebook" width="18" height="22" /> {t('facebook')}
-                </button>
-                <button
-                  onClick={() => handleOAuthLogin('apple')}
-                  disabled
-                  className="flex items-center justify-center gap-2 rounded-lg bg-white py-2.5 px-3 text-sm font-semibold text-dark disabled:opacity-50 shadow-sm"
-                >
-                  <Image src={"/apple.svg"} alt="Apple" width="22" height="22" /> {t('apple')}
-                </button>
-              </div>
+              <button
+                onClick={() => handleOAuthLogin('facebook')}
+                disabled
+                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Image src={"/facebook.svg"} alt="Facebook" width="18" height="22" /> {t('facebook')}
+              </button>
+              <button
+                onClick={() => handleOAuthLogin('apple')}
+                disabled
+                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Image src={"/apple.svg"} alt="Apple" width="22" height="22" /> {t('apple')}
+              </button>
             </div>
           </div>
         </div>

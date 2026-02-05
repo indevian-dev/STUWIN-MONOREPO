@@ -1,13 +1,5 @@
 {
-  "navigate_back": "Назад",
-  "stuwin_ai_home": "stuwin.ai Главная",
-  "create_your_account": "Создайте аккаунт",
-  "secure_onboarding_description": "Простая и безопасная регистрация с четкой проверкой и встроенной верификацией.",
-  "feature_password_strength": "Индикаторы надежности пароля",
-  "feature_phone_formatting": "Локализованное форматирование телефонов для Азербайджана",
-  "feature_email_verification": "Плавный переход к верификации электронной почты",
   "already_have_account": "Уже есть аккаунт?",
-  "go_to_login": "Перейти к входу",
   "already_registered": "Уже зарегистрированы?",
   "create_account": "Создать аккаунт",
   "join_description": "Присоединяйтесь к stuwin.ai, чтобы сохранять прогресс, отслеживать обучение и синхронизировать данные между устройствами.",
