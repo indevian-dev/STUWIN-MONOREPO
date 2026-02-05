@@ -66,11 +66,11 @@ function PublicLayout({ children }: PublicLayoutProps) {
       resources: {
         label: 'resources',
         items: [
-          { href: '/pages/about', icon: PiBookBookmarkLight, label: 'about_us' },
-          { href: '/pages/faq', icon: PiExamLight, label: 'faq' },
+          { href: '/docs/about', icon: PiBookBookmarkLight, label: 'about_us' },
+          { href: '/docs/faq', icon: PiExamLight, label: 'faq' },
+          { href: '/docs/terms', icon: PiBookBookmarkLight, label: 'terms_of_service' },
+          { href: '/docs/privacy', icon: PiBookBookmarkLight, label: 'privacy_policy' },
           { href: '/pdf-tool', icon: PiFilePdf, label: 'pdf_tools' },
-          { href: '/pages/terms', icon: PiBookBookmarkLight, label: 'terms_of_service' },
-          { href: '/pages/privacy', icon: PiBookBookmarkLight, label: 'privacy_policy' }
         ]
       },
       contact: {

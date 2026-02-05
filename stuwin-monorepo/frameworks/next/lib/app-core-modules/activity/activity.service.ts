@@ -6,9 +6,9 @@ import { Database } from "@/lib/app-infrastructure/database";
 import { genAI, GEMINI_MODELS } from "@/lib/integrations/geminiClient";
 import { providerQuestions as questionsTable, studentQuizzes, studentAiSessions, providerSubjects, providerSubjectTopics, studentHomeworks } from "@/lib/app-infrastructure/database/schema";
 import { inArray, eq, and, sql, desc, or } from "drizzle-orm";
-// import { HOMEWORK_SESSION_SYSTEM_PROMPT, QUIZ_ANALYSIS_PROMPT, LEARNING_CONTEXT_PROMPT } from "@/lib/intelligence/activityPrompts";
 
-import { PromptFlowType } from "@/lib/intelligence/fallbackPrompts";
+
+import { PromptFlowType } from "@/lib/intelligence";
 import { SystemPromptService } from "../intelligence/system-prompt.service";
 
 /**

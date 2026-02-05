@@ -3,7 +3,7 @@ import { SystemPromptRepository } from "./system-prompt.repository";
 import { BaseService } from "../domain/BaseService";
 import { AuthContext } from "@/lib/app-core-modules/types";
 import { Database } from "@/lib/app-infrastructure/database";
-import { FALLBACK_PROMPTS } from "@/lib/intelligence/fallbackPrompts";
+import { BASE_PROMPTS } from "@/lib/intelligence";
 
 export class SystemPromptService extends BaseService {
     constructor(
@@ -14,27 +14,26 @@ export class SystemPromptService extends BaseService {
         super();
     }
 
-    /**
-     * Get the active prompt for a flow, falling back to default if necessary.
-     * Then hydrates it with the provided variables.
-     */
     async getEffectivePromptResult(flowType: string, variables: Record<string, any>) {
         try {
-            // 1. Get Base Core (Hardcoded)
-            const fallback = FALLBACK_PROMPTS[flowType];
-            const promptBody = fallback?.body || "You are a helpful AI assistant. {{aiCrib}}";
+            // 1. Get Base Core (Mandatory Hardcoded)
+            const base = BASE_PROMPTS[flowType];
+            let combinedPrompt = base?.body || "You are a helpful AI assistant.";
 
-            // 2. Add System Crib from DB (if exists)
+            // 2. Append System-Level Crib from DB (if active for this flow)
             const dbPrompt = await this.repository.findActiveByFlowType(flowType);
             if (dbPrompt && dbPrompt.body) {
-                const systemCrib = dbPrompt.body;
-                // Prepend system crib to the entity-specific cribs
-                const existingCrib = variables.aiCrib || "";
-                variables.aiCrib = systemCrib + (existingCrib ? "\n\n" + existingCrib : "");
+                combinedPrompt += "\n\n### SYSTEM INSTRUCTIONS (CRIB):\n" + dbPrompt.body;
             }
 
-            // 3. Hydrate
-            return this.hydrateValues(promptBody, variables);
+            // 3. Append Object-Level Crib (Subject/Topic/Question context)
+            const objectCrib = variables.aiCrib || "";
+            if (objectCrib) {
+                combinedPrompt += "\n\n### CONTEXTUAL ADDITIONS (CRIB):\n" + objectCrib;
+            }
+
+            // 4. Hydrate final combined text
+            return this.hydrateValues(combinedPrompt, variables);
         } catch (error) {
             this.handleError(error, "getEffectivePromptResult");
             return "Error generating prompt context.";
@@ -47,7 +46,7 @@ export class SystemPromptService extends BaseService {
     async getRawPrompt(flowType: string) {
         const dbPrompt = await this.repository.findActiveByFlowType(flowType);
         if (dbPrompt) return dbPrompt;
-        return FALLBACK_PROMPTS[flowType] || null;
+        return BASE_PROMPTS[flowType] || null;
     }
 
     /**

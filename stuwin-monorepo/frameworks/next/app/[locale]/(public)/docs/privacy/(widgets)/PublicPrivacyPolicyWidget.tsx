@@ -4,41 +4,30 @@ import { notFound } from 'next/navigation';
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
 import Image
     from 'next/image';
-import supabase
-    from '@/lib/integrations/supabasePublicRoleClient';
+import { ModuleFactory } from '@/lib/app-core-modules/factory';
 
 // Cache the data fetching function to prevent redundant queries
 const getPrivacyData = cache(async (locale: string) => {
     try {
-        const { data, error } = await supabase
-            .from('pages')
-            .select('*')
-            .eq('type', 'PRIVACY')
-            .single();
+        const modules = new ModuleFactory({} as any);
+        const result = await modules.content.getPage('privacy');
 
-        if (error) {
-            ConsoleLogger.error('Error fetching privacy policy:', error);
+        if (!result.success || !result.data) {
+            ConsoleLogger.error('Error fetching privacy policy:', result.error);
             return null;
         }
 
-        // Select content based on locale
-        let content = '';
-        switch (locale) {
-            case 'az':
-                content = data.content_az || data.content_en || '';
-                break;
-            case 'ru':
-                content = data.content_ru || data.content_en || '';
-                break;
-            case 'en':
-            default:
-                content = data.content_en || data.content_az || '';
-                break;
-        }
+        const data = result.data;
+        // Select content based on localizedContent structure
+        const localized = (data.localizedContent as any) || {};
+        const activeData = localized[locale] || localized['en'] || Object.values(localized)[0] || {};
 
         return {
             ...data,
-            content: content
+            title: activeData.title || 'Privacy Policy',
+            content: activeData.content || '',
+            metaDescription: activeData.metaDescription || activeData.meta_description || 'Privacy policy and data protection information.',
+            cover: activeData.cover || null
         };
     } catch (error) {
         ConsoleLogger.error('Error fetching privacy policy:', error);
@@ -60,10 +49,10 @@ export async function generateMetadata() {
 
     return {
         title: privacy.title || 'Privacy Policy',
-        description: privacy.meta_description || 'Privacy policy and data protection information.',
+        description: privacy.metaDescription,
         openGraph: {
-            title: privacy.title || 'Privacy Policy',
-            description: privacy.meta_description || 'Privacy policy and data protection information.',
+            title: privacy.title,
+            description: privacy.metaDescription,
             locale,
         },
     };

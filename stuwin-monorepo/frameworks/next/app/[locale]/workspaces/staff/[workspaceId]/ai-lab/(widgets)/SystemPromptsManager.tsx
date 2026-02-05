@@ -170,7 +170,7 @@ export function SystemPromptsManager() {
                             />
                             <div className="bg-blue-50 p-2 rounded mt-1 border border-blue-100">
                                 <p className="text-xs text-blue-800">
-                                    <strong>How it works:</strong> This content is treated as a "System Crib". It will be prepended to any Subject/Topic/Question cribs and then injected into the <code>{'{{aiCrib}}'}</code> placeholder of the hardcoded core prompt.
+                                    <strong>How it works:</strong> This content is treated as a "System Crib". It will be appended (along with any Subject/Topic/Question cribs) as raw text to the end of the hardcoded mandatory base prompt before being sent to the AI.
                                 </p>
                             </div>
                         </div>
