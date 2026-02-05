@@ -1,5 +1,5 @@
 
-import { eq, and, desc, asc, sql } from "drizzle-orm";
+import { eq, and, desc, asc, sql, count } from "drizzle-orm";
 import { workspaces, workspaceAccesses, users, accounts } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
@@ -71,7 +71,6 @@ export class WorkspaceRepository extends BaseRepository {
         if (options.sortField === 'title') {
             orderByClause = options.orderDir === 'asc' ? asc(workspaces.title) : desc(workspaces.title);
         } else if (options.sortField === 'price') {
-            // JSONB Extraction & Cast for sorting
             const pricePath = sql<number>`(${workspaces.profile}->>'providerSubscriptionPrice')::numeric`;
             orderByClause = options.orderDir === 'asc' ? asc(pricePath) : desc(pricePath);
         }
@@ -85,6 +84,13 @@ export class WorkspaceRepository extends BaseRepository {
             conditions.push(sql`(${workspaces.title} ILIKE ${'%' + options.search + '%'})`);
         }
 
+        // Fetch total count for pagination
+        const countQuery = await client
+            .select({ total: count() })
+            .from(workspaces)
+            .where(and(...conditions));
+        const total = Number(countQuery[0]?.total || 0);
+
         const data = await client
             .select()
             .from(workspaces)
@@ -93,7 +99,7 @@ export class WorkspaceRepository extends BaseRepository {
             .offset(offset)
             .orderBy(orderByClause);
 
-        return { data, total: data.length };
+        return { data, total };
     }
 
     // ═══════════════════════════════════════════════════════════════

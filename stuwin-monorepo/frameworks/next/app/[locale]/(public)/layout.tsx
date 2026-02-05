@@ -60,7 +60,7 @@ function PublicLayout({ children }: PublicLayoutProps) {
         items: [
           { href: '/', icon: PiHouseLine, label: 'home' },
           { href: '/subjects', icon: PiSquaresFourLight, label: 'subjects' },
-          { href: '/eduorgs', icon: PiStorefront, label: 'educational_organizations' }
+          { href: '/programs', icon: PiStorefront, label: 'programs' }
         ]
       },
       resources: {

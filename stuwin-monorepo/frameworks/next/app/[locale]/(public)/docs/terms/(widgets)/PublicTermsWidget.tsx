@@ -1,15 +1,10 @@
 "use client";
 
-import {
-    useState,
-    useEffect
-} from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
+import Image from 'next/image';
+
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
-import Image
-    from 'next/image';
-import supabase
-    from '@/lib/integrations/supabasePublicRoleClient';
 
 interface TermsData {
     cover?: string;
@@ -24,20 +19,19 @@ export function PublicTermsWidget() {
     useEffect(() => {
         async function fetchTerms() {
             try {
-                const { data, error } = await supabase
-                    .from('pages')
-                    .select('*')
-                    .eq('type', 'TERMS')
-                    .single();
+                const res = await fetch(`/api/docs?type=terms`);
+                const data = await res.json();
 
-                if (error) {
-                    ConsoleLogger.error('error', error);
-                    return;
+                if (data.success && data.doc) {
+                    const localized = data.doc.localizedContent[locale] || {};
+                    setTerms({
+                        title: localized.title,
+                        content: localized.content,
+                        cover: data.doc.cover
+                    });
                 }
-
-                setTerms(data);
             } catch (error) {
-                ConsoleLogger.error(error);
+                ConsoleLogger.error("Failed to fetch terms content", error);
             }
         }
 

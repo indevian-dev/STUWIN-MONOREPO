@@ -1,15 +1,10 @@
 "use client";
 
-import {
-    useState,
-    useEffect
-} from 'react';
+import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
+import Image from 'next/image';
+
 import { ConsoleLogger } from '@/lib/app-infrastructure/loggers/ConsoleLogger';
-import Image
-    from 'next/image';
-import supabase
-    from '@/lib/integrations/supabasePublicRoleClient';
 
 interface FaqPageData {
     cover?: string;
@@ -17,27 +12,26 @@ interface FaqPageData {
     content?: string;
 }
 
-export  function PublicFaqPolicyWidget() {
+export function PublicFaqWidget() {
     const [faq, setFaq] = useState<FaqPageData>({});
     const locale = useLocale();
 
     useEffect(() => {
         async function fetchFaq() {
             try {
-                const { data, error } = await supabase
-                    .from('pages')
-                    .select('*')
-                    .eq('type', 'FAQ')
-                    .single();
+                const res = await fetch(`/api/docs?type=faq`);
+                const data = await res.json();
 
-                if (error) {
-                    ConsoleLogger.error('error', error);
-                    return;
+                if (data.success && data.doc) {
+                    const localized = data.doc.localizedContent[locale] || {};
+                    setFaq({
+                        title: localized.title,
+                        content: localized.content,
+                        cover: data.doc.cover
+                    });
                 }
-
-                setFaq(data);
             } catch (error) {
-                ConsoleLogger.error(error);
+                ConsoleLogger.error("Failed to fetch FAQ content", error);
             }
         }
 
@@ -52,7 +46,7 @@ export  function PublicFaqPolicyWidget() {
                         <div className='relative w-full p-20'>
                             <Image
                                 src={faq.cover}
-                                alt={faq.title || 'Rules title'}
+                                alt={faq.title || 'FAQ title'}
                                 layout='fill'
                                 objectFit='cover'
                             />

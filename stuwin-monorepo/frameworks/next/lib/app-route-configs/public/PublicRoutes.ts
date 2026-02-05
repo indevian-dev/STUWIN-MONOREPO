@@ -24,6 +24,7 @@ export const publicEndpoints: EndpointsMap = {
   "/api/providers/:id": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/providers/tags": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/providers/stats": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
+  "/api/programs": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/questions/featured": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/questions/search": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
   "/api/questions/:id": createEndpoint({ method: "GET", authRequired: false, type: "api" }),
@@ -60,6 +61,10 @@ export const publicEndpoints: EndpointsMap = {
   // Providers
   "/providers": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
   "/providers/:id": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+
+  // Programs
+  "/programs": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
+  "/programs/:id": createEndpoint({ method: "GET", authRequired: false, type: "page" }),
 
   // Questions
   "/questions": createEndpoint({ method: "GET", authRequired: false, type: "page" }),

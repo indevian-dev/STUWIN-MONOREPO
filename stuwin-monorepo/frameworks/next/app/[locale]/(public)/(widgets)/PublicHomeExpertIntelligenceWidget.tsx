@@ -18,27 +18,25 @@ export function PublicHomeExpertIntelligenceWidget() {
             </div>
 
             <div className="relative max-w-7xl mx-auto px-4">
-                <div className="flex flex-col gap-16 text-center items-center">
-                    <div className="w-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand/100 border border-brand-secondary/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
+                <div className="flex flex-col gap-16 text-left items-center">
+                    <div className="w-full inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand/100 border border-brand-secondary/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
                         <PiCodeBlockBold />
                         <span>{t('badge')}</span>
                     </div>
                     {/* Full Width Header */}
                     <div className="space-y-8">
-
-
                         <h2 className="text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
                             {t('headline_start')} <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-brand">{t('headline_end')}</span>
                         </h2>
 
-                        <p className="text-2xl text-slate-600 leading-relaxed font-medium max-w-4xl mx-auto">
+                        <p className="text-lg text-slate-600 leading-relaxed font-medium w-full">
                             {t('body')}
                         </p>
                     </div>
 
                     {/* Full Width Visual Representation of the Lab */}
-                    <div className="relative w-full aspect-[10/3] rounded-3xl border border-slate-200 bg-brand-secondary overflow-hidden shadow-2xl shadow-slate-300/50">
+                    <div className="relative w-full aspect-[3/3] sm:aspect-[5/3] md:aspect-[7/3] lg:aspect-[10/3] rounded-3xl border border-slate-200 bg-brand-secondary overflow-hidden shadow-2xl shadow-slate-300/50">
                         <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/10 to-transparent" />
                         <div className="p-8 h-full flex flex-col text-sm">
                             <div className="flex items-center gap-2 border-b border-white/10 pb-6 mb-6">

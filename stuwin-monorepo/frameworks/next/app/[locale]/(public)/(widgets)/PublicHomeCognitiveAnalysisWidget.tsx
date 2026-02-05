@@ -45,7 +45,7 @@ export function PublicHomeCognitiveAnalysisWidget() {
                                 {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span>
                             </h2>
 
-                            <p className="text-xl text-slate-600 leading-relaxed font-medium max-w-3xl">
+                            <p className="text-lg text-slate-600 leading-relaxed font-medium max-w-3xl">
                                 {t('body')}
                             </p>
                         </div>

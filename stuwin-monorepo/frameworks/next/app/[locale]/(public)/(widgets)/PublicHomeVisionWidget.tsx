@@ -29,11 +29,11 @@ export function PublicHomeVisionWidget() {
             <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-brand/10 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/2" />
 
             <div className="relative max-w-7xl mx-auto px-4">
-                <div className="flex flex-col gap-16 text-center items-center">
+                <div className="flex flex-col gap-16 text-left items-center">
 
                     {/* Full Width Header */}
-                    <div className="space-y-8 max-w-4xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
+                    <div className="space-y-8 w-full">
+                        <div className="w-full inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
                             <PiShieldCheckeredFill className="text-brand" />
                             <span>{t('badge')}</span>
                         </div>
@@ -42,7 +42,7 @@ export function PublicHomeVisionWidget() {
                             {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span> {t('headline_extra')}
                         </h2>
 
-                        <p className="text-xl text-slate-600 leading-relaxed font-medium">
+                        <p className="text-lg text-slate-600 leading-relaxed font-medium">
                             {t('body')}
                         </p>
                     </div>
