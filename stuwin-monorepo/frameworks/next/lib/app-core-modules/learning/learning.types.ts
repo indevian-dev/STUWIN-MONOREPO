@@ -31,6 +31,7 @@ export namespace Subject {
         totalTopics: number;
         canManageTopics: boolean;
         aiAssistantCrib?: string;
+        files?: any;
     }
 
     export interface StudentView extends Timestamps {
@@ -66,35 +67,53 @@ export namespace Subject {
 // TOPICS
 // ═══════════════════════════════════════════════════════════════
 
+export interface TopicQuestionsStats {
+    total?: number;
+    remaining?: number;
+    capacity?: number;
+    published?: number;
+}
+
+export interface TopicPdfDetails {
+    s3Key?: string;
+    pdfUrl?: string; // For backward compatibility if needed
+    pageStart?: number;
+    pageEnd?: number;
+    totalPages?: number;
+    chapterNumber?: string;
+    fileName?: string;
+    pages?: { start?: number; end?: number }; // Seen in some UI components
+}
+
 export namespace Topic {
     export interface Entity extends Timestamps {
         id: string;
-        body: string;
+        description: string;
         gradeLevel: number;
         name: string;
-        subjectId: string;
+        providerSubjectId: string;
         aiSummary?: string;
-        isActiveForAi: boolean;
-        pdfS3Key?: string;
-        pdfPageStart?: number;
-        pdfPageEnd?: number;
-        chapterNumber?: string;
-        parentTopicId?: string;
+        isActiveAiGeneration: boolean;
+        workspaceId: string;
+        updatedAt: string;
+        language?: string;
         aiAssistantCrib?: string;
+        pdfDetails?: TopicPdfDetails;
+        questionsStats?: TopicQuestionsStats;
+        parentTopicId?: string;
     }
 
     export interface CreateInput {
-        body: string;
-        gradeLevel: number;
         name: string;
-        subjectId: string;
+        description?: string;
+        gradeLevel?: number;
+        providerSubjectId: string;
         aiSummary?: string;
-        pdfS3Key?: string;
-        pdfPageStart?: number;
-        pdfPageEnd?: number;
-        chapterNumber?: string;
-        parentTopicId?: string;
+        pdfDetails?: TopicPdfDetails;
+        isActiveAiGeneration?: boolean;
         aiAssistantCrib?: string;
+        questionsStats?: TopicQuestionsStats;
+        parentTopicId?: string;
     }
 }
 
@@ -111,7 +130,7 @@ export namespace Question {
         question: string;
         answers: string[];
         correctAnswer: string;
-        subjectId: string;
+        providerSubjectId: string;
         complexity: QuestionComplexity;
         gradeLevel: number;
         explanationGuide: {
@@ -129,7 +148,7 @@ export namespace Question {
         question: string;
         answers: string[];
         correctAnswer: string;
-        subjectId: string;
+        providerSubjectId: string;
         complexity: QuestionComplexity;
         gradeLevel: number;
         explanationGuide: {

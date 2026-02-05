@@ -177,13 +177,12 @@ export function ProviderPdfTopicExtractorWidget({
         body: {
           topics: extractedTopics.map(topic => ({
             name: topic.name,
-            subjectId,
+            providerSubjectId: subjectId,
             gradeLevel: parseInt(gradeLevel),
             aiSummary: topic.aiSummary || "",
-            pdfS3Key: selectedPdf.pdfUrl,
-            pdfPageStart: topic.pageStart,
-            pdfPageEnd: topic.pageEnd,
-            subjectPdfId: selectedPdfId,
+            pdfFileName: selectedPdf.pdfUrl,
+            pdfPagesByTopic: { start: topic.pageStart, end: topic.pageEnd },
+            isActiveAiGeneration: false,
           })),
         },
       });

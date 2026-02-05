@@ -1,6 +1,6 @@
 
 import { eq, desc, and, ilike, or, count, sql } from "drizzle-orm";
-import { blogs, docs, systemPrompts } from "@/lib/app-infrastructure/database/schema";
+import { blogs, docs, systemPromptsCrib } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -98,13 +98,13 @@ export class ContentRepository extends BaseRepository {
 
     async findPromptById(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.select().from(systemPrompts).where(eq(systemPrompts.id, id)).limit(1);
+        const result = await client.select().from(systemPromptsCrib).where(eq(systemPromptsCrib.id, id)).limit(1);
         return result[0] || null;
     }
 
     async listPrompts(tx?: DbClient) {
         const client = tx ?? this.db;
-        return await client.select().from(systemPrompts);
+        return await client.select().from(systemPromptsCrib);
     }
 
     async listPromptsPaginated(options: { limit: number; offset: number; search?: string }, tx?: DbClient) {
@@ -112,16 +112,16 @@ export class ContentRepository extends BaseRepository {
         let whereClause = undefined;
         if (options.search) {
             whereClause = or(
-                ilike(systemPrompts.title, `%${options.search}%`),
-                ilike(systemPrompts.body, `%${options.search}%`)
+                ilike(systemPromptsCrib.title, `%${options.search}%`),
+                ilike(systemPromptsCrib.body, `%${options.search}%`)
             );
         }
 
         return await client
             .select()
-            .from(systemPrompts)
+            .from(systemPromptsCrib)
             .where(whereClause)
-            .orderBy(desc(systemPrompts.createdAt))
+            .orderBy(desc(systemPromptsCrib.createdAt))
             .limit(options.limit)
             .offset(options.offset);
     }
@@ -131,37 +131,37 @@ export class ContentRepository extends BaseRepository {
         let whereClause = undefined;
         if (options.search) {
             whereClause = or(
-                ilike(systemPrompts.title, `%${options.search}%`),
-                ilike(systemPrompts.body, `%${options.search}%`)
+                ilike(systemPromptsCrib.title, `%${options.search}%`),
+                ilike(systemPromptsCrib.body, `%${options.search}%`)
             );
         }
 
         const result = await client
             .select({ val: count() })
-            .from(systemPrompts)
+            .from(systemPromptsCrib)
             .where(whereClause);
         return Number(result[0]?.val || 0);
     }
 
-    async createPrompt(data: typeof systemPrompts.$inferInsert, tx?: DbClient) {
+    async createPrompt(data: typeof systemPromptsCrib.$inferInsert, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.insert(systemPrompts).values(data).returning();
+        const result = await client.insert(systemPromptsCrib).values(data).returning();
         return result[0];
     }
 
-    async updatePrompt(id: string, data: Partial<typeof systemPrompts.$inferInsert>, tx?: DbClient) {
+    async updatePrompt(id: string, data: Partial<typeof systemPromptsCrib.$inferInsert>, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client
-            .update(systemPrompts)
+            .update(systemPromptsCrib)
             .set(data)
-            .where(eq(systemPrompts.id, id))
+            .where(eq(systemPromptsCrib.id, id))
             .returning();
         return result[0];
     }
 
     async deletePrompt(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
-        const result = await client.delete(systemPrompts).where(eq(systemPrompts.id, id)).returning();
+        const result = await client.delete(systemPromptsCrib).where(eq(systemPromptsCrib.id, id)).returning();
         return result[0];
     }
 

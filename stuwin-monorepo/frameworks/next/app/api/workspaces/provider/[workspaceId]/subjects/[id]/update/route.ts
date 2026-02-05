@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/app-access-control/interceptors";
+import { ValidationService, Rules, Sanitizers } from '@/lib/app-core-modules/services/ValidationService';
 
 export const PUT = unifiedApiHandler(
   async (request, { auth, module, params, log }) => {
@@ -14,15 +15,28 @@ export const PUT = unifiedApiHandler(
       }
 
       const body = await request.json();
-      const { name, description, slug, aiLabel, cover, gradeLevel, language } = body;
+      const validation = ValidationService.validate(body, {
+        name: {
+          rules: [Rules.string('name'), Rules.subjectNameFormat('name')]
+        },
+        description: {
+          rules: [Rules.string('description')],
+          sanitizers: [Sanitizers.trim]
+        },
+        slug: {
+          rules: [Rules.string('slug')],
+          sanitizers: [Sanitizers.lowercase, Sanitizers.trim]
+        }
+      });
 
-      // Validate required fields if name is provided
-      if (name !== undefined && (!name || name.trim() === "")) {
-        return NextResponse.json(
-          { success: false, error: "Name is required" },
-          { status: 400 },
-        );
+      if (!validation.isValid) {
+        return NextResponse.json({
+          success: false,
+          error: validation.firstError?.message || "Validation failed"
+        }, { status: 400 });
       }
+
+      const { name, description, slug, aiLabel, cover, gradeLevel, language } = validation.sanitized;
 
       // Build update object only with existing fields in body
       const updateData: any = {};

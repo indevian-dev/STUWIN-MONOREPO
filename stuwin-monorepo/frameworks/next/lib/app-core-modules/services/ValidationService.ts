@@ -51,6 +51,21 @@ export const Rules = {
         rule: 'email',
         message: `${field} must be a valid email`,
         validator: (v: any) => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+    }),
+    subjectNameFormat: (field: string) => ({
+        field,
+        rule: 'subjectNameFormat',
+        message: `${field} must end with -(locale)-(grade) (e.g., -az-9). Grade 1-20.`,
+        validator: (v: any) => {
+            if (typeof v !== 'string') return false;
+            const locales = (process.env.ALLOWED_PROVIDER_CONTENTLOCALES || 'az').split(',');
+            const localePattern = locales.join('|');
+            const regex = new RegExp(`-(${localePattern})-(\\d+)$`);
+            const match = v.match(regex);
+            if (!match) return false;
+            const grade = parseInt(match[2], 10);
+            return grade >= 1 && grade <= 20;
+        }
     })
 };
 

@@ -184,30 +184,6 @@ export function ProviderSubjectDetailWidget({
     }
   };
 
-  const handleTopicsReorder = async (reorderedTopics: Topic[]) => {
-    try {
-      // Try to find a subjectPdfId from the topics being reordered
-      const subjectPdfId = reorderedTopics.find((t) => t.subjectPdfId)?.subjectPdfId;
-
-      const response = await apiCallForSpaHelper({
-        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/reorder`,
-        method: "PUT",
-        body: {
-          topicIds: reorderedTopics.map((t) => t.id),
-          // Send subjectPdfId if we found one, this helps the backend
-          // when multiple PDFs exist for one subject
-          ...(subjectPdfId ? { subjectPdfId } : {}),
-        },
-      });
-
-      if (response.data?.success) {
-        setTopics(reorderedTopics);
-      }
-    } catch (err) {
-      console.error("Failed to reorder topics:", err);
-      throw err;
-    }
-  };
 
   if (loading) return <GlobalLoaderTile />;
 
@@ -252,7 +228,6 @@ export function ProviderSubjectDetailWidget({
         topics={topics}
         pdfs={pdfs}
         onUpdate={handleTopicUpdate}
-        onReorder={handleTopicsReorder}
         onTopicsCreated={fetchTopics}
       />
     </div>

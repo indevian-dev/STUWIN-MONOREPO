@@ -62,13 +62,13 @@ export class QuestionGenerationService {
                 name: topic.name,
                 body: topic.description, // Mapping description to body for AI context
                 aiSummary: topic.aiSummary,
-                pdfS3Key: topic.pdfS3Key,
-                pdfPageStart: topic.pdfPageStart,
-                pdfPageEnd: topic.pdfPageEnd,
+                pdfS3Key: topic.pdfDetails?.s3Key || null,
+                pdfPageStart: topic.pdfDetails?.pageStart || null,
+                pdfPageEnd: topic.pdfDetails?.pageEnd || null,
                 subjectId: topic.providerSubjectId,
                 gradeLevel: topic.gradeLevel,
-                topicQuestionsRemainingToGenerate: topic.topicQuestionsRemainingToGenerate,
-                topicGeneralQuestionsStats: topic.topicGeneralQuestionsStats,
+                topicQuestionsRemainingToGenerate: topic.questionsStats?.remaining || 0,
+                topicGeneralQuestionsStats: topic.questionsStats?.total || 0,
             };
         } catch (error) {
             ConsoleLogger.error("Failed to fetch topic", error);
@@ -253,7 +253,7 @@ export class QuestionGenerationService {
                 });
                 if (topic) {
                     finalTopicName = topic.name;
-                    finalChapterNumber = topic.chapterNumber;
+                    finalChapterNumber = topic.pdfDetails?.chapterNumber;
                 }
             }
         } catch (err) {
@@ -291,10 +291,17 @@ export class QuestionGenerationService {
                 await db
                     .update(providerSubjectTopics)
                     .set({
-                        topicGeneralQuestionsStats: sql`${providerSubjectTopics.topicGeneralQuestionsStats} + ${savedQuestions.length}`,
-                        topicQuestionsRemainingToGenerate: sql`GREATEST(${providerSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0)`,
+                        questionsStats: sql`jsonb_set(
+                            jsonb_set(
+                                COALESCE(${providerSubjectTopics.questionsStats}, '{}'::jsonb),
+                                '{total}',
+                                (COALESCE((${providerSubjectTopics.questionsStats}->>'total')::int, 0) + ${savedQuestions.length})::text::jsonb
+                            ),
+                            '{remaining}',
+                            GREATEST(COALESCE((${providerSubjectTopics.questionsStats}->>'remaining')::int, 0) - ${savedQuestions.length}, 0)::text::jsonb
+                        )`,
                         // If remaining goes to 0, disable AI generation for this topic
-                        isActiveForAi: sql`CASE WHEN GREATEST(${providerSubjectTopics.topicQuestionsRemainingToGenerate} - ${savedQuestions.length}, 0) <= 0 THEN false ELSE ${providerSubjectTopics.isActiveForAi} END`
+                        isActiveAiGeneration: sql`CASE WHEN GREATEST(COALESCE((${providerSubjectTopics.questionsStats}->>'remaining')::int, 0) - ${savedQuestions.length}, 0) <= 0 THEN false ELSE ${providerSubjectTopics.isActiveAiGeneration} END`
                     })
                     .where(eq(providerSubjectTopics.id, String(topicId)));
 

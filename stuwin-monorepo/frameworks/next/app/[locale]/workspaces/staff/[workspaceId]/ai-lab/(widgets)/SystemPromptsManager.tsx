@@ -94,9 +94,9 @@ export function SystemPromptsManager() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">System Prompts</h2>
+                <h2 className="text-xl font-bold">System Prompt Cribs</h2>
                 <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    <FiPlus /> New Prompt
+                    <FiPlus /> New Crib
                 </button>
             </div>
 
@@ -120,9 +120,9 @@ export function SystemPromptsManager() {
                                     </pre>
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <button onClick={() => handleEdit(prompt)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><FiEdit2 /></button>
-                                    <button onClick={() => handleDelete(prompt.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><FiTrash2 /></button>
-                                    <button onClick={() => handleToggleActive(prompt)} className="p-2 text-gray-600 hover:bg-gray-100 rounded" title="Toggle Active">
+                                    <button onClick={() => handleEdit(prompt)} className="p-2 text-blue-600 hover:bg-blue-50 rounded" title="Edit Crib"><FiEdit2 /></button>
+                                    <button onClick={() => handleDelete(prompt.id)} className="p-2 text-red-600 hover:bg-red-50 rounded" title="Delete Crib"><FiTrash2 /></button>
+                                    <button onClick={() => handleToggleActive(prompt)} className="p-2 text-gray-600 hover:bg-gray-100 rounded" title="Toggle Active Status">
                                         <FiRefreshCw />
                                     </button>
                                 </div>
@@ -134,37 +134,45 @@ export function SystemPromptsManager() {
 
             {isEditing && (
                 <div className="bg-white p-6 rounded border shadow">
-                    <h3 className="text-lg font-bold mb-4">{currentPrompt.id ? 'Edit Prompt' : 'Create Prompt'}</h3>
+                    <h3 className="text-lg font-bold mb-4">{currentPrompt.id ? 'Edit System Crib' : 'Create System Crib'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Title</label>
+                            <label className="block text-sm font-medium mb-1">Crib Title</label>
                             <input
-                                className="w-full border rounded p-2"
+                                className="w-full border rounded p-2 text-black"
+                                placeholder="E.g. Azerbaijan Math Specifics"
                                 value={currentPrompt.title}
                                 onChange={e => setCurrentPrompt({ ...currentPrompt, title: e.target.value })}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Flow Type</label>
+                            <label className="block text-sm font-medium mb-1">Usage context (Flow Type)</label>
                             <select
-                                className="w-full border rounded p-2"
+                                className="w-full border rounded p-2 text-black"
                                 value={currentPrompt.usageFlowType}
                                 onChange={e => setCurrentPrompt({ ...currentPrompt, usageFlowType: e.target.value })}
                             >
-                                <option value="HOMEWORK_EXPLANATION">HOMEWORK_EXPLANATION</option>
-                                <option value="STUDENT_QUIZ_SUMMARY">STUDENT_QUIZ_SUMMARY</option>
                                 <option value="QUESTION_EXPLANATION">QUESTION_EXPLANATION</option>
+                                <option value="HOMEWORK_EXPLANATION">HOMEWORK_EXPLANATION</option>
+                                <option value="QUESTION_GENERATION">QUESTION_GENERATION</option>
                                 <option value="TOPIC_EXPLORATION">TOPIC_EXPLORATION</option>
+                                <option value="STUDENT_QUIZ_SUMMARY">STUDENT_QUIZ_SUMMARY</option>
+                                <option value="STUDENT_PROGRESS_SUMMARY">STUDENT_PROGRESS_SUMMARY</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Prompt Body</label>
+                            <label className="block text-sm font-medium mb-1">Crib Content (Prompts Addition)</label>
                             <textarea
-                                className="w-full border rounded p-2 font-mono h-64"
+                                className="w-full border rounded p-2 font-mono h-64 text-black"
+                                placeholder="Add instructions or knowledge that should be appended to the base prompt..."
                                 value={currentPrompt.body}
                                 onChange={e => setCurrentPrompt({ ...currentPrompt, body: e.target.value })}
                             />
-                            <p className="text-xs text-gray-500 mt-1">Available variables depend on flow type. Use {'{{variable}}'} or {'{{#block}}...{{/block}}'}.</p>
+                            <div className="bg-blue-50 p-2 rounded mt-1 border border-blue-100">
+                                <p className="text-xs text-blue-800">
+                                    <strong>How it works:</strong> This content is treated as a "System Crib". It will be prepended to any Subject/Topic/Question cribs and then injected into the <code>{'{{aiCrib}}'}</code> placeholder of the hardcoded core prompt.
+                                </p>
+                            </div>
                         </div>
                         <div>
                             <label className="flex items-center gap-2">

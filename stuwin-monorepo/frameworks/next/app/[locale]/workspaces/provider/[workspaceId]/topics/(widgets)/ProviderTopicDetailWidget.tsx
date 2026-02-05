@@ -120,7 +120,7 @@ export function ProviderTopicDetailWidget({
           </div>
           <div>
             <span className="text-sm font-medium text-gray-600">Subject ID:</span>
-            <span className="ml-2 text-sm text-gray-900">{topic.subjectId || 'N/A'}</span>
+            <span className="ml-2 text-sm text-gray-900">{topic.providerSubjectId || 'N/A'}</span>
           </div>
         </div>
       </div>

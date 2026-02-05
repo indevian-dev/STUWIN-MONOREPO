@@ -20,21 +20,17 @@ export class SystemPromptService extends BaseService {
      */
     async getEffectivePromptResult(flowType: string, variables: Record<string, any>) {
         try {
-            // 1. Try DB
-            let promptBody = "";
-            const dbPrompt = await this.repository.findActiveByFlowType(flowType);
+            // 1. Get Base Core (Hardcoded)
+            const fallback = FALLBACK_PROMPTS[flowType];
+            const promptBody = fallback?.body || "You are a helpful AI assistant. {{aiCrib}}";
 
+            // 2. Add System Crib from DB (if exists)
+            const dbPrompt = await this.repository.findActiveByFlowType(flowType);
             if (dbPrompt && dbPrompt.body) {
-                promptBody = dbPrompt.body;
-            } else {
-                // 2. Fallback
-                const fallback = FALLBACK_PROMPTS[flowType];
-                if (fallback && fallback.body) {
-                    promptBody = fallback.body;
-                } else {
-                    // Safety net
-                    promptBody = "You are a helpful AI assistant.";
-                }
+                const systemCrib = dbPrompt.body;
+                // Prepend system crib to the entity-specific cribs
+                const existingCrib = variables.aiCrib || "";
+                variables.aiCrib = systemCrib + (existingCrib ? "\n\n" + existingCrib : "");
             }
 
             // 3. Hydrate

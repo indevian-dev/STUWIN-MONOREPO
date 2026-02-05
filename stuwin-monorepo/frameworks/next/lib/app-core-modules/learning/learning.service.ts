@@ -45,7 +45,7 @@ export class LearningService extends BaseService {
             if (!subject) return { success: false, error: "Subject not found" };
 
             const topics = await this.repository.listTopicsBySubject(subjectId, { excludeVector: true });
-            const pdfs = await this.repository.listPdfsBySubject(subjectId);
+            const pdfs = (subject.files as any) || [];
 
             return {
                 success: true,
@@ -92,7 +92,10 @@ export class LearningService extends BaseService {
      */
     async getSubjectPdfs(subjectId: string) {
         try {
-            const pdfs = await this.repository.listPdfsBySubject(subjectId);
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+
+            const pdfs: any[] = (subject.files as any) || [];
             const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
 
             // Reconstruct URL if stored as filename only
@@ -122,18 +125,23 @@ export class LearningService extends BaseService {
         language?: string;
     }) {
         try {
-            const newPdf = await this.repository.createSubjectPdf({
-                providerSubjectId: params.subjectId,
-                pdfUrl: params.pdfFileName, // Storing only filename
-                uploadAccountId: params.uploadAccountId,
-                workspaceId: params.workspaceId,
-                name: params.name,
-                language: params.language,
-                isActive: true,
-                createdAt: new Date(),
-            });
+            const subject = await this.repository.findSubjectById(params.subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
 
-            return { success: true, data: newPdf };
+            const currentFiles = (subject.files as any[]) || [];
+            const newFile = {
+                id: uuidv4(),
+                pdfUrl: params.pdfFileName,
+                name: params.name || params.pdfFileName,
+                language: params.language,
+                createdAt: new Date(),
+                isActive: true
+            };
+
+            const updatedFiles = [...currentFiles, newFile];
+            await this.repository.updateSubject(params.subjectId, { files: updatedFiles });
+
+            return { success: true, data: newFile };
         } catch (error) {
             this.handleError(error, "saveSubjectPdf");
             return { success: false, error: "Failed to save PDF metadata" };
@@ -154,6 +162,15 @@ export class LearningService extends BaseService {
         aiAssistantCrib?: string;
     }) {
         try {
+            // Validate name format: -(locale)-(grade)
+            const locales = (process.env.ALLOWED_PROVIDER_CONTENTLOCALES || 'az').split(',');
+            const regex = new RegExp(`-(${locales.join('|')})-(\\d+)$`);
+            const match = data.title.match(regex);
+
+            if (!match || parseInt(match[2], 10) < 1 || parseInt(match[2], 10) > 20) {
+                return { success: false, error: "Subject title must end with -(locale)-(grade) (e.g. -az-1). Grade 1-20." };
+            }
+
             const slug = slugify(data.title, { lower: true, strict: true });
 
             const newSubject = await this.repository.createSubject({
@@ -189,11 +206,21 @@ export class LearningService extends BaseService {
     }) {
         try {
             const updateData: any = { ...data };
+            const subjectName = data.title || (data as any).name;
 
-            if (data.title) {
-                updateData.name = data.title;
-                updateData.slug = slugify(data.title, { lower: true, strict: true });
-                delete updateData.title;
+            if (subjectName) {
+                // Validate name format: -(locale)-(grade)
+                const locales = (process.env.ALLOWED_PROVIDER_CONTENTLOCALES || 'az').split(',');
+                const regex = new RegExp(`-(${locales.join('|')})-(\\d+)$`);
+                const match = subjectName.match(regex);
+
+                if (!match || parseInt(match[2], 10) < 1 || parseInt(match[2], 10) > 20) {
+                    return { success: false, error: "Subject name must end with -(locale)-(grade) (e.g. -az-1). Grade 1-20." };
+                }
+
+                updateData.name = subjectName;
+                updateData.slug = slugify(subjectName, { lower: true, strict: true });
+                if (updateData.title) delete updateData.title;
             }
 
             // Handle legacy is_active
@@ -336,6 +363,12 @@ export class LearningService extends BaseService {
      */
     async createTopicWithContent(subjectId: string, data: { name: string; description: string; gradeLevel?: number; language?: string; pdfId?: string }) {
         try {
+            // Verify name format
+            const TOPIC_PREFIX_REGEX = /^\d+\.\d+\s+/;
+            if (!TOPIC_PREFIX_REGEX.test(data.name)) {
+                return { success: false as const, error: "Topic name must start with 'X.Y ' prefix (e.g., 1.0 Topic Name)" };
+            }
+
             return await this.db.transaction(async (tx) => {
                 const knowledgeVector = await this.semanticMastery.generateTopicVector(data.name, data.description);
 
@@ -345,11 +378,10 @@ export class LearningService extends BaseService {
                     description: data.description,
                     gradeLevel: data.gradeLevel,
                     language: data.language,
-                    subjectPdfId: data.pdfId,
+                    pdfDetails: { s3Key: (data as any).pdfFileName || data.pdfId },
                     workspaceId: this.ctx.activeWorkspaceId || "default",
-                    isActiveForAi: false,
+                    isActiveAiGeneration: false,
                     aiAssistantCrib: (data as any).aiAssistantCrib,
-                    knowledgeVector
                 }, tx as any);
 
                 return { success: true as const, data: topic };
@@ -426,7 +458,6 @@ export class LearningService extends BaseService {
             body: q.question,
             answers: q.answers,
             correct_answer: q.correctAnswer,
-            subject_id: q.providerSubjectId,
             complexity: q.complexity,
             grade_level: q.gradeLevel,
             explanation_guide: q.explanationGuide,
@@ -454,6 +485,14 @@ export class LearningService extends BaseService {
      */
     async updateTopic(topicId: string, data: any) {
         try {
+            // Verify name format if provided
+            if (data.name) {
+                const TOPIC_PREFIX_REGEX = /^\d+\.\d+\s+/;
+                if (!TOPIC_PREFIX_REGEX.test(data.name)) {
+                    return { success: false, error: "Topic name must start with 'X.Y ' prefix (e.g., 1.0 Topic Name)" };
+                }
+            }
+
             const updated = await this.repository.updateTopic(topicId, data);
             if (!updated) return { success: false, error: "Topic not found" };
             return { success: true, data: updated };
@@ -487,6 +526,20 @@ export class LearningService extends BaseService {
      */
     async bulkCreateTopics(subjectId: string, topicsData: any[]) {
         try {
+            // Verify name format: number.number followed by a space
+            // Pattern: X.Y Topic Name (e.g., 1.0 Algebra Basics)
+            const TOPIC_PREFIX_REGEX = /^\d+\.\d+\s+/;
+            const invalidNames = topicsData
+                .filter(t => !TOPIC_PREFIX_REGEX.test(t.name))
+                .map(t => t.name);
+
+            if (invalidNames.length > 0) {
+                return {
+                    success: false,
+                    error: `Invalid topic name format. Missing 'X.Y ' prefix: ${invalidNames.slice(0, 3).join(", ")}${invalidNames.length > 3 ? "..." : ""}`
+                };
+            }
+
             const result = await this.db.transaction(async (tx) => {
                 const topicsToInsert = await Promise.all(topicsData.map(async t => ({
                     providerSubjectId: subjectId,
@@ -494,29 +547,19 @@ export class LearningService extends BaseService {
                     description: t.description || t.body,
                     gradeLevel: t.gradeLevel,
                     language: t.language,
-                    chapterNumber: t.chapterNumber,
-                    subjectPdfId: t.subjectPdfId,
+                    pdfDetails: t.pdfDetails || {
+                        s3Key: t.pdfFileName || t.pdfS3Key,
+                        pages: t.pdfPagesByTopic,
+                        pageStart: t.pdfPageStart,
+                        pageEnd: t.pdfPageEnd
+                    },
                     workspaceId: this.ctx.activeWorkspaceId || "default",
-                    isActiveForAi: t.isActiveForAi || false,
-                    pdfS3Key: t.pdfS3Key,
-                    pdfPageStart: t.pdfPageStart,
-                    pdfPageEnd: t.pdfPageEnd,
-                    knowledgeVector: await this.semanticMastery.generateTopicVector(t.name, t.description || t.body)
+                    isActiveAiGeneration: t.isActiveAiGeneration || false,
+                    questionsStats: t.questionsStats,
+                    parentTopicId: t.parentTopicId
                 })));
 
                 const createdTopics = await this.repository.bulkCreateTopics(topicsToInsert, tx as any);
-
-                const pdfId = topicsToInsert.find(t => t.subjectPdfId)?.subjectPdfId;
-                if (pdfId) {
-                    const pdf = await this.repository.getPdfById(pdfId, tx as any);
-                    if (pdf) {
-                        const currentOrder = (pdf.topicsOrderedIds as any) || [];
-                        const newIds = createdTopics.map(t => t.id);
-                        const updatedOrder = [...currentOrder, ...newIds];
-                        await this.repository.updatePdfOrder(pdfId, updatedOrder, tx as any);
-                    }
-                }
-
                 return createdTopics;
             });
 
@@ -575,11 +618,16 @@ export class LearningService extends BaseService {
     }
 
     /**
-     * Get a PDF by ID
+     * Get a PDF (file) by ID from subject files
      */
-    async getPdfById(pdfId: string) {
+    async getPdfById(subjectId: string, pdfId: string) {
         try {
-            const pdf = await this.repository.getPdfById(pdfId);
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+
+            const pdfs: any[] = (subject.files as any) || [];
+            const pdf = pdfs.find(p => p.id === pdfId);
+
             if (!pdf) return { success: false, error: "PDF not found" };
             return { success: true, data: pdf };
         } catch (error) {
@@ -589,21 +637,24 @@ export class LearningService extends BaseService {
     }
 
     /**
-     * Reorder topics within a PDF
+     * Reorder files within a subject
      */
-    /**
-     * Reorder topics within a PDF
-     */
-    async reorderTopics(pdfId: string, orderedTopicIds: string[]) {
+    async reorderPdfs(subjectId: string, orderedPdfIds: string[]) {
         try {
-            const result = await this.repository.updatePdfOrder(pdfId, orderedTopicIds);
-            if (!result) return { success: false, error: "Failed to update order" };
-            return { success: true, data: result };
+            const subject = await this.repository.findSubjectById(subjectId);
+            if (!subject) return { success: false, error: "Subject not found" };
+
+            const pdfs: any[] = (subject.files as any) || [];
+            const sortedPdfs = orderedPdfIds.map(id => pdfs.find(p => p.id === id)).filter(Boolean);
+
+            await this.repository.updateSubject(subjectId, { files: sortedPdfs });
+            return { success: true, data: sortedPdfs };
         } catch (error) {
-            this.handleError(error, "reorderTopics");
-            return { success: false, error: "Failed to reorder topics" };
+            this.handleError(error, "reorderPdfs");
+            return { success: false, error: "Failed to reorder PDFs" };
         }
     }
+
 
     /**
      * Generate S3 Upload URL for Subject Cover
@@ -910,11 +961,13 @@ export class LearningService extends BaseService {
             }
 
             const updateData: any = {
-                pdfS3Key: data.s3Key,
-                pdfPageStart: data.pdfPageStart || null,
-                pdfPageEnd: data.pdfPageEnd || null,
-                totalPdfPages: totalPages,
-                chapterNumber: data.chapterNumber || null,
+                pdfDetails: {
+                    s3Key: data.s3Key,
+                    pageStart: data.pdfPageStart || null,
+                    pageEnd: data.pdfPageEnd || null,
+                    totalPages: totalPages,
+                    chapterNumber: data.chapterNumber || null,
+                },
             };
 
             const result = await this.updateTopic(topicId, updateData);

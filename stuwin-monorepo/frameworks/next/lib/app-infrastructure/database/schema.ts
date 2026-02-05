@@ -5,6 +5,7 @@ import {
     text,
     boolean,
     bigint,
+    json,
     jsonb,
     integer,
     real,
@@ -268,21 +269,11 @@ export const providerSubjects = pgTable("provider_subjects", {
     gradeLevel: integer("grade_level"),
     language: varchar("language"),
     aiAssistantCrib: text("ai_assistant_crib"),
+    files: json("files"),
 });
 
-export const providerSubjectPdfs = pgTable("provider_subject_pdfs", {
-    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    pdfUrl: text("pdf_url"),
-    pdfOrder: text("pdf_order"),
-    providerSubjectId: varchar("provider_subject_id").references(() => providerSubjects.id),
-    isActive: boolean("is_active"),
-    uploadAccountId: varchar("upload_account_id"), // Potentially references accounts.id
-    topicsOrderedIds: jsonb("topics_ordered_ids"),
-    workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
-    language: varchar("language"),
-    name: varchar("name"),
-});
+
+import { TopicQuestionsStats, TopicPdfDetails } from "../../app-core-modules/learning/learning.types";
 
 export const providerSubjectTopics = pgTable("provider_subject_topics", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
@@ -292,25 +283,14 @@ export const providerSubjectTopics = pgTable("provider_subject_topics", {
     name: text("name"),
     providerSubjectId: varchar("provider_subject_id").references(() => providerSubjects.id),
     aiSummary: text("ai_summary"),
-    topicPublishedQuestionsStats: bigint("topic_published_questions_stats", { mode: "number" }).default(0),
-    topicGeneralQuestionsStats: bigint("topic_general_questions_stats", { mode: "number" }).default(0),
-    isActiveForAi: boolean("is_active_for_ai").default(false),
-    topicEstimatedQuestionsCapacity: bigint("topic_estimated_questions_capacity", { mode: "number" }),
-    topicQuestionsRemainingToGenerate: bigint("topic_questions_remaining_to_generate", { mode: "number" }),
-    pdfS3Key: text("pdf_s3_key"),
-    pdfPageStart: bigint("pdf_page_start", { mode: "number" }),
-    pdfPageEnd: bigint("pdf_page_end", { mode: "number" }),
-    totalPdfPages: bigint("total_pdf_pages", { mode: "number" }),
-    chapterNumber: text("chapter_number"),
-    parentTopicId: varchar("parent_topic_id"),
-    estimatedEducationStartDate: time("estimated_education_start_date"),
-    subjectPdfId: varchar("subject_pdf_id").references(() => providerSubjectPdfs.id),
+    isActiveAiGeneration: boolean("is_active_ai_generation").default(false),
     workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
-    ftsTokens: text("fts_tokens"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
     language: varchar("language"),
     aiAssistantCrib: text("ai_assistant_crib"),
-    knowledgeVector: vector768("knowledge_vector"),
+    pdfDetails: jsonb("pdf_details").$type<TopicPdfDetails>(),
+    questionsStats: jsonb("questions_stats").$type<TopicQuestionsStats>(),
+    parentTopicId: varchar("parent_topic_id"),
 }, (table) => {
     return {
         parentTopicFkey: foreignKey({
@@ -325,14 +305,14 @@ export const providerQuestions = pgTable("provider_questions", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     question: text("question"),
-    answers: jsonb("answers"),
+    answers: json("answers"),
     correctAnswer: text("correct_answer"),
     authorAccountId: varchar("author_account_id").references(() => accounts.id),
     reviewerAccountId: varchar("reviewer_account_id").references(() => accounts.id),
     providerSubjectId: varchar("provider_subject_id").references(() => providerSubjects.id),
     complexity: text("complexity"),
     gradeLevel: bigint("grade_level", { mode: "number" }),
-    explanationGuide: jsonb("explanation_guide"),
+    explanationGuide: json("explanation_guide"),
     updatedAt: timestamp("updated_at", { withTimezone: true }),
     language: text("language"),
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
@@ -525,7 +505,7 @@ export const docs = pgTable("docs", {
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-export const systemPrompts = pgTable("system_prompts", {
+export const systemPromptsCrib = pgTable("system_prompts_crib", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     body: text("body"),

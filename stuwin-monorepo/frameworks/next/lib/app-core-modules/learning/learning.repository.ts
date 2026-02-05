@@ -1,6 +1,6 @@
 
 import { eq, count, and, or, sql } from "drizzle-orm";
-import { providerSubjects, providerSubjectTopics, providerQuestions, providerSubjectPdfs } from "@/lib/app-infrastructure/database/schema";
+import { providerSubjects, providerSubjectTopics, providerQuestions } from "@/lib/app-infrastructure/database/schema";
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
 
@@ -112,24 +112,14 @@ export class LearningRepository extends BaseRepository {
                     name: providerSubjectTopics.name,
                     providerSubjectId: providerSubjectTopics.providerSubjectId,
                     aiSummary: providerSubjectTopics.aiSummary,
-                    topicPublishedQuestionsStats: providerSubjectTopics.topicPublishedQuestionsStats,
-                    topicGeneralQuestionsStats: providerSubjectTopics.topicGeneralQuestionsStats,
-                    isActiveForAi: providerSubjectTopics.isActiveForAi,
-                    topicEstimatedQuestionsCapacity: providerSubjectTopics.topicEstimatedQuestionsCapacity,
-                    topicQuestionsRemainingToGenerate: providerSubjectTopics.topicQuestionsRemainingToGenerate,
-                    pdfS3Key: providerSubjectTopics.pdfS3Key,
-                    pdfPageStart: providerSubjectTopics.pdfPageStart,
-                    pdfPageEnd: providerSubjectTopics.pdfPageEnd,
-                    totalPdfPages: providerSubjectTopics.totalPdfPages,
-                    chapterNumber: providerSubjectTopics.chapterNumber,
-                    parentTopicId: providerSubjectTopics.parentTopicId,
-                    estimatedEducationStartDate: providerSubjectTopics.estimatedEducationStartDate,
-                    subjectPdfId: providerSubjectTopics.subjectPdfId,
+                    isActiveAiGeneration: providerSubjectTopics.isActiveAiGeneration,
                     workspaceId: providerSubjectTopics.workspaceId,
-                    ftsTokens: providerSubjectTopics.ftsTokens,
                     updatedAt: providerSubjectTopics.updatedAt,
                     language: providerSubjectTopics.language,
                     aiAssistantCrib: providerSubjectTopics.aiAssistantCrib,
+                    pdfDetails: providerSubjectTopics.pdfDetails,
+                    questionsStats: providerSubjectTopics.questionsStats,
+                    parentTopicId: providerSubjectTopics.parentTopicId,
                 })
                 .from(providerSubjectTopics)
                 .where(
@@ -137,6 +127,9 @@ export class LearningRepository extends BaseRepository {
                         eq(providerSubjectTopics.providerSubjectId, plainId),
                         eq(providerSubjectTopics.providerSubjectId, prefixedId)
                     )
+                )
+                .orderBy(
+                    sql`ARRAY(SELECT CAST(m[1] AS integer) FROM regexp_matches(${providerSubjectTopics.name}, '(\d+)', 'g') AS m)`
                 );
         }
 
@@ -148,6 +141,9 @@ export class LearningRepository extends BaseRepository {
                     eq(providerSubjectTopics.providerSubjectId, plainId),
                     eq(providerSubjectTopics.providerSubjectId, prefixedId)
                 )
+            )
+            .orderBy(
+                sql`ARRAY(SELECT CAST(m[1] AS integer) FROM regexp_matches(${providerSubjectTopics.name}, '(\d+)', 'g') AS m)`
             );
     }
 
@@ -184,10 +180,17 @@ export class LearningRepository extends BaseRepository {
 
     async incrementTopicQuestionStats(topicId: string, count: number, tx?: DbClient) {
         const client = tx ?? this.db;
+        // Since it's JSONB now, we handle it slightly differently if we want to increment a specific key
+        // or just store the total. User SQL had `questions_stats jsonb`.
+        // Let's assume it stores { total: X } for now.
         return await client
             .update(providerSubjectTopics)
             .set({
-                topicGeneralQuestionsStats: sql`${providerSubjectTopics.topicGeneralQuestionsStats} + ${count}`
+                questionsStats: sql`jsonb_set(
+                    COALESCE(${providerSubjectTopics.questionsStats}, '{}'::jsonb), 
+                    '{total}', 
+                    (COALESCE(${providerSubjectTopics.questionsStats}->>'total', '0')::int + ${count})::text::jsonb
+                )`
             })
             .where(eq(providerSubjectTopics.id, topicId));
     }
@@ -270,42 +273,7 @@ export class LearningRepository extends BaseRepository {
         return result[0];
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // PDFS & ORDERING
-    // ═══════════════════════════════════════════════════════════════
 
-    async listPdfsBySubject(subjectId: string, tx?: DbClient) {
-        const client = tx ?? this.db;
-        const prefixedId = subjectId.includes(":") ? subjectId : `provider_subjects:${subjectId}`;
-        const plainId = subjectId.includes(":") ? subjectId.split(":")[1] : subjectId;
-
-        return await client
-            .select()
-            .from(providerSubjectPdfs)
-            .where(
-                or(
-                    eq(providerSubjectPdfs.providerSubjectId, plainId),
-                    eq(providerSubjectPdfs.providerSubjectId, prefixedId)
-                )
-            );
-    }
-
-    async getPdfById(id: string, tx?: DbClient) {
-        const client = tx ?? this.db;
-        const result = await client.select().from(providerSubjectPdfs).where(eq(providerSubjectPdfs.id, id)).limit(1);
-        return result[0] || null;
-    }
-
-    async updatePdfOrder(id: string, orderedIds: string[], tx?: DbClient) {
-        const client = tx ?? this.db;
-        return await client.update(providerSubjectPdfs).set({ topicsOrderedIds: orderedIds }).where(eq(providerSubjectPdfs.id, id)).returning();
-    }
-
-    async createSubjectPdf(data: typeof providerSubjectPdfs.$inferInsert, tx?: DbClient) {
-        const client = tx ?? this.db;
-        const result = await client.insert(providerSubjectPdfs).values(data).returning();
-        return result[0];
-    }
     async deleteTopic(id: string, tx?: DbClient) {
         const client = tx ?? this.db;
         const result = await client

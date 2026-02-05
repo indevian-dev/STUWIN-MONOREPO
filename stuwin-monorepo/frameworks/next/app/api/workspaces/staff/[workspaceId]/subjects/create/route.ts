@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/app-access-control/interceptors';
+import { ValidationService, Rules } from '@/lib/app-core-modules/services/ValidationService';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module }) => {
   try {
     const body = await request.json();
-    const { title, description, cover, aiLabel } = body;
 
-    if (!title || !description) {
+    const validation = ValidationService.validate(body, {
+      title: {
+        rules: [Rules.required('title'), Rules.string('title'), Rules.subjectNameFormat('title')]
+      },
+      description: {
+        rules: [Rules.required('description'), Rules.string('description')]
+      }
+    });
+
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: 'Title and description are required' },
+        { error: validation.firstError?.message || 'Validation failed' },
         { status: 400 }
       );
     }
+
+    const { title, description, cover, aiLabel } = validation.sanitized;
 
     const result = await module.learning.createSubject({
       title,

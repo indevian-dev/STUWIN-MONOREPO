@@ -105,7 +105,7 @@ export function ProviderTopicsListWidget() {
     // Filter by subject
     if (filters.subjectId) {
       filtered = filtered.filter(
-        (topic) => topic.subjectId === filters.subjectId,
+        (topic) => topic.providerSubjectId === filters.subjectId,
       );
     }
 
@@ -183,7 +183,7 @@ export function ProviderTopicsListWidget() {
       url: `/api/workspaces/provider/${workspaceId}/topics/update/${topicId}`,
       params: {},
       body: {
-        is_active_for_ai: newState,
+        is_active_ai_generation: newState,
       },
     });
 
@@ -209,7 +209,7 @@ export function ProviderTopicsListWidget() {
                   Grade {topic.gradeLevel}
                 </span>
               )}
-              {topic.isActiveForAi && (
+              {topic.isActiveAiGeneration && (
                 <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded font-medium">
                   AI Active
                 </span>
@@ -223,34 +223,16 @@ export function ProviderTopicsListWidget() {
             <div className="flex gap-3 text-xs text-gray-500 flex-wrap">
               <span>ID: {topic.id}</span>
               <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
-                Published: {topic.topicPublishedQuestionsStats}
+                Total Ques: {(topic.questionsStats as any)?.total || 0}
               </span>
-              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">
-                General: {topic.topicGeneralQuestionsStats}
-              </span>
-              {topic.topicEstimatedQuestionsCapacity !== null && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                  Capacity: {topic.topicEstimatedQuestionsCapacity}
-                </span>
-              )}
-              {topic.topicQuestionsRemainingToGenerate !== null && (
-                <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded">
-                  Remaining: {topic.topicQuestionsRemainingToGenerate}
-                </span>
-              )}
-              {topic.pdfS3Key && (
+              {topic.pdfDetails?.fileName && (
                 <>
                   <span className="px-2 py-1 bg-pink-100 text-pink-700 rounded font-medium">
-                    📄 PDF
+                    📄 PDF: {topic.pdfDetails.fileName}
                   </span>
-                  {topic.pdfPageStart !== null && topic.pdfPageEnd !== null && (
+                  {topic.pdfDetails.pages?.start && (
                     <span className="px-2 py-1 bg-pink-50 text-pink-700 rounded">
-                      Pages: {topic.pdfPageStart}-{topic.pdfPageEnd}
-                    </span>
-                  )}
-                  {topic.totalPdfPages !== null && (
-                    <span className="px-2 py-1 bg-pink-50 text-pink-700 rounded">
-                      Total: {topic.totalPdfPages}
+                      Pages: {topic.pdfDetails.pages.start}-{topic.pdfDetails.pages.end}
                     </span>
                   )}
                 </>
@@ -292,15 +274,15 @@ export function ProviderTopicsListWidget() {
               <span className="text-xs text-gray-600">AI Active:</span>
               <button
                 onClick={() =>
-                  toggleActiveForAi(topic.id, topic.isActiveForAi ?? null)
+                  toggleActiveForAi(topic.id, topic.isActiveAiGeneration ?? null)
                 }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${topic.isActiveForAi ? "bg-emerald-600" : "bg-gray-300"
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${topic.isActiveAiGeneration ? "bg-emerald-600" : "bg-gray-300"
                   }`}
                 role="switch"
-                aria-checked={topic.isActiveForAi ?? false}
+                aria-checked={topic.isActiveAiGeneration ?? false}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${topic.isActiveForAi ? "translate-x-6" : "translate-x-1"
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${topic.isActiveAiGeneration ? "translate-x-6" : "translate-x-1"
                     }`}
                 />
               </button>

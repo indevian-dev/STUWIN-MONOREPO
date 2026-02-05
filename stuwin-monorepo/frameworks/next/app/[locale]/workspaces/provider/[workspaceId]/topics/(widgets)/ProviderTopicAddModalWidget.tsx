@@ -132,7 +132,7 @@ export function ProviderTopicAddModalWidget({
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter topic name"
+              placeholder="Enter topic name (e.g., 1.0 Algebra Basics)"
             />
           </div>
 

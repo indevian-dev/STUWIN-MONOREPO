@@ -16,7 +16,6 @@ interface SubjectTopicsSectionProps {
   topics: Topic[];
   pdfs: SubjectPdf[];
   onUpdate: (topicId: string, data: Partial<Topic>) => Promise<void>;
-  onReorder: (topics: Topic[]) => Promise<void>;
   onTopicsCreated?: () => Promise<void>;
 }
 
@@ -66,8 +65,8 @@ function BulkTopicCreateModal({
         const lines = bulkText.split("\n").filter((line) => line.trim());
         topics = lines.map((line) => ({
           name: line.trim(),
-          subjectId,
-          isActiveForAi: false,
+          providerSubjectId: subjectId,
+          isActiveAiGeneration: false,
         }));
       } else {
         // Parse JSON format
@@ -97,10 +96,10 @@ function BulkTopicCreateModal({
             pdfS3Key: selectedPdf?.pdfUrl || null,
             estimatedEducationStartDate:
               item.estimatedEducationStartDate || null,
-            isActiveForAi:
-              item.isActiveForAi !== undefined ? item.isActiveForAi : false,
+            isActiveAiGeneration:
+              item.isActiveAiGeneration !== undefined ? item.isActiveAiGeneration : false,
             aiAssistantCrib: item.aiAssistantCrib || null,
-            subjectId,
+            providerSubjectId: subjectId,
           }));
 
           // Validate that all topics have names
@@ -352,6 +351,8 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
       ? new Date(topic.estimatedEducationStartDate).toISOString().slice(0, 16)
       : "",
     aiAssistantCrib: topic.aiAssistantCrib || "",
+    questionsStats: topic.questionsStats || null,
+    pdfDetails: topic.pdfDetails || null,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -681,7 +682,6 @@ export function SubjectTopicsSection({
   topics,
   pdfs,
   onUpdate,
-  onReorder,
   onTopicsCreated,
 }: SubjectTopicsSectionProps) {
   const t = useTranslations("SubjectTopicsSection");
@@ -696,47 +696,10 @@ export function SubjectTopicsSection({
     setLocalTopics(topics);
   });
 
-  const handleMoveUp = async (index: number) => {
-    if (index === 0) return;
-
-    const newTopics = [...localTopics];
-    [newTopics[index - 1], newTopics[index]] = [
-      newTopics[index],
-      newTopics[index - 1],
-    ];
-    setLocalTopics(newTopics);
-
-    try {
-      await onReorder(newTopics);
-    } catch (err) {
-      // Revert on error
-      setLocalTopics(topics);
-      console.error("Failed to reorder topics:", err);
-    }
-  };
-
-  const handleMoveDown = async (index: number) => {
-    if (index === localTopics.length - 1) return;
-
-    const newTopics = [...localTopics];
-    [newTopics[index], newTopics[index + 1]] = [
-      newTopics[index + 1],
-      newTopics[index],
-    ];
-    setLocalTopics(newTopics);
-
-    try {
-      await onReorder(newTopics);
-    } catch (err) {
-      // Revert on error
-      setLocalTopics(topics);
-      console.error("Failed to reorder topics:", err);
-    }
-  };
 
   const handleToggleAi = async (topic: Topic) => {
     try {
-      await onUpdate(topic.id, { isActiveForAi: !topic.isActiveForAi });
+      await onUpdate(topic.id, { isActiveAiGeneration: !topic.isActiveAiGeneration });
     } catch (err) {
       console.error("Failed to toggle AI status:", err);
     }
@@ -752,12 +715,25 @@ export function SubjectTopicsSection({
   };
 
   const handleBulkCreate = async (newTopics: Partial<Topic>[]) => {
-    // TODO: Implement bulk create API call
-    console.log("Bulk creating topics:", newTopics);
-    alert(
-      `Would create ${newTopics.length} topics. API endpoint needs to be implemented.\n\nTopics: ${JSON.stringify(newTopics.slice(0, 2), null, 2)}...`,
-    );
-    // You'll need to implement the API endpoint and call it here
+    try {
+      const response = await apiCallForSpaHelper({
+        method: "POST",
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/create`,
+        body: { topics: newTopics },
+      });
+
+      if (response.data?.success) {
+        if (onTopicsCreated) {
+          await onTopicsCreated();
+        }
+        setShowBulkCreate(false);
+      } else {
+        throw new Error(response.data?.error || "Failed to create topics");
+      }
+    } catch (err) {
+      console.error("Failed to bulk create topics:", err);
+      throw err; // Propagate to modal to show error
+    }
   };
 
   const handleGenerateTests = (topic: Topic) => {
@@ -812,49 +788,8 @@ export function SubjectTopicsSection({
               key={topic.id}
               className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
             >
-              {/* Reorder Controls */}
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={() => handleMoveUp(index)}
-                  disabled={index === 0}
-                  className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  title={t("moveUp")}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 15l7-7 7 7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleMoveDown(index)}
-                  disabled={index === localTopics.length - 1}
-                  className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  title={t("moveDown")}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <span className="text-xs text-gray-500 text-center mt-1">
+              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 min-w-[3rem]">
+                <span className="text-xs font-bold text-gray-500">
                   #{index + 1}
                 </span>
               </div>
@@ -889,12 +824,12 @@ export function SubjectTopicsSection({
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={() => handleToggleAi(topic)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${topic.isActiveForAi
+                      className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${topic.isActiveAiGeneration
                         ? "bg-green-100 text-green-700 hover:bg-green-200"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                     >
-                      {topic.isActiveForAi ? t("aiActive") : t("aiInactive")}
+                      {topic.isActiveAiGeneration ? t("aiActive") : t("aiInactive")}
                     </button>
                   </div>
                 </div>
@@ -913,28 +848,22 @@ export function SubjectTopicsSection({
                     </div>
                   )}
                   <div>
-                    <span className="font-medium">{t("published")}:</span>{" "}
-                    {topic.topicPublishedQuestionsStats}
+                    <span className="font-medium">{t("questions")}:</span>{" "}
+                    {(topic.questionsStats as any)?.total || 0}
                   </div>
-                  <div>
-                    <span className="font-medium">{t("general")}:</span>{" "}
-                    {topic.topicGeneralQuestionsStats}
-                  </div>
-                  {topic.topicEstimatedQuestionsCapacity && (
+                  {(topic as any).topicEstimatedQuestionsCapacity && (
                     <div>
                       <span className="font-medium">{t("capacity")}:</span>{" "}
-                      {topic.topicEstimatedQuestionsCapacity}
+                      {(topic as any).topicEstimatedQuestionsCapacity}
                     </div>
                   )}
                 </div>
 
-                {(topic.pdfPageStart || topic.pdfPageEnd) && (
+                {(topic.pdfDetails?.pages || topic.pdfDetails?.fileName) && (
                   <div className="text-xs text-gray-600 mb-3">
-                    <span className="font-medium">{t("pdfPages")}:</span>{" "}
-                    {topic.pdfPageStart && `${t("from")} ${topic.pdfPageStart}`}
-                    {topic.pdfPageEnd && ` ${t("to")} ${topic.pdfPageEnd}`}
-                    {topic.totalPdfPages &&
-                      ` (${t("total")}: ${topic.totalPdfPages})`}
+                    <span className="font-medium">{t("pdf")}:</span>{" "}
+                    {topic.pdfDetails.fileName}
+                    {topic.pdfDetails.pages?.start && ` (${t("pages")}: ${topic.pdfDetails.pages.start}-${topic.pdfDetails.pages.end})`}
                   </div>
                 )}
 
@@ -947,9 +876,9 @@ export function SubjectTopicsSection({
                   </button>
                   <button
                     onClick={() => handleGenerateTests(topic)}
-                    disabled={!topic.isActiveForAi}
+                    disabled={!topic.isActiveAiGeneration}
                     className="px-4 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    title={!topic.isActiveForAi ? t("aiNotActive") : t("generateTestsTooltip")}
+                    title={!topic.isActiveAiGeneration ? t("aiNotActive") : t("generateTestsTooltip")}
                   >
                     <svg
                       className="w-4 h-4"

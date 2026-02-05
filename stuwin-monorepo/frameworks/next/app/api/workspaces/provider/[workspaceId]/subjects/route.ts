@@ -22,7 +22,7 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
 
   const validation = ValidationService.validate(body, {
     title: {
-      rules: [Rules.required('title'), Rules.string('title')]
+      rules: [Rules.required('title'), Rules.string('title'), Rules.subjectNameFormat('title')]
     },
     slug: {
       rules: [Rules.required('slug'), Rules.string('slug')],

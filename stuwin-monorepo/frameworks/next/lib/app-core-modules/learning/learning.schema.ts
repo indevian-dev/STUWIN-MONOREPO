@@ -11,7 +11,14 @@ import { z } from "zod";
 
 export const subjectSchema = z.object({
     id: z.string().optional(),
-    title: z.string().min(2).max(255),
+    title: z.string().min(2).max(255).refine((v) => {
+        const locales = (process.env.ALLOWED_PROVIDER_CONTENTLOCALES || 'az').split(',');
+        const regex = new RegExp(`-(${locales.join('|')})-(\\d+)$`);
+        const match = v.match(regex);
+        if (!match) return false;
+        const grade = parseInt(match[2], 10);
+        return grade >= 1 && grade <= 20;
+    }, { message: "Subject title must end with -(locale)-(grade) (e.g. -az-1). Grade 1-20." }),
     description: z.string().optional(),
     cover: z.string().url().optional().or(z.literal('')),
     slug: z.string().min(2).max(255),
@@ -30,14 +37,28 @@ export const topicSchema = z.object({
     id: z.string().optional(),
     providerSubjectId: z.string(),
     name: z.string().min(2).max(255),
-    body: z.string(),
+    description: z.string().optional(),
     gradeLevel: z.number().int().min(1).max(12).optional(),
-    chapterNumber: z.string().optional(),
-    subjectPdfId: z.number().optional(),
-    isActiveForAi: z.boolean().default(false),
-    pdfS3Key: z.string().optional(),
-    pdfPageStart: z.number().int().optional(),
-    pdfPageEnd: z.number().int().optional(),
+    isActiveAiGeneration: z.boolean().default(false),
+    pdfDetails: z.object({
+        s3Key: z.string().optional(),
+        pageStart: z.number().int().optional(),
+        pageEnd: z.number().int().optional(),
+        totalPages: z.number().int().optional(),
+        chapterNumber: z.string().optional(),
+        fileName: z.string().optional(),
+        pages: z.object({
+            start: z.number().optional(),
+            end: z.number().optional()
+        }).optional(),
+    }).optional(),
+    questionsStats: z.object({
+        total: z.number().int().optional(),
+        remaining: z.number().int().optional(),
+        capacity: z.number().int().optional(),
+        published: z.number().int().optional(),
+    }).optional(),
+    parentTopicId: z.string().optional(),
 });
 
 export const createTopicSchema = topicSchema.omit({ id: true });

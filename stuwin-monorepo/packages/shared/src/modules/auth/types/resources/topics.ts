@@ -7,29 +7,34 @@ export namespace Topic {
         description: string | null;
         gradeLevel: number | null;
         language: string | null;
-        subjectId: string;
+        providerSubjectId: string;
         aiSummary: string | null;
-        topicPublishedQuestionsStats: number;
-        topicGeneralQuestionsStats: number;
-        isActiveForAi: boolean;
-        topicEstimatedQuestionsCapacity: number | null;
-        topicQuestionsRemainingToGenerate: number | null;
-        pdfS3Key: string | null;
-        pdfPageStart: number | null;
-        pdfPageEnd: number | null;
-        totalPdfPages: number | null;
-        chapterNumber: string | null;
-        parentTopicId: string | null;
-        subjectPdfId?: string | null;
-        estimatedEducationStartDate: string | null;
+        isActiveAiGeneration: boolean;
+        workspaceId: string;
+        updatedAt?: string;
         aiAssistantCrib: string | null;
+        pdfDetails: any | null;
+        questionsStats: any | null;
+        parentTopicId: string | null;
+        // Keep these for UI compatibility, though they might come from JSON
+        chapterNumber?: string | null;
+        topicEstimatedQuestionsCapacity?: number | null;
+        topicQuestionsRemainingToGenerate?: number | null;
+        pdfPageStart?: number | null;
+        pdfPageEnd?: number | null;
+        totalPdfPages?: number | null;
+        estimatedEducationStartDate?: string | null;
+        // Legacy properties for backward compatibility during refactor
+        isActiveForAi?: boolean;
+        topicPublishedQuestionsStats?: number;
+        topicGeneralQuestionsStats?: number;
     }
 
     export interface ListItem {
         id: string;
         name: string;
-        subjectId: string;
-        isActiveForAi: boolean;
+        providerSubjectId: string;
+        isActiveAiGeneration: boolean;
     }
 }
 

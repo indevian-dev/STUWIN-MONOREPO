@@ -1,6 +1,6 @@
 import { BaseRepository } from "../domain/BaseRepository";
 import { type DbClient } from "@/lib/app-infrastructure/database";
-import { and, asc, eq, gt, gte, lte, inArray, count } from 'drizzle-orm';
+import { and, asc, eq, gt, gte, lte, inArray, count, sql } from 'drizzle-orm';
 import {
     workspaces,
     accounts,
@@ -107,8 +107,8 @@ export class JobRepository extends BaseRepository {
             .from(learningSubjectTopics)
             .where(
                 and(
-                    eq(learningSubjectTopics.isActiveForAi, true),
-                    gt(learningSubjectTopics.topicQuestionsRemainingToGenerate, 0)
+                    eq(learningSubjectTopics.isActiveAiGeneration, true),
+                    sql`(${learningSubjectTopics.questionsStats}->>'remaining')::int > 0`
                 )
             )
             .limit(limit);

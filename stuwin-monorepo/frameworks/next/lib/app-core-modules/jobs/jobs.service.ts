@@ -354,9 +354,9 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
             }
 
             // Calculate actual questions to generate
-            const currentStats = Number(topic.topicGeneralQuestionsStats || 0);
-            const capacity = Number(topic.topicEstimatedQuestionsCapacity || 0);
-            const remaining = capacity - currentStats;
+            const currentStats = Number(topic.questionsStats?.total || 0);
+            const capacity = Number(topic.questionsStats?.capacity || 0);
+            const remaining = (topic.questionsStats?.remaining ?? (capacity - currentStats));
 
             // If already at capacity, skip
             if (remaining <= 0) {
@@ -564,7 +564,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
             // Process each topic
             for (const topic of topicsToProcess) {
                 try {
-                    const remaining = topic.topicQuestionsRemainingToGenerate || 0;
+                    const remaining = topic.questionsStats?.remaining || 0;
                     if (remaining <= 0) continue;
 
                     // Determine batch size (at least 10 questions per batch, or remaining if less)
@@ -582,13 +582,13 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         name: topic.name,
                         body: topic.description,
                         aiSummary: topic.aiSummary,
-                        pdfS3Key: topic.pdfS3Key,
-                        pdfPageStart: topic.pdfPageStart as number | null,
-                        pdfPageEnd: topic.pdfPageEnd as number | null,
+                        pdfS3Key: topic.pdfDetails?.s3Key,
+                        pdfPageStart: topic.pdfDetails?.pageStart,
+                        pdfPageEnd: topic.pdfDetails?.pageEnd,
                         subjectId: topic.providerSubjectId as any,
                         gradeLevel: topic.gradeLevel as number | null,
-                        topicQuestionsRemainingToGenerate: topic.topicQuestionsRemainingToGenerate as number | null,
-                        topicGeneralQuestionsStats: topic.topicGeneralQuestionsStats as number | null,
+                        topicQuestionsRemainingToGenerate: topic.questionsStats?.remaining,
+                        topicGeneralQuestionsStats: topic.questionsStats?.total,
                     };
 
                     // Generate questions (medium complexity by default for queue)
@@ -620,7 +620,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         topicId: topic.id,
                         topicName: topic.name ?? "Untitled Topic",
                         questionsGenerated: saveResult.savedQuestions.length,
-                        remaining: (topic.topicQuestionsRemainingToGenerate || 0) - saveResult.savedQuestions.length,
+                        remaining: (topic.questionsStats?.remaining || 0) - saveResult.savedQuestions.length,
                     });
                 } catch (topicError) {
                     results.push({

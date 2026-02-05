@@ -346,12 +346,6 @@ export const providerEndpoints: EndpointsMap = {
     permission: "PROVIDER_TOPIC_CREATE",
     type: "api",
   }),
-  "/api/workspaces/provider/:workspaceId/subjects/:id/topics/reorder": createProviderEndpoint({
-    method: "PUT",
-    authRequired: true,
-    permission: "PROVIDER_TOPIC_UPDATE",
-    type: "api",
-  }),
   "/api/workspaces/provider/:workspaceId/subjects/:id/topics/:id": createProviderEndpoint({
     method: "GET",
     authRequired: true,

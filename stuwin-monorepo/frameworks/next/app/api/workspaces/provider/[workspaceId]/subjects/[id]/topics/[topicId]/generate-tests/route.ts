@@ -27,7 +27,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
     const topic = topicResult.data;
 
     // Check if AI is active for this topic
-    if (!topic.isActiveForAi) {
+    if (!topic.isActiveAiGeneration) {
       return NextResponse.json(
         {
           success: false,
