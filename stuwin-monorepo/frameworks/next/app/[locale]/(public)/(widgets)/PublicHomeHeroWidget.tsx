@@ -68,23 +68,23 @@ export function PublicHomeHeroWidget() {
             </Link>
             <Link
               href="#vision"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-secondary border border-white/20 text-white font-black hover:bg-white/20 active:scale-95 transition-all duration-300 shadow-lg"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-secondary border border-white/20 text-white font-black hover:text-brand-secondary hover:bg-white/20 active:scale-95 transition-all duration-300 shadow-lg"
             >
               {t('cta_secondary')}
             </Link>
           </div>
 
-          <div className="justify-center gap-4 pt-8 grid grid-cols-2 md:grid-cols-4">
+          <div className="justify-center gap-2 pt-8 grid grid-cols-2 md:grid-cols-4">
             {publicHeroHighlights.map(({ Icon, href }, idx) => (
               <Link
                 key={idx}
                 href={href}
-                className="group flex items-center gap-3 px-3 py-3 rounded bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl hover:bg-white/10 hover:border-brand/50 hover:-translate-y-1 transition-all duration-500"
+                className="group flex items-center gap-1 p-1 md:p-3 rounded bg-white/5 backdrop-blur-md border border-white/10 shadow-2xl hover:bg-white/10 hover:border-brand/50 hover:-translate-y-1 transition-all duration-500"
               >
                 <div className="p-2 rounded-xl bg-brand/10 text-brand-secondary group-hover:bg-brand group-hover:text-brand-secondary transition-all duration-300">
                   <Icon className="text-lg" />
                 </div>
-                <span className="text-xs font-black tracking-wide text-brand-secondary uppercase">
+                <span className="text-xs font-black tracking-wide text-brand-secondary py-2 text-left">
                   {highlightLabels[idx]}
                 </span>
               </Link>

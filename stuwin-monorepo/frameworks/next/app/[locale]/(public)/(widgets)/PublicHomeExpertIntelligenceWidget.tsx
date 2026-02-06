@@ -17,7 +17,7 @@ export function PublicHomeExpertIntelligenceWidget() {
                 <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
             </div>
 
-            <div className="relative px-4 w-full">
+            <div className="relative px-4 w-full max-w-7xl mx-auto">
                 <div className="flex flex-col gap-16 text-left items-center">
                     {/* Full Width Header */}
                     <div className="grid grid-cols-1 gap-8">
@@ -51,13 +51,13 @@ export function PublicHomeExpertIntelligenceWidget() {
 
                             {/* Visual Pulse Wave */}
                             <div className="mt-auto h-32 flex items-end gap-1">
-                                {Array.from({ length: 60 }).map((_, i) => (
+                                {Array.from({ length: 20 }).map((_, i) => (
                                     <motion.div
                                         key={i}
                                         initial={{ height: "10%" }}
                                         animate={{ height: ["20%", "70%", "30%", "60%", "20%"] }}
                                         transition={{ repeat: Infinity, duration: 2, delay: i * 0.05 }}
-                                        className="flex-1 bg-brand/5 rounded-t-sm"
+                                        className="flex-1 bg-brand/50 rounded-t-sm"
                                     />
                                 ))}
                             </div>

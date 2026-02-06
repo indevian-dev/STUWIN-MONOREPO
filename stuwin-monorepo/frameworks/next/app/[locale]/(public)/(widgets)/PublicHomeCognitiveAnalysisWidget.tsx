@@ -74,7 +74,7 @@ export function PublicHomeCognitiveAnalysisWidget() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                                 key={idx}
-                                className="flex flex-col md:flex-row gap-6 p-4 rounded bg-slate-100 border border-slate-200 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
+                                className="flex flex-col md:flex-row gap-3 p-4 rounded bg-slate-100 border border-slate-200 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
                             >
                                 <div className="flex items-center justify-start">
                                     <div className=" p-4 rounded-2xl bg-white shadow-sm h-fit">

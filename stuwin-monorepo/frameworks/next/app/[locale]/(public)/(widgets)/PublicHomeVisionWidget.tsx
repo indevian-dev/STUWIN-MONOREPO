@@ -11,15 +11,15 @@ export function PublicHomeVisionWidget() {
     const pointsTranslations = t.raw('vision_points');
 
     const pointIcons = [
-        <PiHandHeartFill className="text-4xl text-brand-secondary" />,
-        <PiGameControllerFill className="text-4xl text-brand-secondary" />,
-        <PiNavigationArrowFill className="text-4xl text-brand-secondary" />,
-        <PiStudentFill className="text-4xl text-brand-secondary" />
+        PiHandHeartFill,
+        PiGameControllerFill,
+        PiNavigationArrowFill,
+        PiStudentFill
     ];
 
     const visionPoints = pointsTranslations.map((p: any, idx: number) => ({
         ...p,
-        icon: pointIcons[idx]
+        Icon: pointIcons[idx]
     }));
 
     return (
@@ -48,12 +48,14 @@ export function PublicHomeVisionWidget() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                                 key={idx}
-                                className="group relative p-8 rounded-[2.5rem] bg-brand/10 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500"
+                                className="group relative p-8 rounded bg-brand/5 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden"
                             >
-                                <div className="flex flex-col md:flex-row gap-8 items-start">
-                                    <div className="p-5 rounded-3xl bg-white shadow-sm group-hover:scale-110 transition-transform duration-500">
-                                        {point.icon}
-                                    </div>
+                                {/* Background Icon */}
+                                <div className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-[0.10] pointer-events-none group-hover:opacity-[0.15] group-hover:scale-110 transition-all duration-700">
+                                    <point.Icon className="text-[20rem] leading-none text-brand/70" />
+                                </div>
+
+                                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
                                     <div className="space-y-4">
                                         <h3 className="text-2xl font-black text-slate-900">{point.title}</h3>
                                         <p className="text-lg text-slate-600 leading-relaxed font-medium">
