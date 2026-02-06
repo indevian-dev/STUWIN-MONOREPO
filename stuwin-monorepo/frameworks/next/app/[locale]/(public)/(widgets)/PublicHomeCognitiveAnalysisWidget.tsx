@@ -36,12 +36,7 @@ export function PublicHomeCognitiveAnalysisWidget() {
                     {/* Top Row: Content + Smaller Visual */}
                     <div className="grid lg:grid-cols-12 gap-12 items-center">
                         <div className="lg:col-span-8 space-y-8">
-                            <div className="w-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
-                                <PiBrainDuotone />
-                                <span>{t('badge')}</span>
-                            </div>
-
-                            <h2 className="text-5xl lg:text-7xl font-black text-slate-900 leading-tight tracking-tighter">
+                            <h2 className="text-4xl lg:text-6xl font-black text-slate-900 leading-tight tracking-tighter">
                                 {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span>
                             </h2>
 
@@ -79,11 +74,14 @@ export function PublicHomeCognitiveAnalysisWidget() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                                 key={idx}
-                                className="flex gap-6 p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
+                                className="flex flex-col md:flex-row gap-6 p-4 rounded bg-slate-100 border border-slate-200 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
                             >
-                                <div className="shrink-0 p-4 rounded-2xl bg-white shadow-sm h-fit">
-                                    {feature.icon}
+                                <div className="flex items-center justify-start">
+                                    <div className=" p-4 rounded-2xl bg-white shadow-sm h-fit">
+                                        {feature.icon}
+                                    </div>
                                 </div>
+
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
                                     <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>

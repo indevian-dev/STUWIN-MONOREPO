@@ -1,24 +1,20 @@
 {
     "badge": "Koqnitiv İntellekt",
-    "headline_start": "Biliyin",
-    "headline_end": "MRT-si.",
-    "body": "STUWIN sadəcə işinizi qiymətləndirmir. O, koqnitiv performansınızın dərin struktur analizini həyata keçirir, inkişaf üçün dəqiq neyron yollarını müəyyənləşdirir, ən yaxşı öyrənmə metodlarınızı aşkar edir və imtahana hazırlığınızı qiymətləndirir.",
+    "headline_start": "Biliklərin",
+    "headline_end": "analizi.",
+    "body": "Stuwin.ai sadəcə tapşırığınızı yoxlayıb biliyinizi qiymətləndirmir. O, sizin necə düşündüyünüzü və necə öyrəndiyinizi analiz edir — güclü və zəif tərəflərinizi, inkişaf üçün ən doğru istiqaməti müəyyən edir. Real vaxtda “neyron xəritə” (öyrənmə tərzinin xəritəsi) Hər yoxlamada AI sizin cavab vermə tərzinizi izləyir və məlumatın necə qavranıldığını dəqiq müəyyənləşdirir. Dəqiq boşluq aşkarlanması Sadəcə “düz/səhv” demirik — bilik səviyyənizin artımına mane olan gizli boşluqlarını tapırıq. Dinamik geridönüş Sizə dərhal, şəxsinizə uyğun tövsiyələr verir — qarışıqlıqdan aydınlığa daha tez keçməyiniz üçün.",
     "features": [
         {
-            "title": "Real Zamanlı Neyron Xəritələmə",
-            "description": "Süni intellektimiz hər bir qiymətləndirmə zamanı koqnitiv nümunələri izləyir və məlumatı tam olaraq necə emal etdiyinizi xəritələyir."
+            "title": "Real vaxtda “neyron xəritə”",
+            "description": "(öyrənmə tərzinin xəritəsi) Hər yoxlamada AI sizin cavab vermə tərzinizi izləyir və məlumatın necə qavranıldığını dəqiq müəyyənləşdirir."
         },
         {
-            "title": "Dəqiq Boşluq Təsbiti",
-            "description": "Düzgün və ya yanlışdan kənarda — biz növbəti ustalıq səviyyənizə mane olan görünməz konseptual maneələri müəyyənləşdiririk."
+            "title": "Dəqiq boşluq aşkarlanması",
+            "description": "Sadəcə “düz/səhv” demirik — bilik səviyyənizin artımına mane olan gizli boşluqlarını tapırıq."
         },
         {
-            "title": "Adaptiv Metod Optimizasiyası",
-            "description": "Süni İntellekt hansı öyrənmə tərzinin — vizual, Sokratik və ya aktiv xatırlama — sizin yüksək performansınızı açdığını müəyyən edir."
-        },
-        {
-            "title": "İmtahan Hazırlığı Analitikası",
-            "description": "Tarixi bilik mərkəzi sıxlığına əsaslanaraq tələbənin xüsusi imtahanlara hazırlığının dəqiq qiymətləndirilməsi."
+            "title": "Dinamik geridönüş",
+            "description": "Sizə dərhal, şəxsinizə uyğun tövsiyələr verir — qarışıqlıqdan aydınlığa daha tez keçməyiniz üçün."
         }
     ]
 }

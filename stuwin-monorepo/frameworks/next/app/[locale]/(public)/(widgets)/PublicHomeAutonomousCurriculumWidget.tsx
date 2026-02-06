@@ -19,14 +19,8 @@ export function PublicHomeAutonomousCurriculumWidget() {
 
             <div className="relative max-w-7xl mx-auto px-4 w-full">
                 <div className="flex flex-col items-center text-left gap-16">
-                    <div className="w-full inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-bold tracking-[0.2em] uppercase">
-                        <PiLightningFill />
-                        <span>{t('badge')}</span>
-                    </div>
                     <div className="space-y-6 w-full">
-
-
-                        <h2 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter w-full">
+                        <h2 className="text-4xl lg:text-6xl font-black text-slate-900 tracking-tighter w-full">
                             {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span>
                         </h2>
 
@@ -40,15 +34,15 @@ export function PublicHomeAutonomousCurriculumWidget() {
                         <div className="absolute inset-0 bg-slate-50 opacity-50" />
 
                         {/* Animated Pipeline Nodes */}
-                        <div className="relative flex items-center justify-between w-full max-w-5xl px-12 z-10">
+                        <div className="relative flex items-center justify-between w-full px-4 z-0">
                             <div className="flex flex-col items-center gap-4">
-                                <div className="p-2 rounded-2xl bg-slate-100 text-slate-400 group-hover:bg-brand group-hover:text-white transition-all duration-500">
+                                <div className="p-2 rounded-2xl text-slate-400 group-hover:bg-brand group-hover:text-white transition-all duration-500">
                                     <PiFilesFill size={32} />
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('pipeline.ingest')}</span>
+                                <span className="text-[10px] font-bold text-slate-400 tracking-widest">{t('pipeline.ingest')}</span>
                             </div>
 
-                            <div className="flex-1 h-px bg-slate-200 mx-4 relative overflow-hidden">
+                            <div className="flex-1 h-px bg-slate-200 relative overflow-hidden">
                                 <motion.div
                                     animate={{ x: ["-100%", "100%"] }}
                                     transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
@@ -60,10 +54,10 @@ export function PublicHomeAutonomousCurriculumWidget() {
                                 <div className="p-2 rounded-2xl bg-brand text-white shadow-lg shadow-brand/20 scale-125">
                                     <PiDatabaseFill size={32} />
                                 </div>
-                                <span className="text-[10px] font-bold text-brand uppercase tracking-widest">{t('pipeline.structure')}</span>
+                                <span className="text-[10px] font-bold text-brand tracking-widest">{t('pipeline.structure')}</span>
                             </div>
 
-                            <div className="flex-1 h-px bg-slate-200 mx-4 relative overflow-hidden">
+                            <div className="flex-1 h-px bg-slate-200 relative overflow-hidden">
                                 <motion.div
                                     animate={{ x: ["-100%", "100%"] }}
                                     transition={{ repeat: Infinity, duration: 2, ease: "linear", delay: 0.5 }}
@@ -72,10 +66,10 @@ export function PublicHomeAutonomousCurriculumWidget() {
                             </div>
 
                             <div className="flex flex-col items-center gap-4">
-                                <div className="p-2 rounded-2xl bg-slate-100 text-slate-400 group-hover:bg-brand-secondary group-hover:text-white transition-all duration-500">
+                                <div className="p-2 rounded-2xl text-slate-400 group-hover:bg-brand-secondary group-hover:text-white transition-all duration-500">
                                     <PiLightningFill size={32} />
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('pipeline.synthesize')}</span>
+                                <span className="text-[10px] font-bold text-slate-400 tracking-widest">{t('pipeline.synthesize')}</span>
                             </div>
                         </div>
 

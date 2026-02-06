@@ -30,15 +30,9 @@ export function PublicHomeVisionWidget() {
 
             <div className="relative max-w-7xl mx-auto px-4">
                 <div className="flex flex-col gap-16 text-left items-center">
-
                     {/* Full Width Header */}
-                    <div className="space-y-8 w-full">
-                        <div className="w-full inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 border border-brand/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
-                            <PiShieldCheckeredFill className="text-brand" />
-                            <span>{t('badge')}</span>
-                        </div>
-
-                        <h2 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
+                    <div className="grid grid-cols-1 gap-8 w-full">
+                        <h2 className="text-4xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tighter">
                             {t('headline_start')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-secondary">{t('headline_end')}</span> {t('headline_extra')}
                         </h2>
 

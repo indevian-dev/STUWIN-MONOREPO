@@ -17,15 +17,11 @@ export function PublicHomeExpertIntelligenceWidget() {
                 <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
             </div>
 
-            <div className="relative max-w-7xl mx-auto px-4">
+            <div className="relative px-4 w-full">
                 <div className="flex flex-col gap-16 text-left items-center">
-                    <div className="w-full inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand/100 border border-brand-secondary/20 text-brand-secondary text-xs font-bold tracking-[0.2em] uppercase">
-                        <PiCodeBlockBold />
-                        <span>{t('badge')}</span>
-                    </div>
                     {/* Full Width Header */}
-                    <div className="space-y-8">
-                        <h2 className="text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+                    <div className="grid grid-cols-1 gap-8">
+                        <h2 className="text-4xl lg:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter">
                             {t('headline_start')} <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-brand">{t('headline_end')}</span>
                         </h2>
@@ -36,14 +32,14 @@ export function PublicHomeExpertIntelligenceWidget() {
                     </div>
 
                     {/* Full Width Visual Representation of the Lab */}
-                    <div className="relative w-full aspect-[3/3] sm:aspect-[5/3] md:aspect-[7/3] lg:aspect-[10/3] rounded-3xl border border-slate-200 bg-brand-secondary overflow-hidden shadow-2xl shadow-slate-300/50">
+                    <div className="relative w-full aspect-[3/4] sm:aspect-[5/3] md:aspect-[7/3] lg:aspect-[10/3] rounded-3xl border border-slate-200 bg-brand-secondary overflow-hidden shadow-2xl shadow-slate-300/50">
                         <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/10 to-transparent" />
-                        <div className="p-8 h-full flex flex-col text-sm">
+                        <div className="p-8 h-full flex flex-col text-xs md:text-sm">
                             <div className="flex items-center gap-2 border-b border-white/10 pb-6 mb-6">
                                 <div className="w-3 h-3 rounded-full bg-red-500" />
                                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                                <span className="ml-4 text-slate-500 tracking-widest uppercase">{t('terminal.version')}</span>
+                                <span className="ml-4 text-slate-500">{t('terminal.version')}</span>
                             </div>
                             <div className="space-y-2 text-white">
                                 <p>{'>'} {t('terminal.init_flow')}</p>

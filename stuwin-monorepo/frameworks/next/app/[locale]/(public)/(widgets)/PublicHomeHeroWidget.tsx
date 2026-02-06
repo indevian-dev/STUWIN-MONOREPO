@@ -28,7 +28,7 @@ export function PublicHomeHeroWidget() {
           src="/hero.png"
           alt="Hero"
           fill
-          className="absolute inset-0 object-cover opacity-50 grayscale brightness-75 contrast-125 mix-blend-luminosity"
+          className="absolute inset-0 object-cover opacity-20 grayscale brightness-100 contrast-125 mix-blend-luminosity"
         />
 
         <div
@@ -62,13 +62,13 @@ export function PublicHomeHeroWidget() {
           <div className="justify-center gap-4 grid grid-cols-2 max-w-2xl mx-auto">
             <Link
               href="/signup"
-              className="group relative inline-flex items-center justify-center px-12 py-5 rounded-2xl bg-brand text-brand-secondary font-black hover:bg-slate-50 hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-2xl shadow-white/10"
+              className="group relative inline-flex items-center justify-center px-4 py-2 md:px-6 md:py-3 rounded-full bg-brand text-brand-secondary font-black hover:bg-slate-50 hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-2xl shadow-white/10"
             >
               {t('cta_primary')}
             </Link>
             <Link
               href="#vision"
-              className="inline-flex items-center justify-center px-12 py-5 rounded-2xl bg-brand-secondary border border-white/20 text-white font-black hover:bg-white/20 active:scale-95 transition-all duration-300 shadow-lg"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-secondary border border-white/20 text-white font-black hover:bg-white/20 active:scale-95 transition-all duration-300 shadow-lg"
             >
               {t('cta_secondary')}
             </Link>

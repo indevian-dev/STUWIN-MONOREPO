@@ -65,7 +65,7 @@ export function GlobalFastNavigationWidget({
               <Link
                 key={index}
                 href={link.href}
-                className={`inline-flex items-center gap-2 rounded hover:scale-110 hover:bg-brand-secondary hover:text-brand transition ${variantClasses}`}
+                className={`inline-flex items-center gap-1 rounded hover:scale-110 hover:bg-brand-secondary hover:text-brand transition ${variantClasses}`}
                 aria-label={t(link.label)}
               >
                 <Icon className="text-2xl" />

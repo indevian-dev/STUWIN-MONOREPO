@@ -1,24 +1,20 @@
 {
     "badge": "Cognitive Intelligence",
-    "headline_start": "The MRI of",
-    "headline_end": "Knowledge.",
-    "body": "STUWIN doesn’t just grade your work. It performs a deep structural analysis of your cognitive performance, identifying the exact neural pathways for growth, detecting your best learning methods, and estimating your exam readiness.",
+    "headline_start": "Knowledge",
+    "headline_end": "Analysis.",
+    "body": "Stuwin.ai doesn’t just check your tasks and grade your knowledge. It analyzes how you think and how you learn — identifying your strengths and weaknesses, and the best direction for growth. Real-time 'Neural Map' (Learning Style Map): With every check, AI monitors your response style and pinpoints exactly how information is being perceived. Precise Gap Detection: We don't just say 'right/wrong' — we find the hidden gaps hindering your knowledge growth. Dynamic Feedback: Provides instant, personalized recommendations — helping you move from confusion to clarity faster.",
     "features": [
         {
-            "title": "Real-Time Neural Mapping",
-            "description": "Our AI monitors cognitive patterns during every assessment to map exactly how you process information."
+            "title": "Real-time 'Neural Map'",
+            "description": "(learning style map) With every check, AI monitors your response style and pinpoints exactly how information is being perceived."
         },
         {
-            "title": "Precision Gap Detection",
-            "description": "Beyond right or wrong—we identify the invisible conceptual hurdles blocking your next level of mastery."
+            "title": "Precise Gap Detection",
+            "description": "We don't just say 'right/wrong' — we find the hidden gaps hindering your knowledge growth."
         },
         {
-            "title": "Adaptive Method Optimization",
-            "description": "AI identifies which learning style—visual, Socratic, or active recall—unlocks your peak performance."
-        },
-        {
-            "title": "Exam-Readiness Analytics",
-            "description": "Precision estimation of student readiness for specific exams based on historical knowledge hub density."
+            "title": "Dynamic Feedback",
+            "description": "Provides instant, personalized recommendations — helping you move from confusion to clarity faster."
         }
     ]
 }
