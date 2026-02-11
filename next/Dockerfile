@@ -11,8 +11,9 @@ FROM base AS deps
 WORKDIR /app
 
 # Copy necessary files for installation
-# We copy package.json and bun.lockb to a subdirectory 'next' to match repo structure
-COPY next/package.json next/bun.lockb ./next/
+# We copy package.json and bun.lock (or bun.lockb) to a subdirectory 'next'
+# This project uses 'bun.lock'
+COPY next/package.json next/bun.lock ./next/
 # Copy shared types as they are a dependency
 COPY _shared.types ./_shared.types
 
