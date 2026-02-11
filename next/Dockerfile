@@ -50,8 +50,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Bun image comes with a 'bun' user (uid 1000)
 
 COPY --from=builder /app/next/public ./public
-# Copy the standalone build
-COPY --from=builder --chown=bun:bun /app/next/.next/standalone ./
+
+# In a monorepo + standalone build, the server.js might be nested inside the package name
+# We copy the entire standalone directory content to the root of /app
+# This handles the case where Next.js outputs to .next/standalone/next/server.js
+COPY --from=builder --chown=bun:bun /app/next/.next/standalone/next/ ./
 COPY --from=builder --chown=bun:bun /app/next/.next/static ./.next/static
 
 USER bun
