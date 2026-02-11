@@ -1,31 +1,28 @@
 # Navigation & Layouts
 
-## 1. Overview
-The app uses the **Next.js 14+ App Router** with a highly nested Layout architecture. This ensures that UI elements (Sidebars, Topbars, Modals) persist correctly across page transitions. Navigation is designed to be **Context-Aware**—links change based on the active Request Locale and Workspace ID.
+## Key Files
+| File | Definition |
+|---|---|
+| `next/app/[locale]/layout.tsx` | Root layout — `<html>`, `<body>`, fonts, `NextIntlClientProvider` |
+| `next/app/[locale]/auth/layout.tsx` | Auth layout — centered card for login flows |
+| `next/app/[locale]/workspaces/layout.tsx` | Workspace boundary — permission checks |
+| `next/app/[locale]/workspaces/(root)/layout.tsx` | Dashboard shell — Sidebar + Topbar + `{children}` |
+| `next/app/[locale]/workspaces/(root)/(widgets)/` | Widget components (Sidebar, Topbar, modals) |
 
-## 2. Key Directories & Files
-- **Root Layout:** `frameworks/next/app/[locale]/layout.tsx` (Global Providers: Query, Toast, Theme).
-- **Workspace Layout:** `frameworks/next/app/[locale]/workspaces/(root)/layout.tsx` (The specific dashboard shell).
-- **Nav Widgets:** `frameworks/next/app/[locale]/workspaces/(root)/(widgets)/` (Sidebar, Topbar).
-- **Parallel Routes:** `@modal` folders for intercepting route modals.
+## Layout Hierarchy
+1. **Root** → HTML, fonts, theme providers
+2. **Auth** → Centered card layout
+3. **Workspace Root** → Protected boundary, permission checks
+4. **Dashboard** → Sidebar + Topbar + page content
 
-## 3. Architecture & Patterns
+## Patterns
+- `<Link>` from `next-intl` preserves `[locale]` in URLs
+- Parallel Routes (`@modal`) for deep-action modals
+- Widgets: self-contained components with own data fetching + presentation
 
-### Layout Hierarchy
-1.  **Root (`layout.tsx`):** `<html>`, `<body>`, Font injection, `NextIntlClientProvider`.
-2.  **Auth Layout (`auth/layout.tsx`):** Centered card layout for login flows.
-3.  **Workspace Root (`workspaces/layout.tsx`):** Protected boundary. Checks permissions.
-4.  **Dashboard Layout (`workspaces/(root)/layout.tsx`):** Renders the Sidebar and Topbar. Contains the `{children}` slot for pages.
-
-### Fast Navigation
-We override the native `<a>` tag with Next.js `<Link>`.
-- **Prefetching:** Links in the viewport are prefetched automatically.
-- **Transitions:** We use `framer-motion` for page exit/enter animations (optional).
-
-## 4. Agent Rules (Do's and Don'ts)
-
-- **ALWAYS** use the standardized `Link` component from `next-intl` (or our wrapper) to preserve the `[locale]`.
-- **ALWAYS** place "Widget" components (small, isolated UI logic) in `(widgets)` folders close to where they are used.
-- **NEVER** trigger full page reloads (`window.location.href`) unless absolutely necessary (e.g., logout to clear state).
-- **DO** use Parallel Routes (`@modal`) for "Deep Actions" like opening an item or performing a task, so the background context remains visible.
-- **DO** ensure `Sidebar` items verify `active` state against the current `pathname` to highlight the correct tab.
+## Rules
+- **ALWAYS** use the `Link` component from `next-intl` (or wrapper) to preserve locale
+- **ALWAYS** place widget components in `(widgets)` folders near their usage
+- **NEVER** trigger full page reloads (`window.location.href`) unless necessary (e.g., logout)
+- **DO** use Parallel Routes (`@modal`) for deep actions keeping background context visible
+- **DO** verify `Sidebar` items highlight the correct tab via `pathname` match

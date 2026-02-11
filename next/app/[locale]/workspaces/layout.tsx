@@ -1,0 +1,31 @@
+
+import { withLayoutAuth } from '@/lib/middleware/handlers';
+import type { ReactNode } from 'react';
+
+interface WorkspaceLayoutProps {
+  children: ReactNode;
+  params: Promise<{
+    locale: string;
+    workspaceId?: string;
+  }>;
+}
+
+/**
+ * Workspace Layout - Server Component
+ * The workspaceId from URL params is monitored by GlobalAuthProfileContext
+ * which automatically syncs it to the current workspace when it changes
+ */
+async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
+  // Await the params promise (Next.js 13+ behavior)
+  await params;
+
+  return (
+    <>
+      {children}
+    </>
+  );
+}
+
+export default withLayoutAuth(WorkspaceLayout, {
+  path: '/workspaces',
+});

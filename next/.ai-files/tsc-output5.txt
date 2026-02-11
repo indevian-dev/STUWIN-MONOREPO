@@ -1,0 +1,4 @@
+﻿lib/domain/content/content.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/domain/workspace/workspace.types.ts(2,33): error TS2307: Cannot find module '../../../types/base' or its corresponding type declarations.
+lib/utils/http/StaffAiLabApiHelper.ts(1,37): error TS2307: Cannot find module './spa-api-client' or its corresponding type declarations.
+lib/utils/http/StaffJobsApiHelper.ts(9,37): error TS2307: Cannot find module './spa-api-client' or its corresponding type declarations.

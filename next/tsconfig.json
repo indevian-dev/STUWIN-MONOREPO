@@ -1,0 +1,73 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@/types": [
+        "../_shared.types/index"
+      ],
+      "@/types/auth/*": [
+        "../_shared.types/auth/*"
+      ],
+      "@/types/domain": [
+        "../_shared.types/domain/index"
+      ],
+      "@/types/domain/*": [
+        "../_shared.types/domain/*"
+      ],
+      "@/types/*": [
+        "../_shared.types/*"
+      ],
+      "@/lib/domain/types": [
+        "../_shared.types/common/index"
+      ],
+      "@/lib/domain/auth/types": [
+        "../_shared.types/auth/index"
+      ],
+      "@/lib/infra/types": [
+        "../_shared.types/api/index"
+      ],
+      "@/lib/ui/types": [
+        "../_shared.types/ui/index"
+      ],
+      "@/lib/utils/types": [
+        "../_shared.types/validation/index"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

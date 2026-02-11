@@ -1,0 +1,22 @@
+{
+  "students": "Students",
+  "manage_organization_students": "Manage your organization's enrolled students",
+  "search_students": "Search students by name or email...",
+  "refresh": "Refresh",
+  "no_students_found": "No students enrolled yet",
+  "no_students_match_search": "No students match your search",
+  "unnamed_student": "Unnamed Student",
+  "active": "Active",
+  "no_email": "No email",
+  "joined": "Joined",
+  "view_student": "View Student",
+  "delete_student": "Remove Student",
+  "confirm_delete_student": "Are you sure you want to remove this student?",
+  "student_deleted": "Student removed successfully",
+  "error_deleting_student": "Failed to remove student",
+  "error_loading_students": "Failed to load students",
+  "invite_students": "Invite Students",
+  "add_student": "Add Student",
+  "page": "Page",
+  "of": "of"
+}

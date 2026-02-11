@@ -2,15 +2,12 @@
 trigger: always_on
 ---
 
-When Refactoring something related to one of the rules related logic also need update rules in folder  .agent/rules/*.md
+## Similarity Flow
+Cross-platform parity is mandatory. Web and Mobile must share the same business logic behavior.
 
-
-Try Write Code For human easy understanding and effective maintening
-
-ALL AI GENERATED FILES must be stored in the web-next-js/.ai-files folder.
-
-
-I use BUN js engine so commands in temrinal mostly must use BUN
-
-
-ALways use Scripting with JAvaScript to handle massive similar changes accross codebase 
+## Core Rules
+- **Write code for humans.** Focus on readability and effective maintenance.
+- **BUN engine.** Use BUN for all terminal commands and as the primary JS engine.
+- **AI-Generated Files.** All AI files must be stored in the `.ai-files` folder.
+- **Massive Changes.** Always use JavaScript scripting for multi-file/massive changes across the codebase.
+- **Rule Synchronization.** When refactoring logic related to established rules, you MUST update the corresponding files in `.agent/rules/*.md`.

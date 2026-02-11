@@ -1,52 +1,62 @@
 ---
-trigger: model_decision
-description: This MD outlines a Workspace-First architecture for hierarchical systems. It treats every node as a unique key, using a Scoped Client to auto-filter data. It ensures secure, multi-level access (Admin/Parent/Student) via a single user account.
+trigger: always_on
+description: Workspace-First architecture — hierarchical tree with scoped access, 4-layer security, multi-vendor scaling.
 ---
 
-# 🗺️ Workspace-First Architecture Roadmap
+# Workspace-First Architecture
 
-## 1. Entity Structure (The Tree)
-The system is built on a hierarchy of Workspaces rather than a rigid "user-to-organization" link.
+## Key Files
+| File | Definition |
+|---|---|
+| `next/lib/domain/workspace/workspace.service.ts` | Workspace CRUD, enrollment, provider applications |
+| `next/lib/domain/workspace/workspace.repository.ts` | Workspace + membership DB queries |
+| `next/lib/domain/workspace/workspace.types.ts` | `WorkspaceProfile`, `ProviderListOptions`, `CreateWorkspaceDetails` |
+| `next/lib/domain/workspace/workspace.inputs.ts` | Zod schemas for workspace operations |
+| `next/lib/domain/role/role.service.ts` | Role + permission management |
+| `next/lib/domain/role/role.repository.ts` | Role DB queries |
+| `next/lib/middleware/authorizers/` | Permission checks, workspace access validation |
+| `next/lib/database/schema.ts` | `workspaces`, `workspace_memberships`, `workspace_roles` table definitions |
 
-* **Workspace:** A space with a unique key `workspace_access_key` (e.g., `org_node.sub_123`).
-* **parent_workspace_id:** A reference to the parent node (creates the tree structure).
-* **ui_type:** Defines the interface (e.g., `end_user`, `manager`, `sys_admin`).
-* **Account:** The user's identity (Email, Password).
-* **Membership:** Links an **Account** to a **Workspace** + assigns a **Role**.
-    *   **Direct Access:** `target_workspace_id === via_workspace_id`. The account is a member of this workspace (Identity).
-    *   **Linked Access (W2W):** `target_workspace_id !== via_workspace_id`. The account accesses the `target` workspace "through" the `via` workspace (e.g., Student node enrolled in a Provider node).
+## Entity Structure (The Tree)
+| Concept | Definition |
+|---|---|
+| **Workspace** | A node with unique `workspace_access_key` (e.g., `org_node.sub_123`) |
+| **parent_workspace_id** | Reference to parent node — creates the tree hierarchy |
+| **ui_type** | Interface type: `end_user`, `manager`, `sys_admin` |
+| **Account** | User identity (email, password) |
+| **Membership** | Links Account → Workspace + assigns Role |
+| **Direct Access** | `target_workspace_id === via_workspace_id` — Direct member (Staff/Admin/Director of the workspace) |
+| **Linked Access** | `target_workspace_id !== via_workspace_id` (e.g. `via`=StudentPersonal, `target`=Provider) — Enrollment/Subscription |
 
----
-
-## 2. Interface Types and Access Logic
-We decouple "Where I am" (the URL/Workspace) from "What I see" (the UI/Permissions).
-
+## Interface Types
 | Interface (`ui_type`) | Access Context | Target User |
-| :--- | :--- | :--- |
-| **Admin Dashboard** | Entire organization root | Managers, Directors |
-| **End User Portal** | Personal node `org.node_id` | Users (and Managers as viewers) |
-| **Monitor Dashboard** | Own hub + related nodes | Supervisors (data aggregator) |
-| **Global Staff** | Entire database | Developers / System Admins |
+|---|---|---|
+| Admin Dashboard | Entire organization root | Managers, Directors |
+| End User Portal | Personal node | Users (and Managers as viewers) |
+| Monitor Dashboard | Own hub + related nodes | Supervisors |
+| Global Staff | Entire database | Developers / Admins |
 
----
+## Authorization Flow
+1. Middleware extracts `workspace_key` from URL
+2. `getAuthContext` queries DB/Redis for user's role in that workspace
+3. Generates `allowedKeys` list (single key for user, list for managers)
+4. Permission check validates action against role's `permissions` list
+5. Cached via React `cache()` per request
 
-## 3. Authorization Mechanism (Context Flow)
-Permission validation process for every request:
+## Automatic Data Filtering (`getScopedDb`)
+| Role | Filter |
+|---|---|
+| Users | `WHERE workspace_access_key = 'active_key'` |
+| Managers | `WHERE workspace_access_key IN (...)` |
+| Staff | No filter |
 
-1.  **Middleware / Layout:** Extracts the `workspace_key` from the URL.
-2.  **Auth Context (`getAuthContext`):**
-    * Queries DB/Redis: "Who is this user within this workspace?"
-    * Generates a list of `allowedKeys` (for a user, it's one; for a manager, a list of managed keys).
-    * Caches the result via React `cache()` for the duration of the render.
-3.  **Permission Check:** Validates the user's action against the `permissions` list defined in their role.
+## 4-Layer Security Shield
+1. **Edge Protection (Cloudflare):** DDoS / Bot mitigation
+2. **JWT Context:** Request-scoped identity + workspace injection
+3. **Scoped Clients:** Auto data filtering by `workspace_access_key`
+4. **RLS:** Physical DB constraints preventing cross-workspace leaks
 
----
-
-## 4. Automatic Data Filtering (`getScopedDb`)
-To avoid writing `WHERE` clauses manually, we use a **Scoped Client** layer.
-
-* **For Users:** Auto-filter `WHERE workspace_access_key = 'active_key'`.
-* **For Managers:** Auto-filter `WHERE workspace_access_key IN ('sub_key_1', 'sub_key_2')`.
-* **For Staff:** No filter applied.
-
->
+## Rules
+- **ALWAYS** scope queries by `workspaceId` for user-facing features
+- **ALWAYS** use `AuthContext` from the handler — never parse workspace from raw URL
+- **NEVER** perform cross-workspace data access in user-facing code

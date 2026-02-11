@@ -1,32 +1,37 @@
 # Notification Channels
 
-## 1. Overview
-The Notification System is a **Multi-Channel Dispatcher**. It decouples the "Trigger" (e.g., Action Completed) from the "Delivery" (Email, Push, In-App). This allows users to configure *how* they receive updates without changing business logic.
+## Key Files
+| File | Definition |
+|---|---|
+| `next/lib/notifications/mail.service.ts` | `MailService` — email sending logic |
+| `next/lib/notifications/mail.templates.ts` | HTML email template builders |
+| `next/lib/notifications/sms.service.ts` | `SmsService` — SMS sending logic |
+| `next/lib/notifications/sms.templates.ts` | SMS text template builders |
+| `next/lib/notifications/push.service.ts` | `PushService` — push notification logic |
+| `next/lib/notifications/notification.types.ts` | Notification channel types |
+| `next/lib/notifications/index.ts` | Barrel export |
 
-## 2. Key Directories & Files
-- **Service Core:** `frameworks/next/lib/app-core-modules/notifications/` (Manager & Dispatcher).
-- **Channel Adapters:** `frameworks/next/lib/app-infrastructure/notificators/` (EmailNotificator, PushNotificator).
-- **API Endpoint:** `frameworks/next/app/api/workspaces/dashboard/notifications/` (For In-App fetching).
-- **Templates:** `frameworks/next/lib/app-core-modules/content/email-templates/` (React Email or HTML strings).
+## Integration Clients
+| File | Definition |
+|---|---|
+| `next/lib/integrations/notifications/mail.client.ts` | Email provider client (SendGrid) |
+| `next/lib/integrations/notifications/sms.client.ts` | SMS provider client |
 
-## 3. Architecture & Patterns
+## Factory Access
+| Getter | Service | Purpose |
+|---|---|---|
+| `module.mail` | `MailService` | Send transactional emails |
+| `module.sms` | `SmsService` | Send SMS messages |
+| `module.push` | `PushService` | Send push notifications |
 
-### The Dispatcher Flow
-1.  **Event:** A Business Service calls `NotificationService.send({ type: 'ACTION_COMPLETED', ... })`.
-2.  ** Preference Check:** Service checks User Settings (DB) to see enabled channels for this event type.
-3.  **Dispatch:**
-    - If `EMAIL_ENABLED`: Calls `EmailNotificator.send(...)`.
-    - If `PUSH_ENABLED`: Calls `PushNotificator.send(...)`.
-    - Always: Creates `NotificationLog` (In-App).
+## Dispatcher Flow
+1. Business service calls `module.mail.send(...)` or `module.sms.send(...)`
+2. Service selects template from `*.templates.ts`
+3. Template renders with user data + locale
+4. Integration client delivers via external provider
 
-### In-App State
-- Notifications have `isRead` and `isSeen` states.
-- The Topbar "Bell" widget polls the API for `count(isRead: false)`.
-
-## 4. Agent Rules (Do's and Don'ts)
-
-- **ALWAYS** route notifications through `NotificationService`. Never call `sendgrid` or `expo-push` directly from a business service.
-- **ALWAYS** create a fallback. If Push fails, logging should capture it, but the operation shouldn't crash the request.
-- **NEVER** spam. Implement "Debounce" or "Daily Digest" logic for high-frequency events (e.g., "5 new messages" instead of 5 notifications).
-- **DO** use the `NotificationType` enum to categorize alerts (Info, Success, Warning, Error).
-- **DO** ensure templates are localized based on the *Recipient's* language preference, not the *Sender's*.
+## Rules
+- **ALWAYS** route notifications through notification services — never call provider clients directly
+- **ALWAYS** create a fallback — if delivery fails, log but don't crash the request
+- **ALWAYS** localize templates based on the **recipient's** language, not the sender's
+- **NEVER** call notification services synchronously in the request path — use fire-and-forget with `.catch()`

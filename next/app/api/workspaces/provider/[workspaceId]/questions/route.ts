@@ -1,0 +1,117 @@
+
+import { NextResponse } from 'next/server';
+import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { z } from 'zod';
+
+export const GET = unifiedApiHandler(async (request, { module, params }) => {
+  const { searchParams } = new URL(request.url);
+  const workspaceId = params?.workspaceId as string;
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+
+  const subjectId = searchParams.get('subjectId') || undefined;
+
+  const complexity = searchParams.get('complexity') || undefined;
+  const gradeLevelParam = searchParams.get('gradeLevel');
+  const gradeLevel = gradeLevelParam ? parseInt(gradeLevelParam, 10) : undefined;
+
+  const filterAuthorId = searchParams.get('authorAccountId') || undefined;
+
+  const result = await module.question.list({
+    page,
+    pageSize,
+    subjectId,
+    complexity,
+    gradeLevel,
+    authorAccountId: filterAuthorId,
+    onlyPublished: false, // Providers need to see drafts
+    workspaceId
+  });
+
+  if (!result.success || !result.data) {
+    return NextResponse.json({ error: result.error || "Failed" }, { status: 500 });
+  }
+
+  const { questions, pagination } = result.data;
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      questions,
+      ...pagination
+    }
+  });
+});
+
+// Legacy question create — uses snake_case fields from old frontend
+const LegacyQuestionCreateSchema = z.object({
+  body: z.string().min(5, 'Question body must be at least 5 characters'),
+  subject_id: z.string().min(1, 'subject_id is required'),
+  grade_level: z.coerce.number().int().min(1).max(12),
+  complexity: z.enum(['easy', 'medium', 'hard', 'expert']),
+  answers: z.array(z.string()).min(2, 'At least 2 answers required'),
+  correct_answer: z.string().min(1, 'correct_answer is required'),
+  explanation_guide: z.string().optional(),
+});
+
+export const POST = unifiedApiHandler(async (request, { module, auth, params }) => {
+  const accountId = auth.accountId;
+  try {
+    const body = await request.json();
+
+    const parsed = LegacyQuestionCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({
+        error: parsed.error.errors[0]?.message || 'Validation failed',
+        errorCount: parsed.error.errors.length
+      }, { status: 400 });
+    }
+
+    const {
+      body: questionBody,
+      subject_id,
+      grade_level,
+      complexity,
+      answers,
+      correct_answer,
+      explanation_guide
+    } = parsed.data;
+
+    // Verify correct_answer is in answers
+    if (!answers.includes(correct_answer)) {
+      return NextResponse.json({
+        error: 'Correct answer must be one of the answer options'
+      }, { status: 400 });
+    }
+
+    const workspaceId = params?.workspaceId as string;
+
+    // Create via service
+    const result = await module.question.create({
+      question: questionBody,
+      providerSubjectId: subject_id,
+      gradeLevel: grade_level,
+      complexity,
+      answers,
+      correctAnswer: correct_answer,
+      explanationGuide: explanation_guide ? { content: explanation_guide } : undefined,
+      language: 'az', // Default for now
+      workspaceId
+    }, accountId);
+
+    if (!result.success || !result.data) {
+      throw new Error(result.error);
+    }
+
+    return NextResponse.json({
+      message: 'Question created successfully',
+      question: result.data
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error('Error creating question:', error);
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : 'Failed to create question'
+    }, { status: 500 });
+  }
+});

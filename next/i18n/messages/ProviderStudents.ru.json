@@ -1,0 +1,22 @@
+{
+    "students": "Ученики",
+    "manage_organization_students": "Управление зарегистрированными учениками вашей организации",
+    "search_students": "Поиск учеников по имени или email...",
+    "refresh": "Обновить",
+    "no_students_found": "Пока нет зарегистрированных учеников",
+    "no_students_match_search": "Ничего не найдено по вашему запросу",
+    "unnamed_student": "Безымянный ученик",
+    "active": "Активен",
+    "no_email": "Нет email",
+    "joined": "Присоединился",
+    "view_student": "Просмотреть ученика",
+    "delete_student": "Удалить ученика",
+    "confirm_delete_student": "Вы уверены, что хотите удалить этого ученика?",
+    "student_deleted": "Ученик успешно удален",
+    "error_deleting_student": "Не удалось удалить ученика",
+    "error_loading_students": "Не удалось загрузить учеников",
+    "invite_students": "Пригласить учеников",
+    "add_student": "Добавить ученика",
+    "page": "Страница",
+    "of": "из"
+}

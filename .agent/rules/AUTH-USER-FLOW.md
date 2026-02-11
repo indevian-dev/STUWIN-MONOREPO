@@ -1,38 +1,51 @@
 # Auth User Flow
 
-## 1. Overview
-Authentication separates **Identity** (Account) from **Authorization** (Workspace Access).
-1.  **Identity:** "Who am I?" (Managed via Global Session).
-2.  **Authorization:** "Where can I go?" (Managed via Relation Tables & Permissions).
+## Key Files
+| File | Definition |
+|---|---|
+| `next/lib/domain/auth/auth.service.ts` | Login, register, password reset, profile update |
+| `next/lib/domain/auth/auth.repository.ts` | Account + membership DB queries |
+| `next/lib/domain/auth/auth.types.ts` | `AccountEntity`, `MembershipEntity` types |
+| `next/lib/domain/auth/auth.inputs.ts` | Zod schemas for login, register, reset |
+| `next/lib/domain/auth/otp.service.ts` | OTP generation, validation, expiry |
+| `next/lib/domain/auth/otp.repository.ts` | OTP DB queries |
+| `next/lib/domain/auth/otp.types.ts` | `OtpType`, `OtpPurpose` |
+| `next/lib/domain/auth/verification.service.ts` | Email/phone verification flow |
+| `next/lib/domain/auth/password.util.ts` | Hashing, comparison, strength validation |
+| `next/lib/middleware/authenticators/IdentityAuthenticator.ts` | JWT decoding, session validation, `AuthData` resolution |
+| `next/lib/middleware/authenticators/SessionAuthenticator.ts` | Session cookie management |
+| `next/lib/middleware/authenticators/CookieAuthenticator.ts` | Cookie-based auth helpers |
+| `next/lib/middleware/authenticators/OAuthAuthenticator.ts` | OAuth flow (Google, etc.) |
+| `next/app/api/auth/` | Auth API routes (login, register, verify, reset, OAuth) |
 
-We prioritize **Passwordless OTP (Phone/Email)** for authentication but support passwords for legacy/admin flows.
+## Identity vs Authorization
+- **Identity (Account):** "Who am I?" — managed via session tokens
+- **Authorization (Workspace):** "Where can I go?" — managed via membership + role + permissions
 
-## 2. Key Directories & Files
-- **Auth UI:** `frameworks/next/app/[locale]/auth/` (Login, Register, OTP Verify).
-- **Auth Service:** `frameworks/next/lib/app-core-modules/auth/` (Token generation, Hashing).
-- **Session Management:** `frameworks/next/lib/app-access-control/session/` (Cookie handling).
-- **Interceptors:** `frameworks/next/lib/app-access-control/interceptors/` (JWT Verification).
+## Token Strategy
+| Token | Storage | Purpose |
+|---|---|---|
+| Session Token | HttpOnly cookie | Primary persistence |
+| Access Token | Short-lived JWT | Internal request auth |
+| Refresh Token | Rotated | Long-lived session renewal |
 
-## 3. Architecture & Patterns
+## Auth Flow
+1. User logs in → gets `session_token` cookie
+2. Middleware verifies `session_token`
+3. User navigates to `/workspaces/<type>/<id>`
+4. Interceptor checks membership + role for that workspace
+5. ✅ Granted or ❌ Redirected to 403 / Onboarding
 
-### The "Visitor" Model
-Users are "Visitors" to workspaces.
-- A user logs in -> Gets a `session_token` cookie.
-- Middleware verifies `session_token`.
-- User navigates to `/workspaces/user/123`.
-- Interceptor checks: Does User(Token) have `User` relation to Workspace `123`?
-  - **Yes:** Grant Access.
-  - **No:** Redirect to 403 / Onboarding.
+## OTP Module
+| File | Definition |
+|---|---|
+| `auth/otp.types.ts` | `OtpType` enum, `OtpPurpose` enum |
+| `auth/otp.repository.ts` | Create, find, mark-used OTP records |
+| `auth/otp.service.ts` | Generate OTP, validate, handle expiry, rate-limiting |
 
-### Token Strategy
-- **Access Tokens:** Short-lived JWTs (handled internally if needed).
-- **Session Tokens:** HttpOnly cookies used for persistence.
-- **Refresh Tokens:** Rotated for long-lived sessions.
-
-## 4. Agent Rules (Do's and Don'ts)
-
-- **ALWAYS** use `AuthService` for login/signup logic. Never write raw SQL inserts for users in controllers.
-- **ALWAYS** rely on `ctx.accountId` and `ctx.userId` provided by `withApiHandler`. Do not try to re-parse cookies manually in business logic.
-- **NEVER** store sensitive user state (like `isLoggedIn` boolean) in `localStorage` for security decisions. Only use it for UI hints.
-- **DO** use the `verify` endpoints (`/auth/verify/phone`, `/auth/verify/email`) for the 2-step OTP flow.
-- **DO** ensure the `onboarding` flow correctly creates the *first* workspace after a new account is registered.
+## Rules
+- **ALWAYS** use `AuthService` for login/signup — never raw SQL inserts for users
+- **ALWAYS** use `ctx.accountId` / `ctx.userId` from `unifiedApiHandler` — never re-parse cookies
+- **ALWAYS** use `OtpService` for OTP flows — never generate OTPs manually
+- **NEVER** store sensitive state (`isLoggedIn`) in `localStorage` for security checks
+- **NEVER** access `auth.repository` directly from routes — always go through `auth.service`

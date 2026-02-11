@@ -1,0 +1,20 @@
+
+import { unifiedApiHandler } from "@/lib/middleware/handlers/ApiInterceptor";
+import { ModuleFactory } from "@/lib/domain/factory";
+import { NextResponse } from "next/server";
+
+export const POST = unifiedApiHandler(async (req, { ctx }) => {
+    const modules = new ModuleFactory(ctx);
+    const transactionId = ctx.params?.transactionId;
+
+    if (!transactionId) {
+        return NextResponse.json({ success: false, error: "Transaction ID missing" }, { status: 400 });
+    }
+
+    try {
+        const result = await modules.payment.checkPaymentStatus(transactionId);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+});

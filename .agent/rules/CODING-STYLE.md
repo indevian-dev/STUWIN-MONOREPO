@@ -2,92 +2,77 @@
 trigger: always_on
 ---
 
-Here is the specific technical standard for **Dependency Injection** and the **Module Factory (Container)**. You should add this to your AI Agent's rule file to ensure it writes clean, decoupled code.
+## Dependency Injection & Module Factory
 
----
+### Key Files
+| File | Definition |
+|---|---|
+| `next/lib/domain/factory.ts` | `ModuleFactory` — DI container, lazy getters for every service |
+| `next/lib/domain/base/base.service.ts` | `BaseService` — abstract class with `handleError(error, context)` |
+| `next/lib/domain/base/base.repository.ts` | `BaseRepository` — injects `DbClient` via constructor |
+| `next/lib/domain/base/types.ts` | Re-exports `_shared.types/` (auth, domain, common) |
 
-## 🧩 Agent Rule: Dependency Injection & Containerization
-
-### 1. Constructor Injection Standard
-
-To ensure testability and loose coupling, all Services and Repositories must use **Constructor Injection**.
-
-* **Syntax:** Use the `private readonly` shorthand i n the constructor.
-* **Benefit:** This automatically declares the property, assigns the value, and hides it from external access (Encapsulation).
-
+### Constructor Injection Standard
+All Services and Repositories use `private readonly` shorthand:
 ```typescript
-// MANDATORY SERVICE SYNTAX
-export class LearningService {
+export class QuizService extends BaseService {
   constructor(
-    private readonly subjectRepo: SubjectRepository, // Injected Repository
-    private readonly topicRepo: TopicRepository,     // Injected Repository
-    private readonly db: DatabaseType,               // Injected DB Instance (for transactions)
-    private readonly ctx: AuthContext                // Injected User/Workspace Context
-  ) {}
-
-  // Methods access dependencies via this.subjectRepo, etc.
+    private readonly repository: QuizRepository,
+    private readonly ctx: AuthContext,
+    private readonly db: Database,
+    private readonly systemPrompts: SystemPromptService,
+    private readonly semanticMastery: SemanticMasteryService
+  ) { super(); }
 }
-
 ```
 
----
+### Module Factory (Container)
+- Located at `next/lib/domain/factory.ts`
+- Uses **lazy getters** — modules instantiated only when accessed
+- Receives `AuthContext` once and propagates to all services
+- In API routes, use `module.<service>.<method>()` — never instantiate directly
 
-### 2. Module Factory (The Dependency Container)
+### Domain Module File Naming
+| Pattern | Purpose |
+|---|---|
+| `<module>.service.ts` | Business logic (extends `BaseService`) |
+| `<module>.repository.ts` | Database queries (extends `BaseRepository`) |
+| `<module>.types.ts` | Entity interfaces, enums, result types |
+| `<module>.inputs.ts` | Zod schemas + input DTOs |
+| `<module>.entity.ts` | Entity type definitions (if separate) |
+| `<module>.views.ts` | View-model / response-shape types |
+| `index.ts` | Barrel export (public API of the module) |
 
-To prevent "Import Hell" and manual instantiation in API routes, use a central **Module Factory**. This factory is responsible for "assembling" the modules.
+### Current Modules in Factory
+| Getter | Service Class | Status |
+|---|---|---|
+| `module.subject` | `SubjectService` | ✅ Active |
+| `module.topic` | `TopicService` | ✅ Active |
+| `module.question` | `QuestionService` | ✅ Active |
+| `module.quiz` | `QuizService` | ✅ Active |
+| `module.homework` | `HomeworkService` | ✅ Active |
+| `module.aiSession` | `AiSessionService` | ✅ Active |
+| `module.auth` | `AuthService` | ✅ Active |
+| `module.verification` | `VerificationService` | ✅ Active |
+| `module.workspace` | `WorkspaceService` | ✅ Active |
+| `module.content` | `ContentService` | ✅ Active |
+| `module.support` | `SupportService` | ✅ Active |
+| `module.jobs` | `JobService` | ✅ Active |
+| `module.payment` | `PaymentService` | ✅ Active |
+| `module.roles` | `RoleService` | ✅ Active |
+| `module.intelligence` | `SystemPromptService` | ✅ Active |
+| `module.semanticMastery` | `SemanticMasteryService` | ✅ Active |
+| `module.mail` | `MailService` | ✅ Active |
+| `module.sms` | `SmsService` | ✅ Active |
+| `module.push` | `PushService` | ✅ Active |
+| `module.reports` | `ReportService` | ✅ Active |
+| `module.learning` | `LearningService` | ⚠️ Deprecated — use subject/topic/question |
+| `module.activity` | `ActivityService` | ⚠️ Deprecated — use quiz/homework/aiSession |
 
-* **Location:** `src/lib/modules/ModuleFactory.ts`
-* **Pattern:** Use **Lazy Getters**. Modules should only be instantiated when accessed.
-* **Context Injection:** The factory receives the `AuthContext` once and propagates it to all services.
-
-```typescript
-// THE FACTORY (CONTAINER)
-export class ModuleFactory {
-  constructor(private readonly ctx: AuthContext) {}
-
-  /** * Assembles the Learning Module 
-   * Logic: Repo -> Service -> Returned to Controller
-   */
-  get learning() {
-    const subjectRepo = new SubjectRepository(db);
-    const topicRepo = new TopicRepository(db);
-    
-    return new LearningService(subjectRepo, topicRepo, db, this.ctx);
-  }
-
-  get user() {
-    const userRepo = new UserRepository(db);
-    return new UserService(userRepo, this.ctx);
-  }
-}
-
-```
-
----
-
-### 3. Agent Implementation Logic (Decision Flow)
-
-When the AI Agent is tasked with creating a new feature:
-
-1. **Check the Factory:** Ensure the new Service is registered as a getter in `ModuleFactory.ts`.
-2. **Verify Injections:** Ensure the Service constructor asks for the specific Repositories it needs. **Do not** instantiate Repositories inside the Service methods.
-3. **Controller Usage:** In the API route (`route.ts`), the Agent must only interact with the Factory:
-```typescript
-const modules = new ModuleFactory(ctx);
-const data = await modules.learning.getSubject(id);
-
-```
-
-
-
----
-
-### 4. Why this is Mandatory (Guardrails)
-
-* **Encapsulation:** Using `private` prevents API routes from bypasssing the Service and touching the Repository or Database directly.
-* **Single Source of Truth:** If a constructor signature changes, the Agent only needs to update the `ModuleFactory`, not every API route in the project.
-* **Testability:** By injecting dependencies, we can easily "mock" the database or repositories during unit testing.
-
----
-
-**Would you like me to provide the `BaseService` abstract class that automatically handles the `ctx` and `db` injection for you?** This would make your Service files even smaller and cleaner.
+### Rules
+- **ALWAYS** extend `BaseService` for services, `BaseRepository` for repositories
+- **ALWAYS** register new services in `ModuleFactory` as lazy getters
+- **ALWAYS** use Constructor Injection (`private readonly`) for all dependencies
+- **NEVER** use `any` type — define proper interfaces in `*.types.ts`
+- **NEVER** instantiate services directly in routes — use the factory
+- **PREFER** split modules over deprecated monoliths

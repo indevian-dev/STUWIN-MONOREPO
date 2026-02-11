@@ -1,30 +1,32 @@
-# Monorepo Architecture
+# Monorepo Structure
 
-## 1. Overview
-The codebase is a **Turborepo**-managed monorepo designed for maximum code sharing between Web (Next.js) and Mobile (Expo/React Native). The architecture strictly separates **Framework Layouts** (Platform specific) from **Business Logic** (Platform Agnostic).
+## Root Layout
+| Path | Definition |
+|---|---|
+| `next/` | Web app — Next.js 16+ App Router, independent `bun install` |
+| `expo/` | Mobile app — React Native / Expo, independent `bun install` |
+| `_shared.types/` | Cross-platform TS types — no package.json, resolved via tsconfig `@/types` |
+| `_scripts/` | Build / migration helper scripts |
+| `.agent/rules/` | AI agent rule files |
 
-## 2. Key Directories & Files
-- **Root:** `./` (Turborepo config, package.json)
-- **Web App:** `frameworks/next/` (Next.js 14+ App Router)
-- **Mobile App:** `frameworks/expo/` (React Native/Expo)
-- **Shared Logic:** `packages/shared/` (Utils, Types, Constants)
-- **Core Modules:** `frameworks/next/lib/app-core-modules/` (The "Brain" of the backend)
+## `_shared.types/` — Cross-Platform Types
+| Path | Definition |
+|---|---|
+| `auth/authData.ts` | `AuthData`, `AuthContext` interfaces |
+| `auth/session.ts` | Session / token types |
+| `auth/otp.ts` | OTP request/response types |
+| `auth/permissions.ts` | Permission enum / maps |
+| `auth/oauth.ts` | OAuth provider types |
+| `domain/question.ts` | `QuestionEntity` shared shape |
+| `domain/subject.ts` | `SubjectEntity` shared shape |
+| `domain/topic.ts` | `TopicEntity` shared shape |
+| `domain/user.ts` | `UserProfile` shared shape |
+| `domain/provider.ts` | `ProviderProfile` shared shape |
+| `common/base.ts` | Generic util types (`Paginated`, `ApiResponse`) |
+| `common/values.ts` | Shared constants / enums |
+| `common/logger.ts` | Logger interface contract |
 
-## 3. Architecture & Patterns
-
-### The "Core Modules" Pattern
-Located in `frameworks/next/lib/app-core-modules/`, this folder contains the implementation of the Clean Architecture:
-- **Domains:** (e.g., `inventory`, `auth`, `workspace`)
-- **Services:** Business logic (e.g., `InventoryService`).
-- **Repositories:** Database access (e.g., `InventoryRepository`).
-- **Factories:** Dependency Injection (`ModuleFactory`).
-
-This structure guarantees that the API Routes (`app/api/...`) are extremely thin, only acting as HTTP controllers that delegate work to `Core Modules`.
-
-## 4. Agent Rules (Do's and Don'ts)
-
-- **ALWAYS** place business logic in *Services* (`lib/app-core-modules/...`), not in API Routes or UI Components.
-- **ALWAYS** place database queries in *Repositories*. Services should rely on Repositories, not `db` directly.
-- **NEVER** import `next/*` (like `next/navigation`) into `lib/app-infrastructure` or `packages/shared`. These layers must remain framework-agnostic where possible.
-- **DO** use the `ModuleFactory` to instantiate services. This centralizes dependency wiring.
-- **DO** keep the `frameworks/expo` and `frameworks/next` completely independent dependencies. They should share code via `packages/*` or by structural parity, not by direct imports across framework boundaries.
+## Rules
+- `next/` and `expo/` are **fully independent** — never import across app boundaries.
+- `_shared.types/` is **plain `.ts` files only** — never import framework-specific code here.
+- Run `bun install` from inside `next/` or `expo/`, never from root.

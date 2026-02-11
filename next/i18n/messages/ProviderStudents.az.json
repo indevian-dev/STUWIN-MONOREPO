@@ -1,0 +1,22 @@
+{
+    "students": "Tələbələr",
+    "manage_organization_students": "Təşkilatınızın qeydiyyatdan keçmiş tələbələrini idarə edin",
+    "search_students": "Ad və ya e-poçt ilə tələbə axtarın...",
+    "refresh": "Yenilə",
+    "no_students_found": "Hələ heç bir tələbə qeydiyyatdan keçməyib",
+    "no_students_match_search": "Axtarışınıza uyğun tələbə tapılmadı",
+    "unnamed_student": "Adsız tələbə",
+    "active": "Aktiv",
+    "no_email": "E-poçt yoxdur",
+    "joined": "Qoşulub",
+    "view_student": "Tələbəyə bax",
+    "delete_student": "Tələbəni sil",
+    "confirm_delete_student": "Bu tələbəni silmək istədiyinizə əminsiniz?",
+    "student_deleted": "Tələbə uğurla silindi",
+    "error_deleting_student": "Tələbəni silmək alınmadı",
+    "error_loading_students": "Tələbələri yükləmək alınmadı",
+    "invite_students": "Tələbələri dəvət et",
+    "add_student": "Tələbə əlavə et",
+    "page": "Səhifə",
+    "of": "/"
+}

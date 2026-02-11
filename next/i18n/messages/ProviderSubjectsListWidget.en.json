@@ -1,0 +1,22 @@
+{
+  "errorFetchingSubjects": "Failed to load subjects",
+  "error": "Error",
+  "retry": "Retry",
+  "noSubjects": "No subjects available",
+  "noSubjectsDescription": "There are currently no active subjects in the system",
+  "allSubjects": "All Subjects",
+  "createNewSubject": "Create New Subject",
+  "subjectCreatedSuccessfully": "Subject created successfully",
+  "errorCreatingSubject": "An error occurred while creating the subject",
+  "subjectTitle": "Subject Title",
+  "enterSubjectTitle": "Enter subject title",
+  "subjectSlug": "Slug (URL-friendly name)",
+  "enterSubjectSlug": "Enter slug (e.g., mathematics)",
+  "description": "Description",
+  "enterSubjectDescription": "Enter a short description of the subject",
+  "language": "Language",
+  "grade": "Grade",
+  "cancel": "Cancel",
+  "creating": "Creating...",
+  "createSubject": "Create Subject"
+}

@@ -1,0 +1,22 @@
+{
+  "errorFetchingSubjects": "Fənlər yüklənə bilmədi",
+  "error": "Xəta",
+  "retry": "Yenidən cəhd edin",
+  "noSubjects": "Fən mövcud deyil",
+  "noSubjectsDescription": "Sistemdə hazırda aktiv fən yoxdur",
+  "allSubjects": "Bütün Fənlər",
+  "createNewSubject": "Yeni Fən Yaradın",
+  "subjectCreatedSuccessfully": "Fən uğurla yaradıldı",
+  "errorCreatingSubject": "Fən yaradılarkən xəta baş verdi",
+  "subjectTitle": "Fənnin Adı",
+  "enterSubjectTitle": "Fənnin adını daxil edin",
+  "subjectSlug": "Slug (URL dostu ad)",
+  "enterSubjectSlug": "Slug daxil edin (məsələn: riyaziyyat)",
+  "description": "Təsviri",
+  "enterSubjectDescription": "Fənn haqqında qısa məlumat daxil edin",
+  "language": "Dil",
+  "grade": "Sinif",
+  "cancel": "İmtina",
+  "creating": "Yaradılır...",
+  "createSubject": "Fən Yaradın"
+}
