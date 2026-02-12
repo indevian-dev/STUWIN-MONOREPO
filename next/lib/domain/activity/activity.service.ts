@@ -99,8 +99,8 @@ export class ActivityService extends BaseService {
                 startedAt: new Date(),
                 questions: selectedQuestions.map(q => q.id), // Store IDs for legacy
                 snapshotQuestions: selectedQuestions, // Immutable full snapshot
-                snapshotSubjectTitle: selectedQuestions[0]?.context?.subjectName,
-                snapshotTopicTitle: selectedQuestions[0]?.context?.topicName,
+                snapshotSubjectTitle: null, // Context removed from DB
+                snapshotTopicTitle: null, // Context removed from DB
             });
 
             // Prepare questions for user (hide correct answers)

@@ -1,12 +1,12 @@
 {
     "badge": "Cognitive Intelligence",
-    "headline_start": "Knowledge",
-    "headline_end": "Analysis.",
-    "body": "Stuwin.ai doesn’t just check your tasks and grade your knowledge. It analyzes how you think and how you learn — identifying your strengths and weaknesses, and the best direction for growth. Real-time 'Neural Map' (Learning Style Map): With every check, AI monitors your response style and pinpoints exactly how information is being perceived. Precise Gap Detection: We don't just say 'right/wrong' — we find the hidden gaps hindering your knowledge growth. Dynamic Feedback: Provides instant, personalized recommendations — helping you move from confusion to clarity faster.",
+    "headline_start": "Cognitive",
+    "headline_end": "MRI",
+    "body": "Stuwin.ai doesn’t just check your tasks and grade your knowledge. It analyzes how you think and how you learn — identifying your strengths and weaknesses, and the best direction for growth.",
     "features": [
         {
             "title": "Real-time 'Neural Map'",
-            "description": "(learning style map) With every check, AI monitors your response style and pinpoints exactly how information is being perceived."
+            "description": "With every check, AI monitors your response style and pinpoints exactly how information is being perceived."
         },
         {
             "title": "Precise Gap Detection",

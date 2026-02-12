@@ -3,10 +3,33 @@
 import { PiTerminalFill, PiShieldCheckeredFill, PiFadersFill, PiCodeBlockBold } from "react-icons/pi";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { IconType } from "react-icons";
+
+interface FeatureTranslation {
+    title: string;
+    description: string;
+}
+
+interface Feature extends FeatureTranslation {
+    Icon: IconType;
+}
 
 export function PublicHomeExpertIntelligenceWidget() {
     const t = useTranslations('PublicHomeExpertIntelligenceWidget');
-    const features = t.raw('features');
+    const featuresTranslations = t.raw('features') as FeatureTranslation[];
+
+    const featureIcons = [
+        PiTerminalFill,
+        PiFadersFill,
+        PiShieldCheckeredFill,
+        PiCodeBlockBold,
+        PiTerminalFill
+    ];
+
+    const features: Feature[] = featuresTranslations.map((f, idx) => ({
+        ...f,
+        Icon: featureIcons[idx] || PiTerminalFill
+    }));
 
     return (
         <section id="expert-intelligence" className="relative py-24 lg:py-40 bg-white">
@@ -64,18 +87,17 @@ export function PublicHomeExpertIntelligenceWidget() {
                         </div>
                     </div>
 
-                    {/* 3 Features in a Row */}
-                    <div className="grid md:grid-cols-3 gap-8 w-full text-left">
-                        {features.map((feature: any, idx: number) => {
-                            const Icons = [PiTerminalFill, PiFadersFill, PiShieldCheckeredFill];
-                            const Icon = Icons[idx];
+                    {/* Features Grid */}
+                    <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8 w-full text-left">
+                        {features.map((feature, idx: number) => {
+                            const Icon = feature.Icon;
                             return (
-                                <div key={idx} className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
+                                <div key={idx} className="group p-4 rounded bg-slate-50 border border-slate-100 flex flex-col gap-6 items-start transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
                                     <div className="p-4 rounded-2xl bg-brand/10 text-brand">
                                         <Icon size={28} />
                                     </div>
                                     <div className="space-y-2">
-                                        <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">{feature.title}</h3>
+                                        <h3 className="text-md font-black text-slate-900">{feature.title}</h3>
                                         <p className="text-slate-600 text-sm leading-relaxed">
                                             {feature.description}
                                         </p>

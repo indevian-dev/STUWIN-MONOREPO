@@ -14,112 +14,36 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
   }
 
   try {
-    // Validate that the topic exists and belongs to this subject
-    const topicResult = await module.topic.getDetail(topicId, subjectId);
+    let count = 10;
+    try {
+      const body = await request.json();
+      if (body && typeof body.count === 'number') {
+        count = Math.max(1, Math.min(10, body.count));
+      }
+    } catch (e) {
+      // Body might be empty, ignore
+    }
 
-    if (!topicResult.success || !topicResult.data) {
+    // Call the Topic Service to generate real questions using AI
+    const generationResult = await module.topic.generateQuestions(topicId, subjectId, count);
+
+    if (!generationResult.success) {
       return NextResponse.json(
-        { success: false, error: topicResult.error || "Topic not found" },
-        { status: 404 },
+        { success: false, error: generationResult.error || "Failed to generate questions" },
+        { status: 500 }
       );
     }
 
-    const topic = topicResult.data;
-
-    // Check if AI is active for this topic
-    if (!topic.isActiveAiGeneration) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "AI is not active for this topic. Please enable AI first."
-        },
-        { status: 400 },
-      );
-    }
-
-    // TODO: Implement actual AI test generation logic
-    // For now, return mock generated questions
-
-    log.info("AI test generation requested", {
+    log.info("AI test generation successful", {
       subjectId,
       topicId,
       accountId: auth.accountId,
-      topicName: topic.name,
+      count: generationResult.data.count
     });
-
-    // Mock generated questions (replace with actual AI generation)
-    const mockQuestions = [
-      {
-        questionText: `What is the main concept of "${topic.name}"?`,
-        options: [
-          "It is a fundamental principle in the field",
-          "It represents a historical development",
-          "It is a practical application method",
-          "It describes theoretical framework",
-        ],
-        correctAnswer: 0,
-        explanation: "This is the core concept that forms the foundation of understanding this topic.",
-        difficulty: "easy",
-      },
-      {
-        questionText: `Which of the following best describes an application of ${topic.name}?`,
-        options: [
-          "Used in theoretical research only",
-          "Applied in real-world problem solving",
-          "Limited to academic discussions",
-          "Relevant only in historical context",
-        ],
-        correctAnswer: 1,
-        explanation: "This topic has significant real-world applications that extend beyond theory.",
-        difficulty: "medium",
-      },
-      {
-        questionText: `What advanced concept is most closely related to ${topic.name}?`,
-        options: [
-          "Basic foundational principles",
-          "Elementary introduction topics",
-          "Complex analytical methods",
-          "Simple practical exercises",
-        ],
-        correctAnswer: 2,
-        explanation: "Advanced understanding requires knowledge of complex analytical approaches.",
-        difficulty: "hard",
-      },
-      {
-        questionText: `In the context of ${topic.name}, which statement is most accurate?`,
-        options: [
-          "It requires prior knowledge of advanced mathematics",
-          "It can be understood without prerequisites",
-          "It builds upon fundamental concepts progressively",
-          "It is completely independent of other topics",
-        ],
-        correctAnswer: 2,
-        explanation: "This topic builds systematically on fundamental concepts, making progressive learning essential.",
-        difficulty: "medium",
-      },
-      {
-        questionText: `What is a common misconception about ${topic.name}?`,
-        options: [
-          "That it is overly simplified and lacks depth",
-          "That it is too complex for practical use",
-          "That it has no real-world applications",
-          "That it contradicts established principles",
-        ],
-        correctAnswer: 2,
-        explanation: "Despite being theoretical, this topic has numerous practical applications in various fields.",
-        difficulty: "easy",
-      },
-    ];
 
     return NextResponse.json({
       success: true,
-      data: {
-        topicId,
-        topicName: topic.name,
-        questions: mockQuestions,
-        count: mockQuestions.length,
-        note: "Mock data - Replace with actual AI generation",
-      },
+      data: generationResult.data,
     });
   } catch (error: any) {
     log.error("Failed to generate tests", {

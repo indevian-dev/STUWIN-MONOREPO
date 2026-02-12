@@ -2,5 +2,8 @@
   "errorFetchingData": "Fənn məlumatları yüklənə bilmədi",
   "error": "Xəta",
   "subjectNotFound": "Fənn tapılmadı",
-  "retry": "Yenidən cəhd edin"
+  "retry": "Yenidən cəhd edin",
+  "mediaLibrary": "Media Kitabxanası",
+  "topics": "Mövzular",
+  "questions": "Suallar"
 }

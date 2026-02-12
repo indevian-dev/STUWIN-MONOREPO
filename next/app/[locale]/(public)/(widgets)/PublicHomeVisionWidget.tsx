@@ -1,14 +1,22 @@
 "use client";
 
-import { PiHandHeartFill, PiGameControllerFill, PiNavigationArrowFill, PiShieldCheckeredFill, PiStudentFill } from "react-icons/pi";
+import { PiHandHeartFill, PiGameControllerFill, PiNavigationArrowFill, PiStudentFill } from "react-icons/pi";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { IconType } from "react-icons";
 
-// Vision points will be mapped from translations inside the component
+interface VisionPointTranslation {
+    title: string;
+    description: string;
+}
+
+interface VisionPoint extends VisionPointTranslation {
+    Icon: IconType;
+}
 
 export function PublicHomeVisionWidget() {
     const t = useTranslations('PublicHomeVisionWidget');
-    const pointsTranslations = t.raw('vision_points');
+    const pointsTranslations = t.raw('vision_points') as VisionPointTranslation[];
 
     const pointIcons = [
         PiHandHeartFill,
@@ -17,7 +25,7 @@ export function PublicHomeVisionWidget() {
         PiStudentFill
     ];
 
-    const visionPoints = pointsTranslations.map((p: any, idx: number) => ({
+    const visionPoints: VisionPoint[] = pointsTranslations.map((p, idx: number) => ({
         ...p,
         Icon: pointIcons[idx]
     }));
@@ -42,7 +50,7 @@ export function PublicHomeVisionWidget() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 w-full text-left">
-                        {visionPoints.slice(0, 4).map((point: any, idx: number) => (
+                        {visionPoints.slice(0, 4).map((point, idx: number) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}

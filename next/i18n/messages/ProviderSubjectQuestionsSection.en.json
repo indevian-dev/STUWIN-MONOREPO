@@ -1,0 +1,13 @@
+{
+    "questions": "Questions",
+    "loadingQuestions": "Loading questions...",
+    "noQuestionsFound": "No questions found.",
+    "noQuestionsForTopic": "No questions found for this topic.",
+    "filteredByTopic": "Filtered by Topic",
+    "clearFilter": "Clear Filter",
+    "errorFetchingQuestions": "Failed to fetch questions.",
+    "questionDeleted": "Question deleted successfully.",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}"
+}

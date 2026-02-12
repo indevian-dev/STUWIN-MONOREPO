@@ -9,10 +9,14 @@ import { ProviderQuestionListItemWidget } from "@/app/[locale]/workspaces/provid
 import { toast } from "react-toastify";
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
 import { ApiResponse } from "@/types";
+import { PiX } from "react-icons/pi";
 
 interface ProviderSubjectQuestionsSectionProps {
     workspaceId: string;
     subjectId: string;
+    topicId?: string | null;
+    topicName?: string | null;
+    onClearFilter?: () => void;
 }
 
 interface PaginationState {
@@ -24,6 +28,9 @@ interface PaginationState {
 export function ProviderSubjectQuestionsSection({
     workspaceId,
     subjectId,
+    topicId,
+    topicName,
+    onClearFilter,
 }: ProviderSubjectQuestionsSectionProps) {
     const t = useTranslations("ProviderSubjectQuestionsSection");
     const [questions, setQuestions] = useState<QuestionType.PrivateAccess[]>([]);
@@ -35,6 +42,11 @@ export function ProviderSubjectQuestionsSection({
         pageSize: 10,
     });
 
+    // Reset page when topic filter changes
+    useEffect(() => {
+        setPage(1);
+    }, [topicId]);
+
     const fetchQuestions = async () => {
         try {
             setLoading(true);
@@ -43,6 +55,10 @@ export function ProviderSubjectQuestionsSection({
                 pageSize: pagination.pageSize.toString(),
                 subjectId: subjectId,
             });
+
+            if (topicId) {
+                params.append("topicId", topicId);
+            }
 
             const response = await apiCallForSpaHelper({
                 method: "GET",
@@ -73,7 +89,7 @@ export function ProviderSubjectQuestionsSection({
     useEffect(() => {
         fetchQuestions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, subjectId]);
+    }, [page, subjectId, topicId]);
 
     const handleQuestionUpdate = (
         updatedQuestion: QuestionType.PrivateAccess,
@@ -99,13 +115,33 @@ export function ProviderSubjectQuestionsSection({
                 <h2 className="text-2xl font-bold text-gray-900">{t("questions")}</h2>
             </div>
 
+            {topicId && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-blue-800">
+                        <span className="font-medium">{t("filteredByTopic")}:</span>
+                        <span className="font-bold">{topicName || topicId}</span>
+                    </div>
+                    {onClearFilter && (
+                        <button
+                            onClick={onClearFilter}
+                            className="p-1 hover:bg-blue-100 rounded-full transition-colors text-blue-600 hover:text-blue-800"
+                            title={t("clearFilter")}
+                        >
+                            <PiX className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
+            )}
+
             {loading ? (
                 <GlobalLoaderTile message={t("loadingQuestions")} />
             ) : (
                 <div className="space-y-4">
                     {questions.length === 0 ? (
                         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
-                            <p className="text-gray-500">{t("noQuestionsFound")}</p>
+                            <p className="text-gray-500">
+                                {topicId ? t("noQuestionsForTopic") : t("noQuestionsFound")}
+                            </p>
                         </div>
                     ) : (
                         questions.map((question) => (

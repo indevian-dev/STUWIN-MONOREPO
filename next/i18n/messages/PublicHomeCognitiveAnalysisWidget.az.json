@@ -1,12 +1,12 @@
 {
     "badge": "Koqnitiv İntellekt",
     "headline_start": "Biliklərin",
-    "headline_end": "analizi.",
-    "body": "Stuwin.ai sadəcə tapşırığınızı yoxlayıb biliyinizi qiymətləndirmir. O, sizin necə düşündüyünüzü və necə öyrəndiyinizi analiz edir — güclü və zəif tərəflərinizi, inkişaf üçün ən doğru istiqaməti müəyyən edir. Real vaxtda “neyron xəritə” (öyrənmə tərzinin xəritəsi) Hər yoxlamada AI sizin cavab vermə tərzinizi izləyir və məlumatın necə qavranıldığını dəqiq müəyyənləşdirir. Dəqiq boşluq aşkarlanması Sadəcə “düz/səhv” demirik — bilik səviyyənizin artımına mane olan gizli boşluqlarını tapırıq. Dinamik geridönüş Sizə dərhal, şəxsinizə uyğun tövsiyələr verir — qarışıqlıqdan aydınlığa daha tez keçməyiniz üçün.",
+    "headline_end": "MRT-si",
+    "body": "Stuwin.ai sadəcə tapşırığınızı yoxlayıb biliyinizi qiymətləndirmir. O, sizin necə düşündüyünüzü və necə öyrəndiyinizi analiz edir — güclü və zəif tərəflərinizi, inkişaf üçün ən doğru istiqaməti müəyyən edir.",
     "features": [
         {
             "title": "Real vaxtda “neyron xəritə”",
-            "description": "(öyrənmə tərzinin xəritəsi) Hər yoxlamada AI sizin cavab vermə tərzinizi izləyir və məlumatın necə qavranıldığını dəqiq müəyyənləşdirir."
+            "description": "Hər yoxlamada AI sizin cavab vermə tərzinizi izləyir və məlumatın necə qavranıldığını dəqiq müəyyənləşdirir."
         },
         {
             "title": "Dəqiq boşluq aşkarlanması",

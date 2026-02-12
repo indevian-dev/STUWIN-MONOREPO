@@ -36,6 +36,7 @@ export function TestGenerationModal({
   const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [questionCount, setQuestionCount] = useState(10);
 
   const handleGenerate = async () => {
     try {
@@ -46,6 +47,7 @@ export function TestGenerationModal({
       const response = await apiCallForSpaHelper({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/generate-tests`,
         method: "POST",
+        body: { count: questionCount }
       });
 
       if (response.data?.success && response.data?.data?.questions) {
@@ -180,6 +182,27 @@ export function TestGenerationModal({
               <p className="text-gray-600 mb-6">
                 {t("generateDescription")}
               </p>
+
+              {/* Quantity Selector */}
+              <div className="mb-8 w-full max-w-xs mx-auto">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("numberOfQuestions")}: <span className="font-semibold text-purple-700">{questionCount}</span>
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={questionCount}
+                  onChange={(e) => setQuestionCount(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1 px-1">
+                  <span>1</span>
+                  <span>10</span>
+                </div>
+              </div>
+
               <button
                 onClick={handleGenerate}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
@@ -254,8 +277,8 @@ export function TestGenerationModal({
                   <div
                     key={index}
                     className={`border rounded-lg p-4 transition-all ${question.selected
-                        ? "border-purple-300 bg-purple-50/50"
-                        : "border-gray-200 bg-gray-50/50"
+                      ? "border-purple-300 bg-purple-50/50"
+                      : "border-gray-200 bg-gray-50/50"
                       }`}
                   >
                     <div className="flex items-start gap-3">
@@ -275,10 +298,10 @@ export function TestGenerationModal({
                           </h5>
                           {question.difficulty && (
                             <span className={`px-2 py-1 text-xs font-medium rounded ${question.difficulty === "easy"
-                                ? "bg-green-100 text-green-700"
-                                : question.difficulty === "medium"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
+                              ? "bg-green-100 text-green-700"
+                              : question.difficulty === "medium"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
                               }`}>
                               {question.difficulty}
                             </span>
@@ -287,14 +310,13 @@ export function TestGenerationModal({
 
                         <p className="text-gray-800 mb-3">{question.questionText}</p>
 
-                        {/* Options */}
                         <div className="space-y-2 mb-3">
-                          {question.options.map((option, optIndex) => (
+                          {(question.options || []).map((option, optIndex) => (
                             <div
                               key={optIndex}
                               className={`flex items-start gap-2 p-2 rounded ${optIndex === question.correctAnswer
-                                  ? "bg-green-50 border border-green-200"
-                                  : "bg-white border border-gray-200"
+                                ? "bg-green-50 border border-green-200"
+                                : "bg-white border border-gray-200"
                                 }`}
                             >
                               <span className="font-semibold text-sm text-gray-600 mt-0.5">

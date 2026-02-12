@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
-import { Topic } from "@/types";
 import { SubjectInfoSection } from "./ProviderSubjectInfoSection";
 import { SubjectMediaLibrarySection } from "./ProviderSubjectMediaLibrarySection";
 import { SubjectTopicsSection } from "./ProviderSubjectTopicsSection";
 import { ProviderSubjectQuestionsSection } from "./ProviderSubjectQuestionsSection";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
+import { PiFilePdf, PiList, PiListChecks } from "react-icons/pi";
 
 interface ProviderSubjectDetailWidgetProps {
   subjectId: string;
@@ -41,60 +41,37 @@ export interface SubjectPdf {
   language: string | null;
 }
 
-// Topic is now imported from @/types
-
 export function ProviderSubjectDetailWidget({
   subjectId,
 }: ProviderSubjectDetailWidgetProps) {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
   const t = useTranslations("ProviderSubjectDetailWidget");
+
+  // State
   const [subject, setSubject] = useState<Subject | null>(null);
-  const [pdfs, setPdfs] = useState<SubjectPdf[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define fetch functions first
+  // Tabs & Navigation State
+  const [activeTab, setActiveTab] = useState<"media" | "topics" | "questions">("media");
+  const [selectedTopic, setSelectedTopic] = useState<{ id: string; name: string } | null>(null);
+
   const fetchSubject = async () => {
-    const response = await apiCallForSpaHelper({
-      url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}`,
-      method: "GET",
-    });
-
-    if (response.data?.success && response.data?.data) {
-      setSubject(response.data.data);
-    }
-  };
-
-  const fetchPdfs = async () => {
-    const response = await apiCallForSpaHelper({
-      url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
-      method: "GET",
-    });
-
-    if (response.data?.success && response.data?.data) {
-      setPdfs(response.data.data);
-    }
-  };
-
-  const fetchTopics = async () => {
-    const response = await apiCallForSpaHelper({
-      url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics`,
-      method: "GET",
-    });
-
-    if (response.data?.success && response.data?.data) {
-      setTopics(response.data.data);
-    }
-  };
-
-  const fetchAllData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      await Promise.all([fetchSubject(), fetchPdfs(), fetchTopics()]);
+      const response = await apiCallForSpaHelper({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}`,
+        method: "GET",
+      });
+
+      if (response.data?.success && response.data?.data) {
+        setSubject(response.data.data);
+      } else {
+        setError(t("subjectNotFound"));
+      }
     } catch (err) {
       setError(t("errorFetchingData"));
       console.error("Failed to fetch subject data:", err);
@@ -104,7 +81,7 @@ export function ProviderSubjectDetailWidget({
   };
 
   useEffect(() => {
-    fetchAllData();
+    fetchSubject();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjectId]);
 
@@ -125,68 +102,15 @@ export function ProviderSubjectDetailWidget({
     }
   };
 
-  const handlePdfUpload = async () => {
-    try {
-      await fetchPdfs();
-    } catch (err) {
-      console.error("Failed to refresh PDFs:", err);
-      throw err;
-    }
+  const handleShowQuestions = (topicId: string, topicName: string) => {
+    setSelectedTopic({ id: topicId, name: topicName });
+    setActiveTab("questions");
+    // Optionally scroll to tabs if needed, but usually fine
   };
 
-  const handlePdfToggle = async (pdfId: string, isActive: boolean) => {
-    try {
-      const response = await apiCallForSpaHelper({
-        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdfId}`,
-        method: "PUT",
-        body: { isActive },
-      });
-
-      if (response.data?.success) {
-        await fetchPdfs();
-      }
-    } catch (err) {
-      console.error("Failed to toggle PDF:", err);
-      throw err;
-    }
+  const handleClearTopicFilter = () => {
+    setSelectedTopic(null);
   };
-
-  const handlePdfDelete = async (pdfId: string) => {
-    try {
-      const response = await apiCallForSpaHelper({
-        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdfId}/delete`,
-        method: "DELETE",
-      });
-
-      if (response.data?.success) {
-        await fetchPdfs();
-      }
-    } catch (err) {
-      console.error("Failed to delete PDF:", err);
-      throw err;
-    }
-  };
-
-  const handleTopicUpdate = async (
-    topicId: string,
-    updatedData: Partial<Topic>,
-  ) => {
-    try {
-      const response = await apiCallForSpaHelper({
-        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/update`,
-        method: "PUT",
-        body: updatedData,
-      });
-
-      if (response.data?.success) {
-        await fetchTopics();
-      }
-    } catch (err) {
-      console.error("Failed to update topic:", err);
-      throw err;
-    }
-  };
-
 
   if (loading) return <GlobalLoaderTile />;
 
@@ -197,7 +121,7 @@ export function ProviderSubjectDetailWidget({
           <p className="font-medium">{t("error")}</p>
           <p className="text-sm mt-1">{error || t("subjectNotFound")}</p>
           <button
-            onClick={fetchAllData}
+            onClick={fetchSubject}
             className="mt-3 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-md text-sm font-medium transition-colors"
           >
             {t("retry")}
@@ -208,37 +132,95 @@ export function ProviderSubjectDetailWidget({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Section 1: Subject Information */}
-      <SubjectInfoSection workspaceId={workspaceId} subject={subject} onUpdate={handleSubjectUpdate} />
-
-      {/* Section 2: Media Library (PDFs) */}
-      <SubjectMediaLibrarySection
+      <SubjectInfoSection
         workspaceId={workspaceId}
-        subjectId={subjectId}
         subject={subject}
-        pdfs={pdfs}
-        onUpload={handlePdfUpload}
-        onToggle={handlePdfToggle}
-        onDelete={handlePdfDelete}
+        onUpdate={handleSubjectUpdate}
       />
 
-      {/* Section 3: Topics */}
-      <SubjectTopicsSection
-        workspaceId={workspaceId}
-        subjectId={subjectId}
-        subject={subject}
-        topics={topics}
-        pdfs={pdfs}
-        onUpdate={handleTopicUpdate}
-        onTopicsCreated={fetchTopics}
-      />
+      {/* Tabs Navigation */}
+      <div className="">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab("media")}
+            className={`
+              group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm
+              ${activeTab === "media"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }
+            `}
+          >
+            <PiFilePdf className={`mr-2 h-5 w-5 ${activeTab === "media" ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"}`} />
+            {t("mediaLibrary")}
+          </button>
 
-      {/* Questions Section */}
-      <ProviderSubjectQuestionsSection
-        workspaceId={workspaceId}
-        subjectId={subjectId}
-      />
+          <button
+            onClick={() => setActiveTab("topics")}
+            className={`
+              group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm
+              ${activeTab === "topics"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }
+            `}
+          >
+            <PiList className={`mr-2 h-5 w-5 ${activeTab === "topics" ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"}`} />
+            {t("topics")}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("questions")}
+            className={`
+              group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm
+              ${activeTab === "questions"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }
+            `}
+          >
+            <PiListChecks className={`mr-2 h-5 w-5 ${activeTab === "questions" ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"}`} />
+            {t("questions")}
+            {selectedTopic && (
+              <span className="ml-2 bg-indigo-100 text-indigo-600 py-0.5 px-2 rounded-full text-xs">
+                1
+              </span>
+            )}
+          </button>
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-8">
+        {activeTab === "media" && (
+          <SubjectMediaLibrarySection
+            workspaceId={workspaceId}
+            subjectId={subjectId}
+            subject={subject}
+          />
+        )}
+
+        {activeTab === "topics" && (
+          <SubjectTopicsSection
+            workspaceId={workspaceId}
+            subjectId={subjectId}
+            subject={subject}
+            onShowQuestions={handleShowQuestions}
+          />
+        )}
+
+        {activeTab === "questions" && (
+          <ProviderSubjectQuestionsSection
+            workspaceId={workspaceId}
+            subjectId={subjectId}
+            topicId={selectedTopic?.id}
+            topicName={selectedTopic?.name}
+            onClearFilter={handleClearTopicFilter}
+          />
+        )}
+      </div>
     </div>
   );
 }

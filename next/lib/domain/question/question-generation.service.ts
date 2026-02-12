@@ -233,7 +233,6 @@ export class QuestionGenerationService {
     static async saveQuestions({
         generatedQuestions,
         accountId,
-        topicName,
         topicId,
         subjectId,
         gradeLevel,
@@ -244,7 +243,6 @@ export class QuestionGenerationService {
     }: {
         generatedQuestions: GeneratedQuestion[];
         accountId: string | number;
-        topicName: string;
         topicId?: string | number;
         subjectId?: string | number;
         gradeLevel?: number;
@@ -254,32 +252,6 @@ export class QuestionGenerationService {
         actionName?: string;
     }) {
         if (!generatedQuestions.length) return { savedQuestions: [], topicStatsUpdated: false };
-
-        let finalTopicName = topicName;
-        let finalSubjectName = "Unknown Subject";
-        let finalChapterNumber: string | undefined = undefined;
-
-        // Fetch missing context info
-        try {
-            if (subjectId) {
-                const subject = await db.query.providerSubjects.findFirst({
-                    where: eq(providerSubjects.id, String(subjectId)),
-                });
-                if (subject) finalSubjectName = subject.name || "Unknown Subject";
-            }
-
-            if (topicId) {
-                const topic = await db.query.providerSubjectTopics.findFirst({
-                    where: eq(providerSubjectTopics.id, String(topicId)),
-                });
-                if (topic) {
-                    finalTopicName = topic.name || "Unknown Topic";
-                    finalChapterNumber = topic.pdfDetails?.chapterNumber;
-                }
-            }
-        } catch (err) {
-            ConsoleLogger.error("Error fetching context for question snapshot", err);
-        }
 
         // Build combined crib for each saved question
         let combinedCrib: string | null = null;
@@ -311,11 +283,6 @@ export class QuestionGenerationService {
             isPublished: true,
             explanationGuide: { model: modelName, action: actionName },
             aiAssistantCrib: combinedCrib,
-            context: {
-                subjectName: finalSubjectName,
-                topicName: finalTopicName,
-                chapterNumber: finalChapterNumber
-            }
         }));
 
         const savedQuestions = await db

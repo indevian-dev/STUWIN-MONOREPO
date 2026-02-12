@@ -26,5 +26,8 @@
   "generateTestsTooltip": "Bu mövzu üçün AI ilə testlər yarat",
   "extractFromPdf": "PDF-dən Çıxar",
   "languageMismatch": "Dil uyğunsuzluğu",
-  "gradeMismatch": "Sinif uyğunsuzluğu"
+  "gradeMismatch": "Sinif uyğunsuzluğu",
+  "showQuestions": "Suallar",
+  "manageCrib": "Crib idarəsi",
+  "questions": "Suallar"
 }

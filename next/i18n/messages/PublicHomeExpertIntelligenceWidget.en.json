@@ -2,7 +2,7 @@
     "badge": "Pedagogical Governance",
     "headline_start": "Expert-Governed",
     "headline_end": "Intelligence.",
-    "body": "Randomness is the enemy of education. STUWIN’s central AI Lab ensures every interaction is governed by expert-tuned pedagogical prompts, maintaining absolute integrity at scale.",
+    "body": "The learning process is deeply tuned with learning program providers, teachers, and psychologists. We use several levels of tuning: system, subject, topic, question, and personalization level.",
     "terminal": {
         "version": "STUWIN-AI-LAB v4.2",
         "init_flow": "INITIALIZING FLOW: STUDENT_QUIZ_SUMMARY",
@@ -12,16 +12,24 @@
     },
     "features": [
         {
-            "title": "Flow Precision",
-            "description": "Specific AI behavior models for Homework Help, Quiz Analysis, and Concept Exploration, tuned by master educators."
+            "title": "System Level",
+            "description": "Global tuning of general pedagogical principles and safety frameworks."
         },
         {
-            "title": "Real-time Tuning",
-            "description": "Update platform-wide AI logic in milliseconds via our centralized Command Lab. No redeployments required."
+            "title": "Subject Level",
+            "description": "Specific approach tailored to the unique methodology of each subject."
         },
         {
-            "title": "Deterministic Quality",
-            "description": "Ensuring AI stays within academic guardrails while providing the deep, empathetic support students need."
+            "title": "Topic Level",
+            "description": "Optimized explanations for mastering specific subject areas."
+        },
+        {
+            "title": "Question Level",
+            "description": "Building individual feedback maps for every single question."
+        },
+        {
+            "title": "Personalization Level",
+            "description": "Adapting to the student's pace, psychological state, and perception style."
         }
     ]
 }

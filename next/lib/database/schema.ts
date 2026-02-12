@@ -54,11 +54,7 @@ export type LocalizedContent = {
     }
 };
 
-export type QuestionContextSnapshot = {
-    subjectName: string;
-    topicName: string;
-    chapterNumber?: string;
-};
+
 
 export type QuizPerformanceAnalytics = {
     [questionId: string]: {
@@ -322,7 +318,6 @@ export const providerQuestions = pgTable("provider_questions", {
     providerSubjectTopicId: varchar("provider_subject_topic_id").references(() => providerSubjectTopics.id),
     isPublished: boolean("is_published").default(false),
     aiAssistantCrib: text("ai_assistant_crib"),
-    context: jsonb("context").$type<QuestionContextSnapshot>(),
 });
 
 // ═══════════════════════════════════════════════════════════════

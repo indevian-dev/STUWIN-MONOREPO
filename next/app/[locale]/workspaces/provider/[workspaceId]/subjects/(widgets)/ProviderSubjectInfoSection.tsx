@@ -171,7 +171,7 @@ export function SubjectInfoSection({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white rounded p-4">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           {t("subjectInformation")}
@@ -344,7 +344,7 @@ export function SubjectInfoSection({
                   src={!coverImageError ? getCoverSrc(subject.cover) : "/pg.webp"}
                   alt={subject.name}
                   onError={() => setCoverImageError(true)}
-                  className="w-32 h-32 object-cover rounded-md border border-gray-200"
+                  className="h-64 w-auto rounded"
                 />
                 <input
                   ref={coverInputRef}

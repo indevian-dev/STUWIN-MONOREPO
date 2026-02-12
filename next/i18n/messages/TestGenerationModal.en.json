@@ -23,5 +23,6 @@
   "saving": "Saving...",
   "errorGenerating": "Failed to generate tests",
   "errorSaving": "Failed to save tests",
-  "noQuestionsSelected": "Please select at least one question to save"
+  "noQuestionsSelected": "Please select at least one question to save",
+  "numberOfQuestions": "Number of Questions"
 }

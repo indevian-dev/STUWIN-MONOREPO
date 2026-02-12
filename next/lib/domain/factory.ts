@@ -85,6 +85,7 @@ export class ModuleFactory {
             new TopicRepository(db),
             this.ctx,
             db,
+            new SystemPromptService(new SystemPromptRepository(db), this.ctx, db)
         );
     }
 

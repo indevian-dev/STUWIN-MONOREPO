@@ -4,20 +4,26 @@ import { PiBrainDuotone, PiChartLineUpBold, PiPulseFill, PiLightbulbFill } from 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 
-// Features will be mapped from translations inside the component
+interface FeatureTranslation {
+    title: string;
+    description: string;
+}
+
+interface Feature extends FeatureTranslation {
+    icon: React.ReactNode;
+}
 
 export function PublicHomeCognitiveAnalysisWidget() {
     const t = useTranslations('PublicHomeCognitiveAnalysisWidget');
-    const featuresTranslations = t.raw('features');
+    const featuresTranslations = t.raw('features') as FeatureTranslation[];
 
     const featureIcons = [
-        <PiPulseFill className="text-3xl text-brand" />,
-        <PiChartLineUpBold className="text-3xl text-brand" />,
-        <PiLightbulbFill className="text-3xl text-brand" />,
-        <PiChartLineUpBold className="text-3xl text-brand" />
+        <PiPulseFill key="pulse" className="text-3xl text-brand" />,
+        <PiChartLineUpBold key="chart-up-1" className="text-3xl text-brand" />,
+        <PiLightbulbFill key="lightbulb" className="text-3xl text-brand" />
     ];
 
-    const features = featuresTranslations.map((f: any, idx: number) => ({
+    const features: Feature[] = featuresTranslations.map((f, idx: number) => ({
         ...f,
         icon: featureIcons[idx]
     }));
@@ -68,7 +74,7 @@ export function PublicHomeCognitiveAnalysisWidget() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6 pb-8">
-                        {features.map((feature: any, idx: number) => (
+                        {features.map((feature, idx: number) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}

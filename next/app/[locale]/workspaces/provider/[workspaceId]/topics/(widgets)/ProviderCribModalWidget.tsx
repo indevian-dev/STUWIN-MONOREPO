@@ -78,7 +78,7 @@ export function ProviderCribModalWidget({
     const entityLabel = entityType.charAt(0).toUpperCase() + entityType.slice(1);
 
     return (
-        <div className="fixed inset-0 bg-slate-950 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-brand-secondary bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-xl mx-4">
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-200">

@@ -2,5 +2,8 @@
   "errorFetchingData": "Failed to load subject data",
   "error": "Error",
   "subjectNotFound": "Subject not found",
-  "retry": "Retry"
+  "retry": "Retry",
+  "mediaLibrary": "Media Library",
+  "topics": "Topics",
+  "questions": "Questions"
 }

@@ -6,7 +6,8 @@ import { Link, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { DomainNavConfig, MenuGroup, NavItem, MenuDisplayMode } from '@/types';
 import { GlobalProfileWidget } from '@/app/[locale]/(global)/(widgets)/GlobalProfileWidget';
-import { GlobalSubscriptionStatusWidget } from '@/app/[locale]/(global)/(widgets)/GlobalSubscriptionStatusWidget';
+import { GlobalLangSwitcherTile } from '@/app/[locale]/(global)/(tiles)/GlobalLangSwitcherTile';
+import { GlobalThemeSwitcherTile } from '@/app/[locale]/(global)/(tiles)/GlobalThemeSwitcherTile';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 import { PiSignOutBold } from 'react-icons/pi';
 import { FiArrowRight } from 'react-icons/fi';
@@ -38,16 +39,13 @@ interface MenuItemProps {
 export function GlobalFullNavigationWidget({
   config,
   isMenuOpen,
-  setIsMenuOpen,
-  displayMode
+  setIsMenuOpen
 }: GlobalFullNavigationWidgetProps) {
   const t = useTranslations('GlobalFullNavigationWidget');
   const router = useRouter();
   const { clearProfile, userId } = useGlobalAuthProfileContext();
   const { menuGroups, domain } = config;
 
-  // Use the display mode from config (no runtime window checks to avoid hydration issues)
-  const desktopMode = displayMode || config.menuDisplayMode.desktop;
   const isPublicDomain = domain === 'public';
   const isAuthenticated = !!userId;
 
@@ -114,8 +112,12 @@ export function GlobalFullNavigationWidget({
     <>
       {/* Profile tile for authenticated domains */}
       {isAuthenticated && (
-        <li className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded">
+        <li className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded p-1 space-y-2">
           <GlobalProfileWidget />
+          <div className="flex flex-col gap-3 px-3 py-4 border-t border-slate-50 mt-1">
+            <GlobalLangSwitcherTile />
+            <GlobalThemeSwitcherTile />
+          </div>
         </li>
       )}
 

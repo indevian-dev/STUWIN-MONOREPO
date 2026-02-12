@@ -79,8 +79,8 @@ export class QuizService extends BaseService {
                 startedAt: new Date(),
                 questions: selectedQuestions.map(q => q.id),
                 snapshotQuestions: selectedQuestions,
-                snapshotSubjectTitle: selectedQuestions[0]?.context?.subjectName,
-                snapshotTopicTitle: selectedQuestions[0]?.context?.topicName,
+                snapshotSubjectTitle: null, // Context removed from DB
+                snapshotTopicTitle: null, // Context removed from DB
             });
 
             const questionsForUser = selectedQuestions.map((q: QuestionEntity) => ({

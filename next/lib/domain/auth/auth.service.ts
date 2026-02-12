@@ -636,7 +636,7 @@ export class AuthService extends BaseService {
 
     async getAuthProfile(): Promise<AuthResult> {
         try {
-            if (!this.ctx?.userId) {
+            if (!this.ctx?.userId || this.ctx.userId === "guest") {
                 // Return null profile instead of 401 to avoid redirect loops
                 return {
                     success: true,

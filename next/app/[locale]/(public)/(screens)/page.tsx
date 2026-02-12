@@ -1,10 +1,10 @@
 
 
 import { PublicHomeHeroWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeHeroWidget';
-import { PdfToolButtonTile } from '@/app/[locale]/(public)/(tiles)/PdfToolButtonTile';
-import { PublicHomePricingWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomePricingWidget';
+// import { PdfToolButtonTile } from '@/app/[locale]/(public)/(tiles)/PdfToolButtonTile';
+import { PublicHomeProgramsWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeProgramsWidget';
 import { PublicHomeCognitiveAnalysisWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeCognitiveAnalysisWidget';
-import { PublicHomeAutonomousCurriculumWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeAutonomousCurriculumWidget';
+// import { PublicHomeAutonomousCurriculumWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeAutonomousCurriculumWidget';
 import { PublicHomeExpertIntelligenceWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeExpertIntelligenceWidget';
 import { PublicHomeVisionWidget } from '@/app/[locale]/(public)/(widgets)/PublicHomeVisionWidget';
 
@@ -17,11 +17,11 @@ const PublicHomeScreen = async () => {
         <>
             <PublicHomeHeroWidget />
             <PublicHomeCognitiveAnalysisWidget />
-            <PublicHomeAutonomousCurriculumWidget />
+            {/* <PublicHomeAutonomousCurriculumWidget /> */}
             <PublicHomeExpertIntelligenceWidget />
             <PublicHomeVisionWidget />
-            <PublicHomePricingWidget />
-            <PdfToolButtonTile />
+            <PublicHomeProgramsWidget />
+            {/* <PdfToolButtonTile /> */}
         </>
     );
 };

@@ -26,5 +26,7 @@
   "generateTestsTooltip": "Generate tests with AI for this topic",
   "extractFromPdf": "Extract from PDF",
   "languageMismatch": "Language Mismatch",
-  "gradeMismatch": "Grade Mismatch"
+  "gradeMismatch": "Grade Mismatch",
+  "showQuestions": "Show Questions",
+  "manageCrib": "Manage Crib"
 }

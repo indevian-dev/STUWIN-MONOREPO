@@ -8,7 +8,7 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } fro
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager, FileState } from "@google/generative-ai/server";
-import type { TopicEntity, QuestionContextSnapshot } from "./learning.entity";
+import type { TopicEntity } from "./learning.entity";
 import type { SubjectFileView, QuestionProviderView } from "./learning.views";
 import type { QuestionCreateInput, TopicCreateInput, SubjectCreateInput } from "./learning.inputs";
 import { v4 as uuidv4 } from 'uuid';
@@ -324,43 +324,14 @@ export class LearningService extends BaseService {
     /**
      * Create a new question
      */
-    async createQuestion(data: QuestionCreateInput & { context?: QuestionContextSnapshot }, authorAccountId: string) {
+    async createQuestion(data: QuestionCreateInput, authorAccountId: string) {
         try {
-            let context = data.context;
-
-            // If context not provided, try to build it from IDs
-            if (!context && (data.providerSubjectId || data.providerSubjectTopicId)) {
-                try {
-                    let subjectName = "Unknown Subject";
-                    let topicName = "Unknown Topic";
-                    let chapterNumber: string | undefined = undefined;
-
-                    if (data.providerSubjectId) {
-                        const subject = await this.repository.findSubjectById(data.providerSubjectId);
-                        if (subject) subjectName = subject.name || subjectName;
-                    }
-
-                    if (data.providerSubjectTopicId) {
-                        const topic = await this.repository.findTopicById(data.providerSubjectTopicId);
-                        if (topic) {
-                            topicName = topic.name || topicName;
-                            chapterNumber = (topic as unknown as TopicEntity).pdfDetails?.chapterNumber;
-                        }
-                    }
-
-                    context = { subjectName, topicName, chapterNumber };
-                } catch (err) {
-                    this.handleError(err, "createQuestion.contextBuild");
-                }
-            }
-
             const newQuestion = await this.repository.createQuestion({
                 ...data,
                 authorAccountId: authorAccountId,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 isPublished: false,
-                context
             });
 
             return { success: true, data: newQuestion };

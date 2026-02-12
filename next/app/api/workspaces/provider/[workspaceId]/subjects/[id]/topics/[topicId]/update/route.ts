@@ -41,8 +41,8 @@ export const PUT = unifiedApiHandler(async (request, { module, params, isValidSl
       updateData.estimatedEducationStartDate =
         body.estimatedEducationStartDate;
     }
-    if (body.isActiveForAi !== undefined) {
-      updateData.isActiveForAi = body.isActiveForAi;
+    if (body.isActiveAiGeneration !== undefined) {
+      updateData.isActiveAiGeneration = body.isActiveAiGeneration;
     }
     if (body.aiAssistantCrib !== undefined) {
       updateData.aiAssistantCrib = body.aiAssistantCrib;

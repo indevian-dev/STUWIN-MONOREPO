@@ -4,7 +4,7 @@ import { TopicRepository } from "../topic/topic.repository";
 import { BaseService } from "../base/base.service";
 import { AuthContext } from "@/lib/domain/base/types";
 import { Database } from "@/lib/database";
-import type { TopicEntity, QuestionContextSnapshot } from "../learning/learning.entity";
+
 import type { QuestionProviderView } from "../learning/learning.views";
 import type { QuestionCreateInput } from "../learning/learning.inputs";
 
@@ -41,26 +41,9 @@ export class QuestionService extends BaseService {
         }
     }
 
-    async create(data: QuestionCreateInput & { context?: QuestionContextSnapshot }, authorAccountId: string) {
+    async create(data: QuestionCreateInput, authorAccountId: string) {
         try {
-            let context = data.context;
-            if (!context && (data.providerSubjectId || data.providerSubjectTopicId)) {
-                try {
-                    let subjectName = "Unknown Subject";
-                    let topicName = "Unknown Topic";
-                    let chapterNumber: string | undefined = undefined;
-                    if (data.providerSubjectId) {
-                        const subject = await this.subjectRepository.findById(data.providerSubjectId);
-                        if (subject) subjectName = subject.name || subjectName;
-                    }
-                    if (data.providerSubjectTopicId) {
-                        const topic = await this.topicRepository.findById(data.providerSubjectTopicId);
-                        if (topic) { topicName = topic.name || topicName; chapterNumber = (topic as unknown as TopicEntity).pdfDetails?.chapterNumber; }
-                    }
-                    context = { subjectName, topicName, chapterNumber };
-                } catch (err) { this.handleError(err, "create.contextBuild"); }
-            }
-            const newQuestion = await this.repository.create({ ...data, authorAccountId, createdAt: new Date(), updatedAt: new Date(), isPublished: false, context });
+            const newQuestion = await this.repository.create({ ...data, authorAccountId, createdAt: new Date(), updatedAt: new Date(), isPublished: false });
             return { success: true, data: newQuestion };
         } catch (error) {
             this.handleError(error, "create");

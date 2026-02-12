@@ -1,5 +1,5 @@
 
-import type { TopicEntity, QuestionEntity } from './learning.entity';
+import type { TopicEntity } from './learning.entity';
 import type { Timestamps } from '@/lib/domain/base/types';
 
 // ═══════════════════════════════════════════════════════════════
@@ -150,7 +150,6 @@ export interface QuestionProviderView {
     providerSubjectTopicId: string | null;
     isPublished: boolean | null;
     aiAssistantCrib: string | null;
-    context: QuestionEntity['context'];
     createdAt: Date;
     updatedAt: Date | null;
 }

@@ -1,24 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { PiBookOpen } from "react-icons/pi";
+import { PiBookOpen, PiBrain, PiListChecks } from "react-icons/pi";
 import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
 import { Topic } from "@/types";
 import { ProviderPdfTopicExtractorWidget } from "./ProviderPdfTopicExtractorWidget";
 import { TestGenerationModal } from "./TestGenerationModal";
 import { ProviderCribModalWidget } from "../../topics/(widgets)/ProviderCribModalWidget";
-import { PiBrain } from "react-icons/pi";
 import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface SubjectTopicsSectionProps {
   workspaceId: string;
   subjectId: string;
   subject: Subject;
-  topics: Topic[];
-  pdfs: SubjectPdf[];
-  onUpdate: (topicId: string, data: Partial<Topic>) => Promise<void>;
-  onTopicsCreated?: () => Promise<void>;
+  onShowQuestions: (topicId: string, topicName: string) => void;
 }
 
 interface TopicEditModalProps {
@@ -32,6 +29,28 @@ interface BulkTopicCreateModalProps {
   pdfs: SubjectPdf[];
   onSave: (topics: Partial<Topic>[]) => Promise<void>;
   onClose: () => void;
+}
+
+interface RawTopicImport {
+  name?: string;
+  title?: string;
+  description?: string;
+  body?: string;
+  gradeLevel?: number;
+  grade?: number;
+  chapterNumber?: string;
+  chapter?: string;
+  aiSummary?: string;
+  topicEstimatedQuestionsCapacity?: number;
+  capacity?: number;
+  pdfPageStart?: number;
+  start_page?: number;
+  pdfPageEnd?: number;
+  end_page?: number;
+  estimatedEducationStartDate?: string;
+  isActiveAiGeneration?: boolean;
+  aiAssistantCrib?: string;
+  [key: string]: unknown;
 }
 
 function BulkTopicCreateModal({
@@ -85,7 +104,8 @@ function BulkTopicCreateModal({
             ? pdfs.find((p) => p.id === selectedPdfId)
             : null;
 
-          topics = topicsArray.map((item: any) => ({
+
+          topics = topicsArray.map((item: RawTopicImport) => ({
             name: item.name || item.title || "",
             description: item.description || item.body || null,
             gradeLevel: item.gradeLevel || item.grade || null,
@@ -681,28 +701,70 @@ export function SubjectTopicsSection({
   workspaceId,
   subjectId,
   subject,
-  topics,
-  pdfs,
-  onUpdate,
-  onTopicsCreated,
+  onShowQuestions,
 }: SubjectTopicsSectionProps) {
   const t = useTranslations("SubjectTopicsSection");
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [pdfs, setPdfs] = useState<SubjectPdf[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [showPdfExtractor, setShowPdfExtractor] = useState(false);
-  const [localTopics, setLocalTopics] = useState<Topic[]>(topics);
   const [generatingTestsFor, setGeneratingTestsFor] = useState<Topic | null>(null);
   const [activeCribTopic, setActiveCribTopic] = useState<Topic | null>(null);
 
-  // Update local topics when props change
-  useState(() => {
-    setLocalTopics(topics);
-  });
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [topicsRes, pdfsRes] = await Promise.all([
+        apiCallForSpaHelper({
+          url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics`,
+          method: "GET",
+        }),
+        apiCallForSpaHelper({
+          url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
+          method: "GET",
+        }),
+      ]);
 
+      if (topicsRes.data?.success && topicsRes.data?.data) {
+        setTopics(topicsRes.data.data);
+      }
+      if (pdfsRes.data?.success && pdfsRes.data?.data) {
+        setPdfs(pdfsRes.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch topics/pdfs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
+
+  const handleUpdateTopic = async (topicId: string, updatedData: Partial<Topic>) => {
+    try {
+      const response = await apiCallForSpaHelper({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/update`,
+        method: "PUT",
+        body: updatedData,
+      });
+
+      if (response.data?.success) {
+        await fetchData();
+      }
+    } catch (err) {
+      console.error("Failed to update topic:", err);
+      throw err;
+    }
+  };
 
   const handleToggleAi = async (topic: Topic) => {
     try {
-      await onUpdate(topic.id, { isActiveAiGeneration: !topic.isActiveAiGeneration });
+      await handleUpdateTopic(topic.id, { isActiveAiGeneration: !topic.isActiveAiGeneration });
     } catch (err) {
       console.error("Failed to toggle AI status:", err);
     }
@@ -714,7 +776,7 @@ export function SubjectTopicsSection({
 
   const handleSaveTopic = async (data: Partial<Topic>) => {
     if (!editingTopic) return;
-    await onUpdate(editingTopic.id, data);
+    await handleUpdateTopic(editingTopic.id, data);
   };
 
   const handleBulkCreate = async (newTopics: Partial<Topic>[]) => {
@@ -726,9 +788,7 @@ export function SubjectTopicsSection({
       });
 
       if (response.data?.success) {
-        if (onTopicsCreated) {
-          await onTopicsCreated();
-        }
+        await fetchData();
         setShowBulkCreate(false);
       } else {
         throw new Error(response.data?.error || "Failed to create topics");
@@ -744,11 +804,12 @@ export function SubjectTopicsSection({
   };
 
   const handleGenerationSuccess = async () => {
-    // Refresh topics to get updated stats
-    if (onTopicsCreated) {
-      await onTopicsCreated();
-    }
+    await fetchData();
   };
+
+  if (loading && topics.length === 0) {
+    return <GlobalLoaderTile message={t("loadingTopics")} />;
+  }
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -757,18 +818,18 @@ export function SubjectTopicsSection({
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
             {t("totalTopics")}:{" "}
-            <span className="font-semibold">{localTopics.length}</span>
+            <span className="font-semibold">{topics.length}</span>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setShowBulkCreate(true)}
-              className="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-brand hover:bg-brand/80 text-brand-secondary rounded text-sm font-medium transition-colors"
             >
               {t("bulkCreate")}
             </button>
             <button
               onClick={() => setShowPdfExtractor(true)}
-              className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-brand-secondary hover:bg-brand-secondary/80 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
             >
               <PiBookOpen className="w-4 h-4" />
               {t("extractFromPdf")}
@@ -779,38 +840,44 @@ export function SubjectTopicsSection({
 
       <div className="h-4" />
 
-      {localTopics.length === 0 ? (
+      {topics.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p className="text-lg font-medium">{t("noTopics")}</p>
           <p className="text-sm mt-2">{t("noTopicsDescription")}</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {localTopics.map((topic, index) => (
+          {topics.map((topic, index) => (
             <div
               key={topic.id}
-              className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+              className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
             >
-              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 min-w-[3rem]">
-                <span className="text-xs font-bold text-gray-500">
-                  #{index + 1}
-                </span>
-              </div>
+              {/* Row 1: Order and Name/Info */}
+              <div className="flex items-start gap-4">
+                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 min-w-[3rem] shrink-0">
+                  <span className="text-xs font-bold text-gray-500">
+                    #{index + 1}
+                  </span>
+                </div>
 
-              {/* Topic Content */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2" title={topic.name}>
-                      {topic.name}
-                    </h3>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 line-clamp-1" title={topic.name}>
+                    {topic.name}
+                  </h3>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
                     {topic.chapterNumber && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {t("chapter")}: {topic.chapterNumber}
-                      </p>
+                      <span>{t("chapter")}: {topic.chapterNumber}</span>
                     )}
+                    {topic.description && (
+                      <span className="line-clamp-1 text-gray-500 border-l pl-4 border-gray-300">
+                        {topic.description}
+                      </span>
+                    )}
+                  </div>
 
-                    {/* Mismatch Markers */}
+                  {/* Mismatch Markers */}
+                  {(topic.language && subject.language && topic.language !== subject.language || topic.gradeLevel !== null && subject.gradeLevel !== null && topic.gradeLevel !== subject.gradeLevel) && (
                     <div className="flex gap-2 mt-2">
                       {topic.language && subject.language && topic.language !== subject.language && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title={t("languageMismatch")}>
@@ -823,90 +890,101 @@ export function SubjectTopicsSection({
                         </span>
                       )}
                     </div>
-                  </div>
-
-                  {topic.description && (
-                    <p className="text-sm text-gray-700 line-clamp-2 mb-3">
-                      {topic.description}
-                    </p>
                   )}
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600 mb-3">
-                    {topic.gradeLevel && (
-                      <div>
-                        <span className="font-medium">{t("grade")}:</span>{" "}
-                        {topic.gradeLevel}
-                      </div>
-                    )}
-                    <div>
-                      <span className="font-medium">{t("questions")}:</span>{" "}
-                      {(topic.questionsStats as any)?.total || 0}
-                    </div>
-                    {(topic as any).topicEstimatedQuestionsCapacity && (
-                      <div>
-                        <span className="font-medium">{t("capacity")}:</span>{" "}
-                        {(topic as any).topicEstimatedQuestionsCapacity}
-                      </div>
-                    )}
-                  </div>
-
-                  {(topic.pdfDetails?.pages || topic.pdfDetails?.fileName) && (
-                    <div className="text-xs text-gray-600 mb-3">
-                      <span className="font-medium">{t("pdf")}:</span>{" "}
-                      {topic.pdfDetails.fileName}
-                      {topic.pdfDetails.pages?.start && ` (${t("pages")}: ${topic.pdfDetails.pages.start}-${topic.pdfDetails.pages.end})`}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <button
-                      onClick={() => handleToggleAi(topic)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${topic.isActiveAiGeneration
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                    >
-                      {topic.isActiveAiGeneration ? t("aiActive") : t("aiInactive")}
-                    </button>
-                    <button
-                      onClick={() => handleEditClick(topic)}
-                      className="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-sm font-medium transition-colors"
-                    >
-                      {t("edit")}
-                    </button>
-                    <button
-                      onClick={() => setActiveCribTopic(topic)}
-                      className={`px-3 py-1.5 border rounded text-sm font-medium transition-colors flex items-center gap-2 ${topic.aiAssistantCrib
-                        ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      title={t("manageCrib")}
-                    >
-                      <PiBrain className={topic.aiAssistantCrib ? "fill-current" : ""} />
-                    </button>
-                    <button
-                      onClick={() => handleGenerateTests(topic)}
-                      disabled={!topic.isActiveAiGeneration}
-                      className="px-4 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      title={!topic.isActiveAiGeneration ? t("aiNotActive") : t("generateTestsTooltip")}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                      </svg>
-                      <span>{t("generateTests")}</span>
-                    </button>
-                  </div>
                 </div>
+              </div>
+
+              {/* Row 2: Stats */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-700">
+                  {topic.gradeLevel && (
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("grade")}</span>
+                      <span className="font-semibold">{topic.gradeLevel}</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("questions")}</span>
+                    <span className="font-semibold">{topic.questionsStats?.total || 0}</span>
+                  </div>
+                  {/* Only show capacity if it exists */}
+                  {topic.topicEstimatedQuestionsCapacity && (
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("capacity")}</span>
+                      <span className="font-semibold">{topic.topicEstimatedQuestionsCapacity}</span>
+                    </div>
+                  )}
+                  {/* PDF Details integrated into stats row or strictly next to it? Let's put in grid if fits or separate line inside this box */}
+                  {(topic.pdfDetails?.pages || topic.pdfDetails?.fileName) && (
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("pdfPages")}</span>
+                      <span className="font-semibold truncate" title={topic.pdfDetails.fileName || ""}>
+                        {topic.pdfDetails.pages ? `${topic.pdfDetails.pages.start}-${topic.pdfDetails.pages.end}` : "N/A"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 3: Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => onShowQuestions(topic.id, topic.name)}
+                  className="px-3 py-1.5 bg-brand-secondary text-white hover:bg-brand-secondary/80 text-sm font-medium rounded transition-colors flex items-center gap-2"
+                >
+                  <PiListChecks className="w-4 h-4" />
+                  {t("showQuestions")}
+                </button>
+                <button
+                  onClick={() => handleToggleAi(topic)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${topic.isActiveAiGeneration
+                    ? "bg-brand-secondary/50 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/80"
+                    : "bg-brand-secondary/20 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
+                    }`}
+                >
+                  {topic.isActiveAiGeneration ? t("aiActive") : t("aiInactive")}
+                </button>
+                <button
+                  onClick={() => handleGenerateTests(topic)}
+                  disabled={!topic.isActiveAiGeneration}
+                  className="px-3 py-1.5 bg-brand hover:bg-brand-secondary/90 text-brand-secondary rounded text-sm font-medium transition-colors disabled:opacity-90  hover:text-white disabled:cursor-not-allowed flex items-center gap-2"
+                  title={!topic.isActiveAiGeneration ? t("aiNotActive") : t("generateTestsTooltip")}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  <span>{t("generateTests")}</span>
+                </button>
+
+                <div className="flex-1" /> {/* Spacer to push edit/crib to right? Or just keep left aligned? User said "all action buttons". Usually left aligned is better or split. I'll keep them all together or group them. Let's group distinct actions. */}
+
+                <button
+                  onClick={() => setActiveCribTopic(topic)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-2 ${topic.aiAssistantCrib
+                    ? "bg-brand-secondary text-white  hover:bg-brand-secondary/80 hover:text-white"
+                    : "bg-brand-secondary/20 text-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
+                    }`}
+                  title={t("manageCrib")}
+                >
+                  <PiBrain className={topic.aiAssistantCrib ? "fill-current" : ""} />
+                  <span className="hidden sm:inline">{t("manageCrib")}</span>
+                </button>
+                <button
+                  onClick={() => handleEditClick(topic)}
+                  className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium transition-colors"
+                >
+                  {t("edit")}
+                </button>
               </div>
             </div>
           ))}
@@ -971,11 +1049,12 @@ export function SubjectTopicsSection({
             isOpen={!!activeCribTopic}
             entityType="topic"
             entityId={activeCribTopic.id}
+            subjectId={subjectId}
             currentCrib={activeCribTopic.aiAssistantCrib || null}
             onClose={() => setActiveCribTopic(null)}
             onSuccess={() => {
               // Trigger refresh or update local state
-              if (onTopicsCreated) onTopicsCreated();
+              fetchData();
               setActiveCribTopic(null);
             }}
           />

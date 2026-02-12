@@ -23,5 +23,6 @@
   "saving": "Saxlanılır...",
   "errorGenerating": "Testləri yaratmaq alınmadı",
   "errorSaving": "Testləri saxlamaq alınmadı",
-  "noQuestionsSelected": "Saxlamaq üçün ən azı bir sual seçin"
+  "noQuestionsSelected": "Saxlamaq üçün ən azı bir sual seçin",
+  "numberOfQuestions": "Sualların sayı"
 }

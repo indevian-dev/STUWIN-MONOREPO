@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
 import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
 import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
 interface SubjectMediaLibrarySectionProps {
   workspaceId: string;
   subjectId: string;
   subject: Subject;
-  pdfs: SubjectPdf[];
-  onUpload: () => Promise<void>;
-  onToggle: (pdfId: string, isActive: boolean) => Promise<void>;
-  onDelete: (pdfId: string) => Promise<void>;
 }
 
 type UploadMode = "simple" | null;
@@ -22,12 +19,10 @@ export function SubjectMediaLibrarySection({
   workspaceId,
   subjectId,
   subject,
-  pdfs,
-  onUpload,
-  onToggle,
-  onDelete,
 }: SubjectMediaLibrarySectionProps) {
   const t = useTranslations("SubjectMediaLibrarySection");
+  const [pdfs, setPdfs] = useState<SubjectPdf[]>([]);
+  const [loading, setLoading] = useState(true);
   const [uploadMode, setUploadMode] = useState<UploadMode>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +32,30 @@ export function SubjectMediaLibrarySection({
   const [pdfLanguage, setPdfLanguage] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchPdfs = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCallForSpaHelper({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
+        method: "GET",
+      });
+
+      if (response.data?.success && response.data?.data) {
+        setPdfs(response.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch PDFs:", err);
+      setError(t("errorFetchingData"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPdfs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
 
   const handleUploadClick = (mode: UploadMode) => {
     setUploadMode(mode);
@@ -125,8 +144,8 @@ export function SubjectMediaLibrarySection({
         throw new Error(saveResponse.data?.error || "Failed to save PDF metadata");
       }
 
-      // Trigger parent refresh to reload PDF list
-      await onUpload();
+      // Refresh list
+      await fetchPdfs();
 
       setUploadMode(null);
       setSelectedFile(null);
@@ -152,7 +171,15 @@ export function SubjectMediaLibrarySection({
 
   const handleToggleActive = async (pdf: SubjectPdf) => {
     try {
-      await onToggle(pdf.id, !pdf.isActive);
+      const response = await apiCallForSpaHelper({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}`,
+        method: "PUT",
+        body: { isActive: !pdf.isActive },
+      });
+
+      if (response.data?.success) {
+        await fetchPdfs();
+      }
     } catch (err) {
       console.error("Failed to toggle PDF:", err);
     }
@@ -162,7 +189,14 @@ export function SubjectMediaLibrarySection({
     if (!confirm(t("confirmDelete"))) return;
 
     try {
-      await onDelete(pdf.id);
+      const response = await apiCallForSpaHelper({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}/delete`,
+        method: "DELETE",
+      });
+
+      if (response.data?.success) {
+        await fetchPdfs();
+      }
     } catch (err) {
       console.error("Failed to delete PDF:", err);
     }
@@ -176,8 +210,12 @@ export function SubjectMediaLibrarySection({
     setSelectedPdf(null);
   };
 
+  if (loading && pdfs.length === 0) {
+    return <GlobalLoaderTile message={t("loadingMedia")} />;
+  }
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white border border-gray-200 rounded-lg p-6 mt-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           {t("mediaLibrary")}
@@ -320,13 +358,13 @@ export function SubjectMediaLibrarySection({
           {pdfs.map((pdf) => (
             <div
               key={pdf.id}
-              className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${pdf.isActive
+              className={`flex flex-col p-4 border rounded-lg transition-colors ${pdf.isActive
                 ? "border-green-200 bg-green-50"
                 : "border-gray-200 bg-gray-50"
                 }`}
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div className="shrink-0">
+              <div className="flex items-start gap-4 mb-3">
+                <div className="shrink-0 mt-1">
                   <svg
                     className="w-8 h-8 text-red-500"
                     fill="currentColor"
@@ -339,43 +377,43 @@ export function SubjectMediaLibrarySection({
                     />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 line-clamp-1" title={pdf.name || `PDF #${pdf.id}`}>
-                    {pdf.name || `PDF #${pdf.id}`}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-gray-900 line-clamp-1 break-all" title={pdf.name || `PDF #${pdf.id}`}>
+                      {pdf.name || `PDF #${pdf.id}`}
+                    </h4>
                     {pdf.language && ` [${pdf.language.toUpperCase()}]`}
                     {pdf.language && subject.language && pdf.language !== subject.language && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title={t("languageMismatch")}>
+                      <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title={t("languageMismatch")}>
                         {t("languageMismatch")}
                       </span>
                     )}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {t("uploaded")}: {new Date(pdf.createdAt).toLocaleDateString()}
-                    {pdf.pdfOrder && ` • Order: ${pdf.pdfOrder}`}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 text-xs font-medium rounded ${pdf.isActive
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
-                      }`}
-                  >
-                    {pdf.isActive ? t("active") : t("inactive")}
-                  </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                    <span>{t("uploaded")}: {new Date(pdf.createdAt).toLocaleDateString()}</span>
+                    {pdf.pdfOrder && <span>• Order: {pdf.pdfOrder}</span>}
+                    <span
+                      className={`px-2 py-0.5 text-xs font-medium rounded ${pdf.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                        }`}
+                    >
+                      {pdf.isActive ? t("active") : t("inactive")}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-2 pl-12">
                 <button
                   onClick={() => handleViewPdf(pdf)}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-xs font-medium transition-colors"
                 >
                   {t("view")}
                 </button>
                 <button
                   onClick={() => handleToggleActive(pdf)}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${pdf.isActive
+                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${pdf.isActive
                     ? "bg-orange-50 hover:bg-orange-100 text-orange-700"
                     : "bg-green-50 hover:bg-green-100 text-green-700"
                     }`}
@@ -384,7 +422,7 @@ export function SubjectMediaLibrarySection({
                 </button>
                 <button
                   onClick={() => handleDelete(pdf)}
-                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded text-sm font-medium transition-colors"
+                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded text-xs font-medium transition-colors"
                 >
                   {t("delete")}
                 </button>

@@ -8,6 +8,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager, FileState } from "@google/generative-ai/server";
 import type { TopicEntity } from "../learning/learning.entity";
 import type { TopicCreateInput } from "../learning/learning.inputs";
+import { SystemPromptService } from "../ai-prompt/system-prompt.service";
+import { PromptFlowType } from "../ai-prompt/intelligence.types";
 
 /**
  * TopicService - Manages topics (CRUD, bulk create, PDF metadata, book analysis)
@@ -17,6 +19,7 @@ export class TopicService extends BaseService {
         private readonly repository: TopicRepository,
         private readonly ctx: AuthContext,
         private readonly db: Database,
+        private readonly systemPrompts: SystemPromptService
     ) {
         super();
     }
@@ -221,6 +224,136 @@ export class TopicService extends BaseService {
         } catch (error) {
             this.handleError(error, "analyzeBook");
             return { success: false, error: error instanceof Error ? error.message : "Failed to analyze PDF" };
+        }
+    }
+
+    async generateQuestions(topicId: string, subjectId: string, count: number = 10): Promise<{ success: true; data: { topicId: string; topicName: string; questions: any[]; count: number } } | { success: false; error: string }> {
+        try {
+            // 1. Get Topic Details
+            const topicResult = await this.getDetail(topicId, subjectId);
+            if (!topicResult.success || !topicResult.data) {
+                return { success: false, error: topicResult.error || "Failed to load topic" };
+            }
+            const topic = topicResult.data;
+
+            if (!topic.isActiveAiGeneration) {
+                return { success: false, error: "AI generation is not active for this topic" };
+            }
+
+            // 2. Prepare Variables & Prompt
+            const langMap: Record<string, string> = {
+                az: "Azerbaijani",
+                ru: "Russian",
+                en: "English",
+                tr: "Turkish"
+            };
+
+            let langCode = topic.language;
+            if (!langCode && topic.providerSubjectId) {
+                // Fallback to subject language
+                const subject = await this.db.query.providerSubjects.findFirst({
+                    where: (subjects, { eq }) => eq(subjects.id, topic.providerSubjectId!),
+                    columns: { language: true }
+                });
+                if (subject && subject.language) {
+                    langCode = subject.language;
+                }
+            }
+            langCode = langCode || "en";
+
+            const fullLanguage = langMap[langCode] || langCode;
+
+            const variables = {
+                subjectTitle: "Subject",
+                topicTitle: topic.name,
+                gradeLevel: topic.gradeLevel,
+                complexity: "Medium",
+                locale: fullLanguage,
+                aiCrib: topic.aiAssistantCrib || ""
+            };
+
+            const promptText = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.QUESTION_GENERATION, variables);
+
+            // 3. Call AI Service
+            if (!process.env.GEMINI_API_KEY) return { success: false, error: "AI service not configured" };
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({
+                model: "gemini-3-flash-preview"
+                // gemini-3-flash-preview used as requested
+            });
+
+            const prompt = `${promptText}
+            
+TIMINGS: 
+- Generate EXACTLY ${count} questions.
+- Answer STRICTLY in ${fullLanguage} language.
+- Strictly follow this JSON schema:
+{
+  "questions": [
+    {
+      "questionText": "Question content in ${fullLanguage}",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0, // Index of correct option (0-3)
+      "explanation": "Explanation in ${fullLanguage}",
+      "difficulty": "medium"
+    }
+  ]
+}
+- IMPORTANT: Return ONLY valid JSON. No markdown, no explanations outside JSON.`;
+
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
+
+            // 4. Parse & Validate
+            // Extract JSON from potential markdown code blocks or raw text
+            let jsonString = responseText;
+            const codeBlockMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+            if (codeBlockMatch) {
+                jsonString = codeBlockMatch[1];
+            } else {
+                // Try to find the first '{' or '[' and the last '}' or ']'
+                const firstOpen = responseText.indexOf('{');
+                const firstArray = responseText.indexOf('[');
+                const start = (firstOpen !== -1 && (firstArray === -1 || firstOpen < firstArray)) ? firstOpen : firstArray;
+
+                const lastClose = responseText.lastIndexOf('}');
+                const lastArray = responseText.lastIndexOf(']');
+                const end = (lastClose !== -1 && (lastArray === -1 || lastClose > lastArray)) ? lastClose : lastArray;
+
+                if (start !== -1 && end !== -1) {
+                    jsonString = responseText.substring(start, end + 1);
+                }
+            }
+
+            let parsed;
+            try {
+                parsed = JSON.parse(jsonString);
+            } catch (e) {
+                console.error("Failed to parse AI response:", responseText);
+                return { success: false, error: "Failed to parse AI response. Expected JSON." };
+            }
+
+            const questionsRaw = Array.isArray(parsed) ? parsed : (parsed.questions || []);
+            const questions = questionsRaw.map((q: any) => ({
+                ...q,
+                options: Array.isArray(q.options) ? q.options : [],
+                questionText: q.questionText || q.question || "No question text",
+                correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0
+            }));
+
+            return {
+                success: true,
+                data: {
+                    topicId,
+                    topicName: topic.name || "Unknown Topic",
+                    questions: questions,
+                    count: questions.length
+                }
+            };
+
+        } catch (error) {
+            this.handleError(error, "generateQuestions");
+            return { success: false, error: "Failed to generate questions" };
         }
     }
 }
