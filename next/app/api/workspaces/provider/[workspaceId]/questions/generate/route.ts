@@ -116,7 +116,6 @@ export const POST = unifiedApiHandler(
       const saveResult = await QuestionGenerationService.saveQuestions({
         generatedQuestions,
         accountId,
-        topicName: topic,
         topicId: topic_id || undefined,
         subjectId: subject_id,
         gradeLevel: grade_level,

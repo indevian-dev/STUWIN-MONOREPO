@@ -606,7 +606,6 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                     const saveResult = await QuestionGenerationService.saveQuestions({
                         generatedQuestions: generatedQuestions as any[],
                         accountId,
-                        topicName: topic.name ?? "Untitled Topic",
                         topicId: topic.id ?? undefined,
                         subjectId: topic.providerSubjectId ?? undefined,
                         gradeLevel: topic.gradeLevel ?? undefined,
