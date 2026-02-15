@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 const AuthRegisterWidget = dynamic(() => import('@/app/[locale]/auth/register/(widgets)/AuthRegisterWidget'), {
@@ -20,12 +20,12 @@ export default function AuthRegisterPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: '/api/auth',
         method: 'GET'
       });
 
-      const data = response.data as any;
+      const data = response as any;
       if (data && data.user) {
         // User is already logged in
         router.replace('/workspaces');

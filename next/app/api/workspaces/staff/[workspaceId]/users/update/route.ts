@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
@@ -16,11 +17,7 @@ export const PUT = unifiedApiHandler(async (request: NextRequest, { module }) =>
 
     const parsed = UpdateUserSchema.safeParse(body);
     if (!parsed.success) {
-      const errors = parsed.error.errors.reduce((acc: Record<string, string>, err) => {
-        acc[String(err.path[0] || 'unknown')] = err.message;
-        return acc;
-      }, {} as Record<string, string>);
-      return NextResponse.json({ error: 'Validation failed', errors }, { status: 400 });
+      return errorResponse("Validation failed");
     }
 
     const {
@@ -39,10 +36,7 @@ export const PUT = unifiedApiHandler(async (request: NextRequest, { module }) =>
       : (typeof phone_is_verified === 'boolean' ? phone_is_verified : undefined);
 
     if (typeof nextEmailVerified === 'undefined' && typeof nextPhoneVerified === 'undefined') {
-      return NextResponse.json(
-        { error: 'Nothing to update' },
-        { status: 400 }
-      );
+      return errorResponse("Nothing to update");
     }
 
     const result = await module.auth.updateUserVerification(userId, {
@@ -52,15 +46,12 @@ export const PUT = unifiedApiHandler(async (request: NextRequest, { module }) =>
 
     if (!result.success) {
       const status = result.status || 500;
-      return NextResponse.json({ error: result.error }, { status });
+      return errorResponse(result.error, status);
     }
 
-    return NextResponse.json({
-      success: true,
-      user: result.user
-    }, { status: 200 });
+    return okResponse(result.user);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update user verification';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

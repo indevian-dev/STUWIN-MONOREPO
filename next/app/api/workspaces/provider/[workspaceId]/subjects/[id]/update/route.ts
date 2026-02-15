@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { SubjectUpdateSchema } from "@/lib/domain/learning/learning.inputs";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PUT = unifiedApiHandler(
   async (request, { auth, module, params, log }) => {
@@ -8,10 +8,7 @@ export const PUT = unifiedApiHandler(
       const subjectId = params?.id as string;
 
       if (!subjectId) {
-        return NextResponse.json(
-          { success: false, error: "Invalid subject ID" },
-          { status: 400 },
-        );
+        return errorResponse("Invalid subject ID", 400);
       }
 
       const body = await request.json();
@@ -19,10 +16,7 @@ export const PUT = unifiedApiHandler(
       // Validate with Zod — partial update, all fields optional
       const parsed = SubjectUpdateSchema.safeParse(body);
       if (!parsed.success) {
-        return NextResponse.json({
-          success: false,
-          error: parsed.error.errors[0]?.message || "Validation failed"
-        }, { status: 400 });
+        return errorResponse(parsed.error.errors[0]?.message || "Validation failed", 400);
       }
 
       // Build update object only with fields present in body
@@ -36,22 +30,16 @@ export const PUT = unifiedApiHandler(
       if (body.cover !== undefined) updateData.cover = body.cover;
       if (gradeLevel !== undefined) updateData.gradeLevel = gradeLevel;
       if (language !== undefined) updateData.language = language;
-      if (body.aiAssistantCrib !== undefined) updateData.aiAssistantCrib = body.aiAssistantCrib;
+      if (body.aiGuide !== undefined) updateData.aiGuide = body.aiGuide;
 
       if (Object.keys(updateData).length === 0) {
-        return NextResponse.json(
-          { success: false, error: "No fields to update" },
-          { status: 400 },
-        );
+        return errorResponse("No fields to update", 400);
       }
 
       const result = await module.subject.update(subjectId, updateData);
 
       if (!result.success) {
-        return NextResponse.json(
-          { success: false, error: result.error || "Failed to update subject" },
-          { status: result.error === "Subject not found" ? 404 : 500 },
-        );
+        return errorResponse(result.error || "Failed to update subject", result.error === "Subject not found" ? 404 : 500);
       }
 
       log.info("Subject updated successfully", {
@@ -60,20 +48,10 @@ export const PUT = unifiedApiHandler(
         updates: Object.keys(updateData),
       });
 
-      return NextResponse.json({
-        success: true,
-        data: result.data,
-        message: "Subject updated successfully",
-      });
+      return okResponse(result.data, "Subject updated successfully");
     } catch (error) {
       log.error("Failed to update subject", error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : "Failed to update subject",
-        },
-        { status: 500 },
-      );
+      return serverErrorResponse(error instanceof Error ? error.message : "Failed to update subject");
     }
   },
   {

@@ -22,7 +22,10 @@ export namespace Question {
         explanationGuide?: ExplanationGuide;
         authorAccountId: string;
         isPublished: boolean;
-        aiAssistantCrib?: string;
+        aiGuide?: string;
+        visualData?: Record<string, unknown> | null;
+        subjectTitle?: string;
+        topicTitle?: string;
     }
 
     /** What a Student sees during a quiz: no correct answer exposed */
@@ -46,7 +49,7 @@ export namespace Question {
         topic?: string;
         language?: string;
         explanationGuide?: ExplanationGuide;
-        aiAssistantCrib?: string;
+        aiGuide?: string;
     }
 
     export interface UpdateInput extends Partial<CreateInput> { }

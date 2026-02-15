@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/student/[workspaceId]/homeworks/create
@@ -12,7 +13,7 @@ export const POST = unifiedApiHandler(
       const { title, description, topicId, media, textContent } = body;
 
       if (!title) {
-        return NextResponse.json({ error: "title is required" }, { status: 400 });
+        return errorResponse("title is required", 400);
       }
 
       log.info('Creating homework', { accountId: auth.accountId, title });
@@ -28,19 +29,13 @@ export const POST = unifiedApiHandler(
 
       if (!result.success || !result.data) {
         log.error("Failed to create homework", { error: result.error });
-        return NextResponse.json({ error: result.error || "Failed to create homework" }, { status: 500 });
+        return serverErrorResponse(result.error || "Failed to create homework");
       }
 
-      return NextResponse.json(
-        {
-          success: true,
-          homework: result.data,
-        },
-        { status: 201 },
-      );
+      return createdResponse({ success: true, homework: result.data,  });
     } catch (error) {
       log.error("POST homework error", error);
-      return NextResponse.json({ error: "Failed to create homework" }, { status: 500 });
+      return serverErrorResponse("Failed to create homework");
     }
   },
 );

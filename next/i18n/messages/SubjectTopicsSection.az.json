@@ -2,6 +2,7 @@
   "topics": "Mövzular",
   "totalTopics": "Cəmi Mövzular",
   "noTopics": "Mövzu mövcud deyil",
+  "loadingTopics": "Mövzular yüklənir...",
   "noTopicsDescription": "Bu fənnin hələ heç bir mövzusu yoxdur",
   "moveUp": "Yuxarı köçür",
   "moveDown": "Aşağı köçür",
@@ -28,6 +29,6 @@
   "languageMismatch": "Dil uyğunsuzluğu",
   "gradeMismatch": "Sinif uyğunsuzluğu",
   "showQuestions": "Suallar",
-  "manageCrib": "Crib idarəsi",
+  "manageAiGuide": "AI Bələdçi idarəsi",
   "questions": "Suallar"
 }

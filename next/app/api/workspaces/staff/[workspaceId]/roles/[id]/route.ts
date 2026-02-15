@@ -1,24 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
   try {
     const { id } = params || {};
 
     if (!id) {
-      return NextResponse.json({ error: 'Role ID is required' }, { status: 400 });
+      return errorResponse("Role ID is required");
     }
 
     const result = await module.roles.getRole(id);
 
     if (!result.success) {
       const status = result.status || 500;
-      return NextResponse.json({ error: result.error }, { status });
+      return errorResponse(result.error, status);
     }
 
-    return NextResponse.json({ role: result.role }, { status: 200 });
+    return okResponse(result.role);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch role';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

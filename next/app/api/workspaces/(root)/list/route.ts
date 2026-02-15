@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════════════════════════
 // Returns all workspaces accessible to the authenticated user
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/list
@@ -45,23 +45,10 @@ export const GET = unifiedApiHandler(async (request, { auth, module }) => {
       };
     });
 
-    return NextResponse.json({
-      success: true,
-      data: workspacesList,
-      total: workspacesList.length
-    });
+    return okResponse({ workspaces: workspacesList, total: workspacesList.length });
   } catch (error) {
     console.error('Error fetching workspaces:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'FETCH_WORKSPACES_FAILED',
-          message: error instanceof Error ? error.message : 'Failed to fetch workspaces',
-        },
-      },
-      { status: 500 }
-    );
+    return serverErrorResponse(error instanceof Error ? error.message : 'Failed to fetch workspaces');
   }
 },
   {

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiCheckCircleFill, PiCrownBold, PiArrowsClockwiseBold, PiCheckBold, PiReceiptBold, PiStudentBold, PiBuildingsBold } from 'react-icons/pi';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
 export function SubscriptionManagementClient() {
@@ -24,7 +24,7 @@ export function SubscriptionManagementClient() {
         const fetchData = async () => {
             try {
                 // Fetch Subscriptions (Enrolled Providers)
-                const subsRes = await apiCallForSpaHelper({
+                const subsRes = await apiCall<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/subscriptions`
                 });
@@ -34,7 +34,7 @@ export function SubscriptionManagementClient() {
                 }
 
                 // Fetch Transactions
-                const transRes = await apiCallForSpaHelper({
+                const transRes = await apiCall<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/transactions`
                 });

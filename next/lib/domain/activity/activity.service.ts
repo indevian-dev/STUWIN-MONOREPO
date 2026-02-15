@@ -783,13 +783,13 @@ CONTEXT: This is a ${contextType} session.
 
         // 1. Question Crib
         if (params.questionId) {
-            const q = await this.db.select({ crib: questionsTable.aiAssistantCrib }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            const q = await this.db.select({ crib: questionsTable.aiGuide }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
             if (q[0]?.crib) cribs.push(q[0].crib);
         }
 
         // 2. Homework Crib
         if (params.homeworkId) {
-            const h = await this.db.select({ crib: studentHomeworks.aiAssistantCrib }).from(studentHomeworks).where(eq(studentHomeworks.id, params.homeworkId)).limit(1);
+            const h = await this.db.select({ crib: studentHomeworks.aiGuide }).from(studentHomeworks).where(eq(studentHomeworks.id, params.homeworkId)).limit(1);
             if (h[0]?.crib) cribs.push(h[0].crib);
         }
 
@@ -806,14 +806,14 @@ CONTEXT: This is a ${contextType} session.
         }
 
         if (topicId) {
-            const t = await this.db.select({ crib: providerSubjectTopics.aiAssistantCrib, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
+            const t = await this.db.select({ crib: providerSubjectTopics.aiGuide, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
             if (t[0]?.crib) cribs.push(t[0].crib);
             if (!subjectId) subjectId = t[0]?.sid || undefined;
         }
 
         // 4. Subject Crib
         if (subjectId) {
-            const s = await this.db.select({ crib: providerSubjects.aiAssistantCrib }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
+            const s = await this.db.select({ crib: providerSubjects.aiGuide }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
             if (s[0]?.crib) cribs.push(s[0].crib);
         }
 

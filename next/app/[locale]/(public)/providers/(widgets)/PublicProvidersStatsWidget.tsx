@@ -9,7 +9,7 @@ import {
   FiMapPin,
   FiCheckCircle
 } from 'react-icons/fi';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface ProvidersStats {
@@ -29,13 +29,13 @@ export function PublicProvidersStatsWidget() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: '/api/providers/stats'
         });
 
-        if (response.status === 200) {
-          setStats(response.data);
+        if (true) { // apiCall ensures success
+          setStats(response);
         }
       } catch (error) {
         ConsoleLogger.error('Error fetching Providers stats:', error);

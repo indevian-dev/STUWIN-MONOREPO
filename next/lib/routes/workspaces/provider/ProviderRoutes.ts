@@ -35,6 +35,7 @@ export const PERMISSIONS = {
   PROVIDER_QUESTION_MEDIA_UPLOAD: "Upload question media files",
   PROVIDER_QUESTION_MEDIA_DELETE: "Delete question media files",
   PROVIDER_QUESTION_GENERATE: "Generate questions with AI",
+  PROVIDER_QUESTION_VISUAL_GENERATE: "Generate 3D/2D visuals for questions",
   PROVIDER_QUESTION_SUBMIT: "Submit questions for review",
 
   PROVIDER_QUIZ_READ: "View quizzes",
@@ -120,9 +121,8 @@ export const providerEndpoints: EndpointsMap = {
 
   // Organization Details
   "/workspaces/provider/:workspaceId/organization": createProviderEndpoint({ method: "GET", authRequired: true, permission: "PROVIDER_ORG_READ", type: "page" }),
-  "/workspaces/provider/:workspaceId/organization/edit": createProviderEndpoint({ method: "GET", authRequired: true, permission: "PROVIDER_ORG_UPDATE", type: "page" }),
   "/api/workspaces/provider/:workspaceId/organization": createProviderEndpoint({ method: "GET", authRequired: true, permission: "PROVIDER_ORG_READ", type: "api" }),
-  "/api/workspaces/provider/:workspaceId/organization/update": createProviderEndpoint({ method: "PUT", authRequired: true, permission: "PROVIDER_ORG_UPDATE", type: "api" }),
+  "/api/workspaces/provider/:workspaceId/organization/update": createProviderEndpoint({ method: "PUT", authRequired: true, permission: "PROVIDER_ORG_UPDATE", twoFactorAuth: true, twoFactorAuthType: "email", type: "api" }),
   "/api/workspaces/provider/:workspaceId/organization/media/upload": createProviderEndpoint({ method: "POST", authRequired: true, permission: "PROVIDER_ORG_MEDIA_UPLOAD", type: "api" }),
   "/api/workspaces/provider/:workspaceId/organization/media/delete/:id": createProviderEndpoint({ method: "DELETE", authRequired: true, permission: "PROVIDER_ORG_MEDIA_DELETE", type: "api" }),
 
@@ -571,6 +571,24 @@ export const providerEndpoints: EndpointsMap = {
   "/api/workspaces/provider/:workspaceId/questions/queue": createProviderEndpoint({
     method: "POST",
     authRequired: false,
+    type: "api",
+  }),
+  "/api/workspaces/provider/:workspaceId/questions/:id/generate-visual": createProviderEndpoint({
+    method: "POST",
+    authRequired: true,
+    permission: "PROVIDER_QUESTION_GENERATE",
+    type: "api",
+  }),
+  "/api/workspaces/provider/:workspaceId/questions/:id/visual": createProviderEndpoint({
+    method: "GET",
+    authRequired: true,
+    permission: "PROVIDER_QUESTION_READ",
+    type: "api",
+  }),
+  "/api/workspaces/provider/:workspaceId/questions/:id/visual/save": createProviderEndpoint({
+    method: "PUT",
+    authRequired: true,
+    permission: "PROVIDER_QUESTION_GENERATE",
     type: "api",
   }),
 

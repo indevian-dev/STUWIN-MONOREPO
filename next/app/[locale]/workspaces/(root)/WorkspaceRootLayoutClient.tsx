@@ -14,7 +14,7 @@ import { LuUser } from 'react-icons/lu';
 import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
 import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
 import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
-import type { DomainNavConfig } from '@/types';
+import type { DomainNavConfig } from '@stuwin/shared/types';
 
 interface WorkspaceRootLayoutClientProps {
     children: ReactNode;

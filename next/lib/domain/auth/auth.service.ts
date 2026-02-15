@@ -4,8 +4,7 @@ import { BaseService } from "@/lib/domain/base/base.service";
 import { verifyPassword, validatePassword, hashPassword } from "@/lib/domain/auth/password.util";
 import { cleanPhoneNumber, validateAzerbaijanPhone } from "@/lib/utils/formatting/PhoneFormatterUtil";
 import { generateSlimId } from "@/lib/utils/ids/SlimUlidUtil";
-import { SessionAuthenticator } from "@/lib/middleware/authenticators/SessionAuthenticator";
-import { v4 as uuidv4 } from "uuid";
+import { SessionStore } from "@/lib/middleware/authenticators/SessionStore";
 import type { AuthContext } from "@/lib/domain/base/types";
 import { OtpService } from "./otp.service";
 import type { OtpType } from "./otp.types";
@@ -97,13 +96,19 @@ export class AuthService extends BaseService {
                 };
             }
 
-            // Create a session in the database
-            const session = await SessionAuthenticator.createSession({
+            // Create a Redis session
+            const session = await SessionStore.create({
                 accountId: account.id,
-                sessionsGroupId: user.sessionsGroupId || uuidv4(),
-                userAgent: params.deviceInfo?.userAgent || "unknown",
-                ip: params.ip || "0.0.0.0",
-                // metadata: { ...params.deviceInfo }
+                userId: user.id,
+                email: user.email,
+                firstName: user.firstName || null,
+                lastName: user.lastName || null,
+                emailVerified: user.emailIsVerified ?? false,
+                phoneVerified: user.phoneIsVerified ?? false,
+                meta: {
+                    ip: params.ip || "0.0.0.0",
+                    userAgent: params.deviceInfo?.userAgent || "unknown",
+                },
             });
 
             if (!session) {
@@ -128,7 +133,6 @@ export class AuthService extends BaseService {
                 data: {
                     message: "Logged in successfully",
                     session: session.sessionId,
-                    expireAt: session.expireAt,
                 },
             };
         } catch (error) {
@@ -187,15 +191,12 @@ export class AuthService extends BaseService {
             const userId = generateSlimId();
             const accountId = generateSlimId();
             const workspaceId = generateSlimId();
-            const sessionsGroupId = generateSlimId();
-
             const { user, account } = await this.repository.createUserWithAccount({
                 id: userId,
                 email,
                 phone: cleanedPhone,
                 firstName,
                 passwordHash: hashedPassword,
-                sessionsGroupId,
                 accountId,
                 workspaceId
             });
@@ -212,12 +213,19 @@ export class AuthService extends BaseService {
                 ttlMinutes: otpExpireMinutes,
             });
 
-            // 6. Session Creation
-            const sessionResult = await SessionAuthenticator.createSession({
+            // 6. Session Creation (Redis)
+            const sessionResult = await SessionStore.create({
                 accountId: account.id,
-                sessionsGroupId,
-                ip: params.ip || "0.0.0.0",
-                userAgent: params.userAgent || "unknown",
+                userId: user.id,
+                email: user.email,
+                firstName: user.firstName || null,
+                lastName: user.lastName || null,
+                emailVerified: false,
+                phoneVerified: false,
+                meta: {
+                    ip: params.ip || "0.0.0.0",
+                    userAgent: params.userAgent || "unknown",
+                },
             });
 
             if (!sessionResult) {
@@ -235,7 +243,6 @@ export class AuthService extends BaseService {
                     account,
                     session: {
                         id: sessionResult.sessionId,
-                        expires_at: sessionResult.expireAt,
                     },
                     verificationSent: {
                         email: otpResult.emailSent,
@@ -369,6 +376,47 @@ export class AuthService extends BaseService {
         } catch (error) {
             console.error("[AuthService] requestVerificationCode error:", error);
             return { success: false, error: "Failed to process verification request", status: 500 };
+        }
+    }
+
+    /**
+     * Validate a 2FA OTP code.
+     * Uses OTP type '2fa' (matching how requestVerificationCode issues 2FA OTPs).
+     * Does NOT update user verification status — purely for session-level 2FA.
+     */
+    async validate2FA(params: {
+        accountId: string;
+        code: string;
+    }): Promise<AuthResult> {
+        try {
+            const { accountId, code } = params;
+            const otpStr = String(code).trim();
+
+            if (!/^\d{6}$/.test(otpStr)) {
+                return { success: false, error: "OTP must be a 6-digit number", status: 400 };
+            }
+
+            const otpRecord = await this.otpService.getValid({
+                accountId,
+                type: '2fa' as OtpType,
+                code: otpStr,
+            });
+
+            if (!otpRecord) {
+                return { success: false, error: "Invalid or expired OTP", status: 400 };
+            }
+
+            // Consume the OTP so it can't be reused
+            await this.otpService.consume(otpRecord.id);
+
+            return {
+                success: true,
+                status: 200,
+                data: { verified: true, message: "Two-factor authentication verified successfully" }
+            };
+        } catch (error) {
+            this.handleError(error, "AuthService.validate2FA");
+            return { success: false, error: "Failed to validate 2FA code", status: 500 };
         }
     }
 

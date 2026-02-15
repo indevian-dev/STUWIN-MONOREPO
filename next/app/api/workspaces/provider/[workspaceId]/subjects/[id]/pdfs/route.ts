@@ -1,28 +1,19 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json(
-      { success: false, error: "Invalid subject ID" },
-      { status: 400 },
-    );
+    return errorResponse("Invalid subject ID", 400);
   }
 
   const result = await module.subject.getPdfs(id);
 
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, error: result.error || "Failed to fetch subject PDFs" },
-      { status: 500 },
-    );
+    return serverErrorResponse(result.error || "Failed to fetch subject PDFs");
   }
 
-  return NextResponse.json({
-    success: true,
-    data: result.data,
-  });
+  return okResponse(result.data);
 });

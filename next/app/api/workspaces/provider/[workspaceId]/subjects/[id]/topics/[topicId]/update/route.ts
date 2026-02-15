@@ -1,16 +1,13 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PUT = unifiedApiHandler(async (request, { module, params, isValidSlimId, log, auth }) => {
   const subjectId = params?.id as string;
   const topicId = params?.topicId as string;
 
   if (!subjectId || !topicId || !isValidSlimId(subjectId) || !isValidSlimId(topicId)) {
-    return NextResponse.json(
-      { success: false, error: "Invalid subject ID or topic ID" },
-      { status: 400 },
-    );
+    return errorResponse("Invalid subject ID or topic ID", 400);
   }
 
   try {
@@ -44,17 +41,14 @@ export const PUT = unifiedApiHandler(async (request, { module, params, isValidSl
     if (body.isActiveAiGeneration !== undefined) {
       updateData.isActiveAiGeneration = body.isActiveAiGeneration;
     }
-    if (body.aiAssistantCrib !== undefined) {
-      updateData.aiAssistantCrib = body.aiAssistantCrib;
+    if (body.aiGuide !== undefined) {
+      updateData.aiGuide = body.aiGuide;
     }
 
     const result = await module.topic.update(topicId, updateData);
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error || "Failed to update topic" },
-        { status: 500 }
-      );
+      return serverErrorResponse(result.error || "Failed to update topic");
     }
 
     log.info("Topic updated successfully", {
@@ -64,10 +58,7 @@ export const PUT = unifiedApiHandler(async (request, { module, params, isValidSl
       updatedFields: Object.keys(updateData),
     });
 
-    return NextResponse.json({
-      success: true,
-      data: result.data,
-    });
+    return okResponse(result.data);
   } catch (error: any) {
     log.error("Failed to update topic", {
       error: error.message,
@@ -77,12 +68,6 @@ export const PUT = unifiedApiHandler(async (request, { module, params, isValidSl
       accountId: auth.accountId,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to update topic",
-      },
-      { status: 500 },
-    );
+    return serverErrorResponse("Failed to update topic");
   }
 });

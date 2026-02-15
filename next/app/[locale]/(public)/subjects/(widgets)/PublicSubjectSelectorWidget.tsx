@@ -5,7 +5,7 @@ import React, {
   useState,
   useEffect
 } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useTranslations } from 'next-intl';
 import { GlobalSelectWidget } from '@/app/[locale]/(global)/(widgets)/GlobalSelectWidget';
 
@@ -29,17 +29,13 @@ export function PublicSubjectSelectorWidget({ onSubjectChange }: PublicSubjectSe
   useEffect(() => {
     async function fetchSubjects() {
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: '/api/subjects'
         });
 
-        if (response.status !== 200) {
-          ConsoleLogger.log(response.status);
-          throw new Error('Failed to fetch subjects');
-        }
-
-        const subjects = response.data.subjects as Subject[];
+        // apiCall throws on error — no manual status check needed
+        const subjects = response.subjects as Subject[];
         ConsoleLogger.log(subjects);
 
         const buildHierarchy = (arr: Subject[], parentId: string | null = null): Subject[] => arr

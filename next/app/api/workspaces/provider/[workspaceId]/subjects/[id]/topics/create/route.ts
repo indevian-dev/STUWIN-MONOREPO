@@ -1,12 +1,12 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ success: false, error: "Invalid Subject ID" }, { status: 400 });
+    return errorResponse("Invalid Subject ID", 400);
   }
   const subjectId = id as string;
 
@@ -14,18 +14,14 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
   const { topics } = body;
 
   if (!Array.isArray(topics) || topics.length === 0) {
-    return NextResponse.json({ success: false, error: "No topics provided" }, { status: 400 });
+    return errorResponse("No topics provided", 400);
   }
 
   const result = await module.topic.bulkCreate(subjectId, topics);
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ success: false, error: result.error || "Failed to create topics" }, { status: 500 });
+    return serverErrorResponse(result.error || "Failed to create topics");
   }
 
-  return NextResponse.json({
-    success: true,
-    message: `Successfully created ${result.data.length} topics`,
-    data: result.data
-  });
+  return okResponse(result.data, `Successfully created ${result.data.length} topics`);
 });

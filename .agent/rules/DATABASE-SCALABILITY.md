@@ -36,3 +36,39 @@
 - **NEVER** perform cross-workspace joins in user-facing queries
 - **USE** `Soft Delete` (`deletedAt` column) for critical user data unless told otherwise
 - **USE** snake_case for database column names, camelCase for TypeScript properties
+
+## Search Database (Neon + ParadeDB)
+
+### Architecture
+| Layer | Technology |
+|---|---|
+| Search Database | Neon PostgreSQL |
+| Search Extension | ParadeDB `pg_search` (BM25 indexing) |
+| Data Format | Single JSONB column (`data`) per entity |
+| Sync Mechanism | FDW trigger (`to_jsonb(NEW)`) — Supabase → Neon |
+| Driver | `postgres-js` via `paradeDbClient` |
+
+### Key Files
+| File | Definition |
+|---|---|
+| `next/lib/integrations/paradedb/paradedb.client.ts` | Neon connection client |
+| `next/lib/domain/search/search.repository.ts` | BM25 search + JSONB filtered queries |
+| `next/lib/domain/search/search.service.ts` | Search business logic |
+| `.ai-files/supabase-fdw-sync.sql` | FDW setup SQL (run on Supabase) |
+| `.ai-files/paradedb-setup.sql` | Neon table + BM25 index SQL |
+
+### FDW Auto-Sync Flow
+```
+Supabase: INSERT/UPDATE/DELETE on provider_questions
+    → AFTER trigger: sync_question_to_neon()
+    → to_jsonb(NEW) captures ALL columns as snake_case JSONB
+    → FDW writes to Neon's search_questions via foreign table
+```
+
+### Rules
+- **NEVER** sync via app code — FDW trigger handles all sync automatically
+- **ALWAYS** use snake_case for JSONB field references (matches `to_jsonb` output)
+- **ALWAYS** scope search queries by `workspace_id`
+- **ALWAYS** include a Supabase fallback when querying Neon (in case of outage)
+- **ENV** `SEARCH_DATABASE_URL` connects to Neon (direct, not pooler)
+

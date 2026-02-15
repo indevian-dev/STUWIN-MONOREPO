@@ -1,6 +1,6 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/programs
@@ -28,27 +28,15 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
         });
 
         if (!result.success || !result.data) {
-            return NextResponse.json({
-                success: false,
-                error: result.error || "Failed to fetch programs"
-            }, { status: 500 });
+            return serverErrorResponse(result.error || "Failed to fetch programs");
         }
 
         const { data, total } = result.data;
 
-        return NextResponse.json({
-            success: true,
-            programs: data,
-            total,
-            page,
-            pageSize,
-        });
+        return okResponse({ success: true, programs: data, total, page, pageSize,  });
     } catch (error) {
         console.error('Error in programs API:', error);
-        return NextResponse.json({
-            success: false,
-            error: error instanceof Error ? error.message : 'Internal server error',
-        }, { status: 500 });
+        return serverErrorResponse(error instanceof Error ? error.message : 'Internal server error',);
     }
 }, {
     authRequired: false,

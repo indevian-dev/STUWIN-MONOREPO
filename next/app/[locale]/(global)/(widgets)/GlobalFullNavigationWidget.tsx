@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import { Link, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { DomainNavConfig, MenuGroup, NavItem, MenuDisplayMode } from '@/types';
+import { DomainNavConfig, MenuGroup, NavItem, MenuDisplayMode } from '@stuwin/shared/types';
 import { GlobalProfileWidget } from '@/app/[locale]/(global)/(widgets)/GlobalProfileWidget';
 import { GlobalLangSwitcherTile } from '@/app/[locale]/(global)/(tiles)/GlobalLangSwitcherTile';
 import { GlobalThemeSwitcherTile } from '@/app/[locale]/(global)/(tiles)/GlobalThemeSwitcherTile';

@@ -1,28 +1,19 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { id, topicId } = await params;
 
   if (!id || !topicId) {
-    return NextResponse.json(
-      { success: false, error: "Invalid subject ID or topic ID" },
-      { status: 400 },
-    );
+    return errorResponse("Invalid subject ID or topic ID", 400);
   }
 
   const result = await module.topic.getDetail(topicId, id);
 
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, error: result.error || "Failed to fetch topic" },
-      { status: result.error === "Topic not found" ? 404 : 500 },
-    );
+    return errorResponse(result.error || "Failed to fetch topic", result.error === "Topic not found" ? 404 : 500);
   }
 
-  return NextResponse.json({
-    success: true,
-    data: result.data,
-  });
+  return okResponse(result.data);
 });

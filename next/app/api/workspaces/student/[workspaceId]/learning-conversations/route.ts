@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/student/[workspaceId]/learning-conversations
@@ -17,33 +18,25 @@ export const GET = unifiedApiHandler(
         const result = await module.aiSession.getById(conversationId);
 
         if (!result.success || !result.data) {
-          return NextResponse.json({ error: result.error ?? "Conversation not found" }, { status: 404 });
+          return errorResponse(result.error ?? "Conversation not found", 404);
         }
 
         const conversation = result.data as any;
 
         // Access control: Ensure the conversation belongs to the student
         if (conversation.studentAccountId !== auth.accountId) {
-          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+          return errorResponse("Access denied", 403, "FORBIDDEN");
         }
 
-        return NextResponse.json({
-          id: conversation.id.toString(),
-          status: conversation.status,
-          rootQuestion: conversation.rootQuestion,
-          messages: conversation.digests, // Using digests for the new UI
-          branchCount: conversation.branchCount,
-          messageCount: conversation.messageCount,
-          createdAt: conversation.createdAt,
-          updatedAt: conversation.updatedAt,
-        });
+        return okResponse({ id: conversation.id.toString(), status: conversation.status, rootQuestion: conversation.rootQuestion, messages: conversation.digests, // Using digests for the new UI
+          branchCount: conversation.branchCount, messageCount: conversation.messageCount, createdAt: conversation.createdAt, updatedAt: conversation.updatedAt });
       }
 
       // List conversations
       const result = await module.aiSession.list(auth.accountId, status);
 
       if (!result.success || !result.data) {
-        return NextResponse.json({ error: result.error ?? "Failed to fetch list" }, { status: 500 });
+        return serverErrorResponse(result.error ?? "Failed to fetch list");
       }
 
       const conversations = result.data as any[];
@@ -59,15 +52,12 @@ export const GET = unifiedApiHandler(
         updatedAt: conv.updatedAt,
       }));
 
-      return NextResponse.json({
-        data: responses,
-        pagination: {
+      return okResponse({ data: responses, pagination: {
           total: conversations.length,
-        },
-      });
+        } });
     } catch (error) {
       log.error("GET learning conversations error", error);
-      return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 });
+      return serverErrorResponse("Failed to fetch conversations");
     }
   },
 );

@@ -1,29 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 
 export const DELETE = unifiedApiHandler(async (request: NextRequest, { params, authData, module, log }) => {
     if (!params) {
-        return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+        return errorResponse("Missing parameters");
     }
     const { id } = await params;
     if (!id) {
-        return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
+        return errorResponse("Invalid blog ID");
     }
 
     try {
         if (!authData) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
         }
 
         const deletedBlog = await module.content.contentRepo.deleteBlog(id);
 
         if (!deletedBlog) {
-            return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
+            return errorResponse("Blog not found", 404, "NOT_FOUND");
         }
-        return NextResponse.json({ message: 'Blog deleted successfully' }, { status: 200 });
+        return messageResponse("Blog deleted successfully");
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to delete blog';
         if (log) log.error("Failed to delete blog", error);
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return serverErrorResponse(errorMessage);
     }
 });

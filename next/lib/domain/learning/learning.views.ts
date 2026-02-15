@@ -25,7 +25,7 @@ export interface SubjectProviderView {
     slug: string | null;
     isActive: boolean | null;
     aiLabel: string | null;
-    aiAssistantCrib: string | null;
+    aiGuide: string | null;
     language: string | null;
     gradeLevel: number | null;
     totalQuestions: number;
@@ -72,7 +72,7 @@ export interface SubjectStaffView {
     slug: string | null;
     isActive: boolean | null;
     aiLabel: string | null;
-    aiAssistantCrib: string | null;
+    aiGuide: string | null;
     language: string | null;
     gradeLevel: number | null;
     workspaceId: string | null;
@@ -105,7 +105,7 @@ export interface TopicProviderView {
     aiSummary: string | null;
     isActiveAiGeneration: boolean | null;
     workspaceId: string;
-    aiAssistantCrib: string | null;
+    aiGuide: string | null;
     pdfDetails: TopicEntity['pdfDetails'];
     questionsStats: TopicEntity['questionsStats'];
 
@@ -149,7 +149,7 @@ export interface QuestionProviderView {
     language: string | null;
     providerSubjectTopicId: string | null;
     isPublished: boolean | null;
-    aiAssistantCrib: string | null;
+    aiGuide: string | null;
     createdAt: Date;
     updatedAt: Date | null;
 }

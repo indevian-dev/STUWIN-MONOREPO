@@ -1,19 +1,19 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const DELETE = unifiedApiHandler(async (request, { module, params, auth }) => {
   const id = params?.id;
 
   if (!id) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    return errorResponse("Invalid ID", 400);
   }
 
   const result = await module.question.delete(id);
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ error: result.error || "Question not found" }, { status: 404 });
+    return errorResponse(result.error || "Question not found", 404);
   }
 
   const deletedQuestion = result.data;
@@ -40,9 +40,5 @@ export const DELETE = unifiedApiHandler(async (request, { module, params, auth }
     }
   }
 
-  return NextResponse.json({
-    operation: 'success',
-    message: 'Question deleted successfully',
-    deletedQuestionId: id
-  }, { status: 200 });
+  return okResponse({ operation: 'success', deletedQuestionId: id }, 'Question deleted successfully');
 });

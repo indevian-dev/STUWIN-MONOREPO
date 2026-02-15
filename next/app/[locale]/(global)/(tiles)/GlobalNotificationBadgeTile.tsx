@@ -52,8 +52,9 @@ export function GlobalNotificationBadgeTile({ className = "" }: GlobalNotificati
       });
 
       if (response.status === 200) {
-        setUnreadCount(response.data.unread_count);
-        setRecentNotifications(response.data.notifications.slice(0, 3));
+        const payload = response.data?.data;
+        setUnreadCount(payload?.unread_count ?? 0);
+        setRecentNotifications((payload?.notifications ?? []).slice(0, 3));
       }
     } catch (error) {
       ConsoleLogger.error('Error fetching notification summary:', error);

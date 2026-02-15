@@ -2,6 +2,7 @@
   "topics": "Topics",
   "totalTopics": "Total Topics",
   "noTopics": "No topics available",
+  "loadingTopics": "Loading topics...",
   "noTopicsDescription": "This subject doesn't have any topics yet",
   "moveUp": "Move up",
   "moveDown": "Move down",
@@ -28,5 +29,5 @@
   "languageMismatch": "Language Mismatch",
   "gradeMismatch": "Grade Mismatch",
   "showQuestions": "Show Questions",
-  "manageCrib": "Manage Crib"
+  "manageAiGuide": "Manage AI Guide"
 }

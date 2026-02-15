@@ -5,7 +5,7 @@ import {
     useEffect,
     ReactNode
 } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface ModalProps {
@@ -66,11 +66,9 @@ export function StaffSubjectFiltersEditWidget({ subjectId }: StaffSubjectFilters
 
     const fetchFilters = async () => {
         try {
-            const response = await apiCallForSpaHelper({ method: 'GET', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters', params: {}, body: {} });
+            const response = await apiCall<any>({ method: 'GET', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters', params: {}, body: {} });
 
-            if (response.status === 200) {
-                setFilters(response.data.filters);
-            }
+            setFilters(response.filters);
         } catch (error) {
             ConsoleLogger.error('Error fetching filters:', error instanceof Error ? error.message : String(error));
         }
@@ -78,13 +76,11 @@ export function StaffSubjectFiltersEditWidget({ subjectId }: StaffSubjectFilters
 
     const addFilter = async () => {
         try {
-            const response = await apiCallForSpaHelper({ method: 'POST', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/create', params: {}, body: { title: newFilterTitle, title_en: newFilterTitleEn, title_ru: newFilterTitleRu, type: filterType } });
+            await apiCall<any>({ method: 'POST', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/create', params: {}, body: { title: newFilterTitle, title_en: newFilterTitleEn, title_ru: newFilterTitleRu, type: filterType } });
 
-            if (response.status === 200) {
-                setNewFilterTitle('');
-                setFilterType('DYNAMIC');
-                fetchFilters();
-            }
+            setNewFilterTitle('');
+            setFilterType('DYNAMIC');
+            fetchFilters();
         } catch (error) {
             ConsoleLogger.error('Error adding filter:', error instanceof Error ? error.message : String(error));
         }
@@ -92,11 +88,9 @@ export function StaffSubjectFiltersEditWidget({ subjectId }: StaffSubjectFilters
 
     const deleteFilter = async (filterId: number) => {
         try {
-            const response = await apiCallForSpaHelper({ method: 'DELETE', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + filterId + '/delete', params: {}, body: {} });
+            await apiCall<any>({ method: 'DELETE', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + filterId + '/delete', params: {}, body: {} });
 
-            if (response.status === 200) {
-                fetchFilters(); // Refresh the filters list after deletion
-            }
+            fetchFilters(); // Refresh the filters list after deletion
         } catch (error) {
             ConsoleLogger.error('Error deleting filter:', error instanceof Error ? error.message : String(error));
         }
@@ -104,12 +98,10 @@ export function StaffSubjectFiltersEditWidget({ subjectId }: StaffSubjectFilters
 
     const addOption = async () => {
         try {
-            const response = await apiCallForSpaHelper({ method: 'POST', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + selectedFilterId + '/options/create', params: {}, body: { title: newOptionTitle, title_en: newOptionTitleEn, title_ru: newOptionTitleRu } });
+            await apiCall<any>({ method: 'POST', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + selectedFilterId + '/options/create', params: {}, body: { title: newOptionTitle, title_en: newOptionTitleEn, title_ru: newOptionTitleRu } });
 
-            if (response.status === 200) {
-                setNewOptionTitle('');
-                fetchFilters();
-            }
+            setNewOptionTitle('');
+            fetchFilters();
         } catch (error) {
             ConsoleLogger.error('Error adding option:', error instanceof Error ? error.message : String(error));
         }
@@ -117,11 +109,9 @@ export function StaffSubjectFiltersEditWidget({ subjectId }: StaffSubjectFilters
 
     const deleteOption = async (optionId: number) => {
         try {
-            const response = await apiCallForSpaHelper({ method: 'DELETE', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + selectedFilterId + '/options/' + optionId + '/delete', params: {}, body: {} });
+            await apiCall<any>({ method: 'DELETE', url: '/api/workspaces/staff/subjects/' + subjectId + '/filters/' + selectedFilterId + '/options/' + optionId + '/delete', params: {}, body: {} });
 
-            if (response.status === 200) {
-                fetchFilters(); // Refresh the filters list to reflect the deleted option
-            }
+            fetchFilters(); // Refresh the filters list to reflect the deleted option
         } catch (error) {
             ConsoleLogger.error('Error deleting option:', error instanceof Error ? error.message : String(error));
         }

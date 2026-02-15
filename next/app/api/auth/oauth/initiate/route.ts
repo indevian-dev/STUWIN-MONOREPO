@@ -1,16 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { headers } from "next/headers";
 import crypto from "crypto";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (req: NextRequest) => {
   try {
     const { provider } = await req.json();
     if (!provider) {
-      return NextResponse.json(
-        { error: "Provider is required" },
-        { status: 400 },
-      );
+      return errorResponse("Provider is required", 400);
     }
 
     // Define provider-specific configurations
@@ -40,7 +38,7 @@ export const POST = unifiedApiHandler(async (req: NextRequest) => {
 
     const config: ProviderConfig | undefined = providerConfigs[provider];
     if (!config) {
-      return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
+      return errorResponse("Invalid provider", 400);
     }
 
     const redirectUri = (await getBaseUrl()) + `/auth/oauth/callback`;
@@ -48,11 +46,11 @@ export const POST = unifiedApiHandler(async (req: NextRequest) => {
     const authUrl = `${config.authUrl}?client_id=${config.clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(config.scope)}&state=${state}`;
 
     // Return the URL as a JSON response
-    return NextResponse.json({ url: authUrl }, { status: 200 });
+    return okResponse(authUrl);
 
   } catch (error) {
     console.error("OAuth Initiate Error", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return serverErrorResponse("Internal server error");
   }
 });
 

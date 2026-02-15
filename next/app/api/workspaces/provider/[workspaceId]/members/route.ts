@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
     try {
@@ -9,18 +10,18 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module, para
         const limit = parseInt(searchParams.get('limit') || '20');
 
         if (!workspaceId) {
-            return NextResponse.json({ error: 'Workspace ID is required' }, { status: 400 });
+            return errorResponse('Workspace ID is required', 400);
         }
 
         const result = await module.workspace.listProviderMembers(workspaceId, page, limit);
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 500 });
+            return serverErrorResponse(result.error);
         }
 
-        return NextResponse.json(result.data, { status: 200 });
+        return okResponse(result.data);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to list members';
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return serverErrorResponse(errorMessage);
     }
 });

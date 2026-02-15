@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, authData, log }) => {
   const { searchParams } = new URL(request.url);
@@ -15,10 +15,7 @@ export const GET = unifiedApiHandler(async (request, { module, authData, log }) 
   });
 
   if (!result.success) {
-    return NextResponse.json(
-      { error: result.error || 'Failed to fetch questions' },
-      { status: 500 }
-    );
+    return serverErrorResponse(result.error || 'Failed to fetch questions');
   }
 
   log.info('User questions fetched', {
@@ -26,8 +23,5 @@ export const GET = unifiedApiHandler(async (request, { module, authData, log }) 
     total: result.data?.pagination.total
   });
 
-  return NextResponse.json({
-    questions: result.data?.questions.map(q => module.question.mapToLegacy(q)),
-    ...result.data?.pagination
-  });
+  return okResponse({ questions: result.data?.questions.map(q => module.question.mapToLegacy(q)), ...result.data?.pagination });
 });

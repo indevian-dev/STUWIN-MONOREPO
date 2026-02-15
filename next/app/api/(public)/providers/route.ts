@@ -1,6 +1,6 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {
     const { searchParams } = new URL(request.url);
@@ -22,20 +22,15 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
     });
 
     if (!result.success || !result.data) {
-        return NextResponse.json({ error: result.error || "Failed to fetch providers" }, { status: 500 });
+        return serverErrorResponse(result.error || "Failed to fetch providers");
     }
 
     const { data, total } = result.data;
 
     // Backward-compatible response for callers without query params
     if (!hasAnyParam) {
-        return NextResponse.json({ providers: data });
+        return okResponse(data);
     }
 
-    return NextResponse.json({
-        providers: data,
-        total,
-        page,
-        pageSize,
-    });
+    return okResponse({ providers: data, total: total, page: page, pageSize: pageSize });
 });

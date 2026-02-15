@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 import { qstashReceiver } from '@/lib/integrations/upstash/qstash.client';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/jobs/mass-report-scanner
@@ -24,17 +25,11 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
         url,
       });
       if (!isValid) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Invalid signature' },
-          { status: 401 }
-        );
+        return errorResponse('Unauthorized: Invalid signature', 401, "UNAUTHORIZED");
       }
     } catch (verifyError) {
       if (log) log.error('Signature verification failed', verifyError);
-      return NextResponse.json(
-        { error: 'Unauthorized: Signature verification failed' },
-        { status: 401 }
-      );
+      return errorResponse('Unauthorized: Signature verification failed', 401, "UNAUTHORIZED");
     }
   }
 
@@ -60,10 +55,10 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
   });
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return serverErrorResponse(result.error);
   }
 
-  return NextResponse.json(result);
+  return okResponse(result);
 });
 
 /**
@@ -72,9 +67,5 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
  * Health check endpoint
  */
 export const GET = unifiedApiHandler(async () => {
-  return NextResponse.json({
-    service: 'Mass Report Scanner',
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
+  return okResponse({ service: 'Mass Report Scanner', status: 'healthy', timestamp: new Date().toISOString() });
 });

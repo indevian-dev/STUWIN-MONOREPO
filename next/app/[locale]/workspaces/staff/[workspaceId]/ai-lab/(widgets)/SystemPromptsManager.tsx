@@ -94,9 +94,9 @@ export function SystemPromptsManager() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">System Prompt Cribs</h2>
+                <h2 className="text-xl font-bold">System AI Guides</h2>
                 <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    <FiPlus /> New Crib
+                    <FiPlus /> New AI Guide
                 </button>
             </div>
 
@@ -120,8 +120,8 @@ export function SystemPromptsManager() {
                                     </pre>
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <button onClick={() => handleEdit(prompt)} className="p-2 text-blue-600 hover:bg-blue-50 rounded" title="Edit Crib"><FiEdit2 /></button>
-                                    <button onClick={() => handleDelete(prompt.id)} className="p-2 text-red-600 hover:bg-red-50 rounded" title="Delete Crib"><FiTrash2 /></button>
+                                    <button onClick={() => handleEdit(prompt)} className="p-2 text-blue-600 hover:bg-blue-50 rounded" title="Edit AI Guide"><FiEdit2 /></button>
+                                    <button onClick={() => handleDelete(prompt.id)} className="p-2 text-red-600 hover:bg-red-50 rounded" title="Delete AI Guide"><FiTrash2 /></button>
                                     <button onClick={() => handleToggleActive(prompt)} className="p-2 text-gray-600 hover:bg-gray-100 rounded" title="Toggle Active Status">
                                         <FiRefreshCw />
                                     </button>
@@ -134,10 +134,10 @@ export function SystemPromptsManager() {
 
             {isEditing && (
                 <div className="bg-white p-6 rounded border shadow">
-                    <h3 className="text-lg font-bold mb-4">{currentPrompt.id ? 'Edit System Crib' : 'Create System Crib'}</h3>
+                    <h3 className="text-lg font-bold mb-4">{currentPrompt.id ? 'Edit System AI Guide' : 'Create System AI Guide'}</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Crib Title</label>
+                            <label className="block text-sm font-medium mb-1">AI Guide Title</label>
                             <input
                                 className="w-full border rounded p-2 text-black"
                                 placeholder="E.g. Azerbaijan Math Specifics"
@@ -161,7 +161,7 @@ export function SystemPromptsManager() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Crib Content (Prompts Addition)</label>
+                            <label className="block text-sm font-medium mb-1">AI Guide Content (Prompts Addition)</label>
                             <textarea
                                 className="w-full border rounded p-2 font-mono h-64 text-black"
                                 placeholder="Add instructions or knowledge that should be appended to the base prompt..."
@@ -170,7 +170,7 @@ export function SystemPromptsManager() {
                             />
                             <div className="bg-blue-50 p-2 rounded mt-1 border border-blue-100">
                                 <p className="text-xs text-blue-800">
-                                    <strong>How it works:</strong> This content is treated as a "System Crib". It will be appended (along with any Subject/Topic/Question cribs) as raw text to the end of the hardcoded mandatory base prompt before being sent to the AI.
+                                    <strong>How it works:</strong> This content is treated as a "System AI Guide". It will be appended (along with any Subject/Topic/Question AI guides) as raw text to the end of the hardcoded mandatory base prompt before being sent to the AI.
                                 </p>
                             </div>
                         </div>

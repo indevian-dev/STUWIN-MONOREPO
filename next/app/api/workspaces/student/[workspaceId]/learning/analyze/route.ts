@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/student/[workspaceId]/learning/analyze
@@ -12,10 +13,7 @@ export const POST = unifiedApiHandler(
             const { contextType, contextId, question, locale } = body;
 
             if (!contextType || !contextId || !question) {
-                return NextResponse.json({
-                    success: false,
-                    error: "contextType, contextId, and question are required"
-                }, { status: 400 });
+                return errorResponse("contextType, contextId, and question are required", 400);
             }
 
             const result = await module.aiSession.analyzeLearningContext({
@@ -27,17 +25,14 @@ export const POST = unifiedApiHandler(
 
             if (!result.success) {
                 log.error("Failed to analyze learning context", { contextType, contextId, error: result.error });
-                return NextResponse.json({ success: false, error: result.error });
+                return errorResponse(result.error);
             }
 
-            return NextResponse.json({
-                success: true,
-                data: result.data,
-            });
+            return okResponse(result.data);
 
         } catch (error) {
             log.error("Learning analysis error", error);
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+            return errorResponse("Invalid request", 400);
         }
     },
 );

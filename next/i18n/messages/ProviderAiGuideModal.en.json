@@ -1,0 +1,13 @@
+{
+    "title": "AI Guide",
+    "forSubject": "Configure AI behavior for this subject",
+    "forTopic": "Configure AI behavior for this topic",
+    "forQuestion": "Configure AI behavior for this question",
+    "description": "The AI Guide provides instructions to the AI system on how to approach this content. This helps generate better questions, explanations, and learning materials tailored to the specific subject or topic.",
+    "placeholder": "Enter AI guide instructions...\n\nExample: Focus on practical applications. Use simple language suitable for beginners. Emphasize key formulas and their real-world usage.",
+    "clearGuide": "Clear guide",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "errorSaving": "Failed to save AI guide. Please try again."
+}

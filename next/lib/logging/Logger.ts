@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import type { LogLevel, LogContext, LogEntry, LoggerInstance } from '@/types';
-import { LogLevel as LogLevelEnum } from '@/types';
+import type { LogLevel, LogContext, LogEntry, LoggerInstance } from '@stuwin/shared/types';
+import { LogLevel as LogLevelEnum } from '@stuwin/shared/types';
 
 // ═══════════════════════════════════════════════════════════════
 // INLINE COLOR UTILITIES
@@ -204,17 +204,17 @@ class Logger implements LoggerInstance {
     // }
   }
 
-  error(message: string, metaOrError?: Error | Record<string, unknown>, metadata?: Record<string, unknown>): void {
+  error(message: string, metaOrError?: unknown, metadata?: Record<string, unknown>): void {
     const meta = metaOrError instanceof Error
       ? { error: metaOrError, ...metadata }
-      : metaOrError || {};
+      : (metaOrError && typeof metaOrError === 'object' ? metaOrError as Record<string, unknown> : {});
     this._log(LogLevelEnum.ERROR, message, meta);
   }
 
-  fatal(message: string, metaOrError?: Error | Record<string, unknown>, metadata?: Record<string, unknown>): void {
+  fatal(message: string, metaOrError?: unknown, metadata?: Record<string, unknown>): void {
     const meta = metaOrError instanceof Error
       ? { error: metaOrError, ...metadata }
-      : metaOrError || {};
+      : (metaOrError && typeof metaOrError === 'object' ? metaOrError as Record<string, unknown> : {});
     this._log(LogLevelEnum.FATAL, message, meta);
   }
 

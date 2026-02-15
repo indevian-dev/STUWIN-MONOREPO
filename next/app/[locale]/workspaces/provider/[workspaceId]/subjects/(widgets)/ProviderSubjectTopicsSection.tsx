@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { PiBookOpen, PiBrain, PiListChecks } from "react-icons/pi";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
-import { Topic } from "@/types";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { Topic } from "@stuwin/shared/types";
 import { ProviderPdfTopicExtractorWidget } from "./ProviderPdfTopicExtractorWidget";
 import { TestGenerationModal } from "./TestGenerationModal";
-import { ProviderCribModalWidget } from "../../topics/(widgets)/ProviderCribModalWidget";
+import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModalWidget";
 import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
@@ -49,7 +49,7 @@ interface RawTopicImport {
   end_page?: number;
   estimatedEducationStartDate?: string;
   isActiveAiGeneration?: boolean;
-  aiAssistantCrib?: string;
+  aiGuide?: string;
   [key: string]: unknown;
 }
 
@@ -120,7 +120,7 @@ function BulkTopicCreateModal({
               item.estimatedEducationStartDate || null,
             isActiveAiGeneration:
               item.isActiveAiGeneration !== undefined ? item.isActiveAiGeneration : false,
-            aiAssistantCrib: item.aiAssistantCrib || null,
+            aiGuide: item.aiGuide || null,
             providerSubjectId: subjectId,
           }));
 
@@ -129,7 +129,7 @@ function BulkTopicCreateModal({
             setError(t("jsonMissingNames"));
             return;
           }
-        } catch (jsonError) {
+        } catch {
           setError(t("invalidJson"));
           return;
         }
@@ -278,7 +278,7 @@ function BulkTopicCreateModal({
 // - start_page or pdfPageStart
 // - end_page or pdfPageEnd
 // - body, gradeLevel, chapterNumber
-// - isActiveForAi, aiSummary, aiAssistantCrib`}
+// - isActiveForAi, aiSummary, aiGuide`}
                     </pre>
                   </details>
                 </div>
@@ -372,7 +372,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
     estimatedEducationStartDate: topic.estimatedEducationStartDate
       ? new Date(topic.estimatedEducationStartDate).toISOString().slice(0, 16)
       : "",
-    aiAssistantCrib: topic.aiAssistantCrib || "",
+    aiGuide: topic.aiGuide || "",
     questionsStats: topic.questionsStats || null,
     pdfDetails: topic.pdfDetails || null,
   });
@@ -403,7 +403,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
         pdfPageEnd: formData.pdfPageEnd ? parseInt(formData.pdfPageEnd) : null,
         estimatedEducationStartDate:
           formData.estimatedEducationStartDate || null,
-        aiAssistantCrib: formData.aiAssistantCrib || null,
+        aiGuide: formData.aiGuide || null,
       };
 
       await onSave(updateData);
@@ -549,18 +549,18 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("aiAssistantCrib")}
+                {t("aiGuide")}
               </label>
               <textarea
-                value={formData.aiAssistantCrib}
+                value={formData.aiGuide}
                 onChange={(e) =>
-                  setFormData({ ...formData, aiAssistantCrib: e.target.value })
+                  setFormData({ ...formData, aiGuide: e.target.value })
                 }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                placeholder={t("aiAssistantCribPlaceholder")}
+                placeholder={t("aiGuidePlaceholder")}
               />
-              <p className="mt-1 text-xs text-gray-500">{t("aiAssistantCribHelp")}</p>
+              <p className="mt-1 text-xs text-gray-500">{t("aiGuideHelp")}</p>
             </div>
 
             <div>
@@ -711,28 +711,24 @@ export function SubjectTopicsSection({
   const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [showPdfExtractor, setShowPdfExtractor] = useState(false);
   const [generatingTestsFor, setGeneratingTestsFor] = useState<Topic | null>(null);
-  const [activeCribTopic, setActiveCribTopic] = useState<Topic | null>(null);
+  const [activeAiGuideTopic, setActiveAiGuideTopic] = useState<Topic | null>(null);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [topicsRes, pdfsRes] = await Promise.all([
-        apiCallForSpaHelper({
+      const [topicsData, pdfsData] = await Promise.all([
+        apiCall<Topic[]>({
           url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics`,
           method: "GET",
         }),
-        apiCallForSpaHelper({
+        apiCall<SubjectPdf[]>({
           url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
           method: "GET",
         }),
       ]);
 
-      if (topicsRes.data?.success && topicsRes.data?.data) {
-        setTopics(topicsRes.data.data);
-      }
-      if (pdfsRes.data?.success && pdfsRes.data?.data) {
-        setPdfs(pdfsRes.data.data);
-      }
+      setTopics(topicsData ?? []);
+      setPdfs(pdfsData ?? []);
     } catch (err) {
       console.error("Failed to fetch topics/pdfs:", err);
     } finally {
@@ -747,24 +743,22 @@ export function SubjectTopicsSection({
 
   const handleUpdateTopic = async (topicId: string, updatedData: Partial<Topic>) => {
     try {
-      const response = await apiCallForSpaHelper({
+      await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/update`,
         method: "PUT",
         body: updatedData,
       });
-
-      if (response.data?.success) {
-        await fetchData();
-      }
+      await fetchData();
     } catch (err) {
       console.error("Failed to update topic:", err);
       throw err;
     }
   };
 
-  const handleToggleAi = async (topic: Topic) => {
+  const handleToggleAi = async (topicId: string, currentState: boolean | null) => {
     try {
-      await handleUpdateTopic(topic.id, { isActiveAiGeneration: !topic.isActiveAiGeneration });
+      const newState = !currentState;
+      await handleUpdateTopic(topicId, { isActiveAiGeneration: newState });
     } catch (err) {
       console.error("Failed to toggle AI status:", err);
     }
@@ -781,21 +775,16 @@ export function SubjectTopicsSection({
 
   const handleBulkCreate = async (newTopics: Partial<Topic>[]) => {
     try {
-      const response = await apiCallForSpaHelper({
+      await apiCall<any>({
         method: "POST",
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/create`,
         body: { topics: newTopics },
       });
-
-      if (response.data?.success) {
-        await fetchData();
-        setShowBulkCreate(false);
-      } else {
-        throw new Error(response.data?.error || "Failed to create topics");
-      }
+      await fetchData();
+      setShowBulkCreate(false);
     } catch (err) {
       console.error("Failed to bulk create topics:", err);
-      throw err; // Propagate to modal to show error
+      throw err;
     }
   };
 
@@ -936,7 +925,7 @@ export function SubjectTopicsSection({
                   {t("showQuestions")}
                 </button>
                 <button
-                  onClick={() => handleToggleAi(topic)}
+                  onClick={() => handleToggleAi(topic.id, topic.isActiveAiGeneration)}
                   className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${topic.isActiveAiGeneration
                     ? "bg-brand-secondary/50 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/80"
                     : "bg-brand-secondary/20 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
@@ -966,18 +955,18 @@ export function SubjectTopicsSection({
                   <span>{t("generateTests")}</span>
                 </button>
 
-                <div className="flex-1" /> {/* Spacer to push edit/crib to right? Or just keep left aligned? User said "all action buttons". Usually left aligned is better or split. I'll keep them all together or group them. Let's group distinct actions. */}
+                <div className="flex-1" /> {/* Spacer */}
 
                 <button
-                  onClick={() => setActiveCribTopic(topic)}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-2 ${topic.aiAssistantCrib
+                  onClick={() => setActiveAiGuideTopic(topic)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-2 ${topic.aiGuide
                     ? "bg-brand-secondary text-white  hover:bg-brand-secondary/80 hover:text-white"
                     : "bg-brand-secondary/20 text-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
                     }`}
-                  title={t("manageCrib")}
+                  title={t("manageAiGuide")}
                 >
-                  <PiBrain className={topic.aiAssistantCrib ? "fill-current" : ""} />
-                  <span className="hidden sm:inline">{t("manageCrib")}</span>
+                  <PiBrain className={topic.aiGuide ? "fill-current" : ""} />
+                  <span className="hidden sm:inline">{t("manageAiGuide")}</span>
                 </button>
                 <button
                   onClick={() => handleEditClick(topic)}
@@ -1042,20 +1031,20 @@ export function SubjectTopicsSection({
         )
       }
 
-      {/* Crib Modal */}
+      {/* AI Guide Modal */}
       {
-        activeCribTopic && (
-          <ProviderCribModalWidget
-            isOpen={!!activeCribTopic}
+        activeAiGuideTopic && (
+          <ProviderAiGuideModalWidget
+            isOpen={!!activeAiGuideTopic}
             entityType="topic"
-            entityId={activeCribTopic.id}
+            entityId={activeAiGuideTopic.id}
             subjectId={subjectId}
-            currentCrib={activeCribTopic.aiAssistantCrib || null}
-            onClose={() => setActiveCribTopic(null)}
+            currentAiGuide={activeAiGuideTopic.aiGuide || null}
+            onClose={() => setActiveAiGuideTopic(null)}
             onSuccess={() => {
               // Trigger refresh or update local state
               fetchData();
-              setActiveCribTopic(null);
+              setActiveAiGuideTopic(null);
             }}
           />
         )

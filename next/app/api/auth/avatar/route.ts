@@ -1,6 +1,6 @@
 
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { NextResponse } from "next/server";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET - Returns a presigned URL for avatar upload
@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 export const GET = unifiedApiHandler(async (request, { module, authData }) => {
     try {
         if (!authData?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
         }
 
         const { searchParams } = new URL(request.url);
@@ -18,18 +18,12 @@ export const GET = unifiedApiHandler(async (request, { module, authData }) => {
         const result = await module.auth.getAvatarUploadUrl(authData.user.id, contentType, fileName);
 
         if (!result.success) {
-            return NextResponse.json(
-                { error: result.error },
-                { status: result.status }
-            );
+            return errorResponse(result.error, result.status);
         }
 
-        return NextResponse.json(result.data, { status: 200 });
+        return okResponse(result.data);
     } catch (error) {
         console.error("Error in avatar presign route:", error);
-        return NextResponse.json(
-            { error: "Server error occurred" },
-            { status: 500 }
-        );
+        return serverErrorResponse("Server error occurred");
     }
 });

@@ -1,11 +1,12 @@
 
-
 import 'react-toastify/dist/ReactToastify.css';
 import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { GlobalToastProvider } from '@/app/[locale]/(global)/(providers)/GlobalToastProvider';
 import { GlobalAuthProfileProvider } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
+import { GlobalTwoFactorAuthProvider } from '@/app/[locale]/(global)/(context)/GlobalTwoFactorAuthContext';
+import { GlobalTwoFactorAuthModal } from '@/app/[locale]/(global)/(tiles)/GlobalTwoFactorAuthModal';
 import type { ReactNode } from 'react';
 
 interface LocaleLayoutProps {
@@ -30,7 +31,10 @@ async function LocaleLayout({ children, params }: LocaleLayoutProps) {
             <GlobalToastProvider />
           </div>
           <GlobalAuthProfileProvider>
-            {children}
+            <GlobalTwoFactorAuthProvider>
+              {children}
+              <GlobalTwoFactorAuthModal />
+            </GlobalTwoFactorAuthProvider>
           </GlobalAuthProfileProvider>
         </NextIntlClientProvider>
       </body>

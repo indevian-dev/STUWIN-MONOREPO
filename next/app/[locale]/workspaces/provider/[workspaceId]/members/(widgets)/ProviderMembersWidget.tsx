@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalPaginationTile } from '@/app/[locale]/(global)/(tiles)/GlobalPaginationTile';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { toast } from 'react-toastify';
@@ -39,7 +39,7 @@ export function ProviderMembersWidget() {
         if (!workspaceId) return;
         try {
             setLoading(true);
-            const response = await apiCallForSpaHelper({
+            const data = await apiCall<any>({
                 method: 'GET',
                 url: `/api/workspaces/provider/${workspaceId}/members`,
                 params: {
@@ -48,7 +48,6 @@ export function ProviderMembersWidget() {
                 },
             });
 
-            const data = await response.data;
             setMembers(data?.members || []);
             setTotal(data?.total || 0);
             setTotalPages(data?.totalPages || 1);
@@ -71,7 +70,7 @@ export function ProviderMembersWidget() {
         }
         setInviting(true);
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/${workspaceId}/invitations`,
                 body: {
@@ -79,13 +78,9 @@ export function ProviderMembersWidget() {
                     role: inviteRole
                 }
             });
-            if (response.data?.success) {
                 toast.success("Invitation sent successfully");
                 setShowInviteModal(false);
                 setInviteEmail('');
-            } else {
-                toast.error(response.data?.error || "Failed to send invitation");
-            }
         } catch (error) {
             ConsoleLogger.error("Invite error:", error);
             toast.error("An error occurred");

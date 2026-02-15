@@ -1,50 +1,10 @@
-export interface Permission {
-  id: string;
-  name: string;
-  description: string;
-  resource: string;
-  action: string;
-  scope?: string[];
-}
-
+// Role type — used for workspace_roles DB shape
 export interface Role {
   id: string;
   name: string;
   description?: string;
-  permissions: Permission[];
+  permissions: string[];
   isSystem: boolean;
   createdAt: string;
   updatedAt?: string;
-}
-
-export interface PermissionCheck {
-  resource: string;
-  action: string;
-  scope?: string;
-  userId?: string;
-  accountId?: string;
-}
-
-// Access Control
-
-export enum AccessScopeType {
-  PUBLIC = 'public',
-  STUDENT = 'student',
-  PROVIDER = 'provider',
-  EDUORG = 'eduorg',
-  STAFF = 'staff',
-}
-
-export interface AccessScope {
-  type: AccessScopeType;
-  key?: string;
-  permissions: string[];
-}
-
-export interface AccessControlDecision {
-  granted: boolean;
-  reason?: string;
-  requiredPermissions?: string[];
-  userPermissions?: string[];
-  scope?: AccessScope;
 }

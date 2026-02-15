@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 // GET /api/providers/stats
 // Returns statistics about educational providers
@@ -8,10 +9,10 @@ export const GET = unifiedApiHandler(
         const result = await module.support.getPublicProviderStats();
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 500 });
+            return serverErrorResponse(result.error);
         }
 
-        return NextResponse.json(result.data);
+        return okResponse(result.data);
     },
     {
         authRequired: false

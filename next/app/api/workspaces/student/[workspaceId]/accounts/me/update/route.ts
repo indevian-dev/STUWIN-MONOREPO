@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PATCH = unifiedApiHandler(async (request: NextRequest, { module, auth, log }) => {
   try {
@@ -9,10 +10,7 @@ export const PATCH = unifiedApiHandler(async (request: NextRequest, { module, au
     const { user } = requestBody;
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User data is required' },
-        { status: 400 }
-      );
+      return errorResponse('User data is required', 400);
     }
 
     log.info('Updating account', { userId });
@@ -26,23 +24,14 @@ export const PATCH = unifiedApiHandler(async (request: NextRequest, { module, au
 
     if (!result.success || !result.data) {
       log.error('Error updating user', { error: result.error });
-      return NextResponse.json(
-        { error: result.error || 'Failed to update user' },
-        { status: result.status || 500 }
-      );
+      return errorResponse(result.error || 'Failed to update user', result.status);
     }
 
     log.info('Account updated', { userId });
 
-    return NextResponse.json({
-      success: true,
-      user: result.data.user
-    });
+    return okResponse({ success: true, user: result.data.user });
   } catch (error) {
     log.error('Error in account update', error instanceof Error ? error : new Error(String(error)));
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Internal server error');
   }
 });

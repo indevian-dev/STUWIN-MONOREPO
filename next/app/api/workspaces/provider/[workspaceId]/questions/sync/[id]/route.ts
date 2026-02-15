@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { module, params, auth, log }: UnifiedContext) => {
@@ -7,14 +8,14 @@ export const POST = unifiedApiHandler(
     const accountId = auth.accountId;
 
     if (!questionId) {
-      return NextResponse.json({ error: "Question ID is required" }, { status: 400 });
+      return errorResponse("Question ID is required", 400);
     }
 
     try {
       // Get the question
       const questionResult = await module.question.getById(questionId);
       if (!questionResult.success) {
-        return NextResponse.json({ error: "Question not found" }, { status: 404 });
+        return errorResponse("Question not found", 404, "NOT_FOUND");
       }
 
       // Update question to be published
@@ -25,21 +26,17 @@ export const POST = unifiedApiHandler(
       });
 
       if (!updateResult.success) {
-        return NextResponse.json({ error: "Failed to publish question" }, { status: 500 });
+        return serverErrorResponse("Failed to publish question");
       }
 
       // TODO: Create notification for author if needed
       // This can be handled in a separate service or here
 
-      return NextResponse.json({
-        success: true,
-        message: "Question published successfully",
-        data: updateResult.data
-      }, { status: 200 });
+      return okResponse(updateResult.data, "Question published successfully");
 
     } catch (error) {
       log.error("Error syncing (publishing) question", error);
-      return NextResponse.json({ error: "Failed to publish question" }, { status: 500 });
+      return serverErrorResponse("Failed to publish question");
     }
   },
 );

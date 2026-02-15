@@ -1,19 +1,17 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers/ApiInterceptor";
-import { ModuleFactory } from "@/lib/domain/factory";
+import { okResponse } from '@/lib/middleware/responses/ApiResponse';
 
-export const POST = unifiedApiHandler(async (req, { ctx }) => {
-    const modules = new ModuleFactory(ctx);
+export const POST = unifiedApiHandler(async (req, { module }) => {
     const body = await req.json();
     const { providerId, workspaceId, couponCode, tierId, language } = body;
 
-    const result = await modules.payment.initiatePayment({
+    const result = await module.payment.initiatePayment({
         tierId: tierId || providerId,
         workspaceId: workspaceId || tierId || providerId,
         couponCode,
         language
     });
 
-    return NextResponse.json(result);
+    return okResponse(result);
 });

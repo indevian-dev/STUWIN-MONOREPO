@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiPlusBold, PiTrashBold, PiToggleLeftFill, PiToggleRightFill, PiArrowsClockwiseBold, PiCheckCircleFill, PiTicketBold } from 'react-icons/pi';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 export function StaffCouponManagementClient() {
@@ -32,12 +32,12 @@ export function StaffCouponManagementClient() {
     const fetchCoupons = async () => {
         try {
             setLoading(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons`
             });
-            if (response.data) {
-                setCoupons(response.data);
+            if (response) {
+                setCoupons(response);
             }
         } catch (error) {
             console.error("Failed to fetch coupons", error);
@@ -50,7 +50,7 @@ export function StaffCouponManagementClient() {
         e.preventDefault();
         try {
             setActionLoading('create');
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons`,
                 body: {
@@ -58,7 +58,7 @@ export function StaffCouponManagementClient() {
                     code: formData.code.toUpperCase()
                 }
             });
-            if (response.data?.success) {
+            if (response?.success) {
                 setShowCreateModal(false);
                 setFormData({ code: '', discountPercent: 10, isActive: true, metadata: {} });
                 fetchCoupons();
@@ -73,7 +73,7 @@ export function StaffCouponManagementClient() {
     const handleToggleStatus = async (coupon: any) => {
         try {
             setActionLoading(coupon.id);
-            await apiCallForSpaHelper({
+            await apiCall<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons/${coupon.id}`,
                 body: { isActive: !coupon.isActive }
@@ -90,7 +90,7 @@ export function StaffCouponManagementClient() {
         if (!confirm("Are you sure you want to delete this coupon?")) return;
         try {
             setActionLoading(id);
-            await apiCallForSpaHelper({
+            await apiCall<any>({
                 method: 'DELETE',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons/${id}`
             });

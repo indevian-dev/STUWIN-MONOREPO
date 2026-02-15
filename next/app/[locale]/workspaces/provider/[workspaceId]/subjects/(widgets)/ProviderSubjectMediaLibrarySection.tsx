@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
@@ -36,14 +36,12 @@ export function SubjectMediaLibrarySection({
   const fetchPdfs = async () => {
     try {
       setLoading(true);
-      const response = await apiCallForSpaHelper({
+      const data = await apiCall<SubjectPdf[]>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
         method: "GET",
       });
 
-      if (response.data?.success && response.data?.data) {
-        setPdfs(response.data.data);
-      }
+      setPdfs(data ?? []);
     } catch (err) {
       console.error("Failed to fetch PDFs:", err);
       setError(t("errorFetchingData"));
@@ -98,7 +96,7 @@ export function SubjectMediaLibrarySection({
       setUploadProgress(0);
 
       // Step 1: Get presigned URL
-      const response = await apiCallForSpaHelper({
+      const uploadData = await apiCall<{ presignedUrl: string; generatedFileName: string }>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/upload`,
         method: "POST",
         body: {
@@ -107,11 +105,11 @@ export function SubjectMediaLibrarySection({
         },
       });
 
-      if (!response.data?.success) {
-        throw new Error(response.data?.error || "Failed to get upload URL");
+      if (!uploadData) {
+        throw new Error("Failed to get upload URL");
       }
 
-      const { presignedUrl, generatedFileName } = response.data;
+      const { presignedUrl, generatedFileName } = uploadData;
 
       // Step 2: Upload file to S3 (using axios for progress tracking)
       await axios.put(presignedUrl, selectedFile, {
@@ -129,7 +127,7 @@ export function SubjectMediaLibrarySection({
       });
 
       // Step 3: Save PDF metadata to database
-      const saveResponse = await apiCallForSpaHelper({
+      await apiCall<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/save`,
         method: "POST",
         body: {
@@ -139,10 +137,6 @@ export function SubjectMediaLibrarySection({
           language: pdfLanguage,
         },
       });
-
-      if (!saveResponse.data?.success) {
-        throw new Error(saveResponse.data?.error || "Failed to save PDF metadata");
-      }
 
       // Refresh list
       await fetchPdfs();
@@ -171,15 +165,13 @@ export function SubjectMediaLibrarySection({
 
   const handleToggleActive = async (pdf: SubjectPdf) => {
     try {
-      const response = await apiCallForSpaHelper({
+      await apiCall<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}`,
         method: "PUT",
         body: { isActive: !pdf.isActive },
       });
 
-      if (response.data?.success) {
-        await fetchPdfs();
-      }
+      await fetchPdfs();
     } catch (err) {
       console.error("Failed to toggle PDF:", err);
     }
@@ -189,14 +181,12 @@ export function SubjectMediaLibrarySection({
     if (!confirm(t("confirmDelete"))) return;
 
     try {
-      const response = await apiCallForSpaHelper({
+      await apiCall<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}/delete`,
         method: "DELETE",
       });
 
-      if (response.data?.success) {
-        await fetchPdfs();
-      }
+      await fetchPdfs();
     } catch (err) {
       console.error("Failed to delete PDF:", err);
     }

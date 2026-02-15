@@ -1,5 +1,5 @@
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { NextResponse } from "next/server";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/onboarding
@@ -14,54 +14,54 @@ export const POST = unifiedApiHandler(
             if (type === "parent") {
                 const { studentWorkspaceIds } = data;
                 if (!studentWorkspaceIds || !studentWorkspaceIds.length) {
-                    return NextResponse.json({ success: false, error: "Selection is required" }, { status: 400 }) as any;
+                    return errorResponse("Selection is required", 400) as any;
                 }
                 const result = await module.workspace.startParentWorkspaceFlow(auth.accountId, studentWorkspaceIds);
-                return NextResponse.json(result) as any;
+                return okResponse(result) as any;
             }
 
             if (type === "provider") {
                 const { title, orgDetails } = data;
                 if (!title) {
-                    return NextResponse.json({ success: false, error: "Organization title is required" }, { status: 400 }) as any;
+                    return errorResponse("Organization title is required", 400) as any;
                 }
                 const result = await module.workspace.submitProviderApplication(auth.accountId, {
                     title,
                     metadata: orgDetails || {},
                 });
-                return NextResponse.json(result) as any;
+                return okResponse(result) as any;
             }
 
             if (type === "student") {
                 const { displayName, metadata, providerId } = data;
                 if (!displayName || !providerId) {
-                    return NextResponse.json({ success: false, error: "Display name and Provider are required" }, { status: 400 }) as any;
+                    return errorResponse("Display name and Provider are required", 400) as any;
                 }
                 const result = await module.workspace.createStudentWorkspace(auth.accountId, {
                     displayName,
                     gradeLevel: metadata?.gradeLevel,
                     providerId
                 });
-                return NextResponse.json(result) as any;
+                return okResponse(result) as any;
             }
 
             if (type === "tutor") {
                 const { title, metadata } = data;
                 if (!title) {
-                    return NextResponse.json({ success: false, error: "Title is required" }, { status: 400 }) as any;
+                    return errorResponse("Title is required", 400) as any;
                 }
                 // Tutor workspaces created as 'tutor' type, potentially requiring approval if isActive=false
                 const result = await module.workspace.submitProviderApplication(auth.accountId, {
                     title,
                     metadata: metadata || {},
                 }, "tutor");
-                return NextResponse.json(result) as any;
+                return okResponse(result) as any;
             }
 
-            return NextResponse.json({ success: false, error: "Invalid onboarding type" }, { status: 400 }) as any;
+            return errorResponse("Invalid onboarding type", 400) as any;
         } catch (error) {
             log.error("Onboarding POST error", error);
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 }) as any;
+            return errorResponse("Invalid request", 400) as any;
         }
     },
     {

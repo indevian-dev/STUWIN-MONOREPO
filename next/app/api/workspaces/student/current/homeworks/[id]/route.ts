@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(
     async (req: NextRequest, { module, params }: UnifiedContext) => {
@@ -7,13 +8,10 @@ export const GET = unifiedApiHandler(
         const result = await module.homework.getDetail(homeworkId);
 
         if (!result.success) {
-            return NextResponse.json({ success: false, error: result.error });
+            return errorResponse(result.error);
         }
 
-        return NextResponse.json({
-            success: true,
-            data: result.data,
-        });
+        return okResponse(result.data);
     },
     {
         method: "GET",
@@ -26,7 +24,7 @@ export const DELETE = unifiedApiHandler(
         const homeworkId = params.id;
         // Note: We'd implement delete in ActivityService/Repository
         // For now, returning 200 to satisfy front-end logic or implement basic delete
-        return NextResponse.json({ success: true });
+        return messageResponse("Success");
     },
     {
         method: "DELETE",

@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 export const POST = unifiedApiHandler(async (request: NextRequest, { params, module }) => {
   const { id } = await params;
   if (!id) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    return errorResponse("User ID is required");
   }
 
   const body = await request.json();
@@ -14,8 +14,8 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { params, mod
   const result = await module.workspace.getUserMediaUploadUrl(id, fileName, fileType);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: (result as any).code || 500 });
+    return errorResponse(result.error, (result as any).code || 500);
   }
 
-  return NextResponse.json(result.data, { status: 200 });
+  return okResponse(result.data);
 });

@@ -1,15 +1,15 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {
   const data = await module.content.contentRepo.findPageByType('RULES');
 
   if (!data) {
-    return NextResponse.json({ error: 'Rules not found' }, { status: 404 });
+    return errorResponse('Rules not found', 404, "NOT_FOUND");
   }
 
-  return NextResponse.json({ content: data }, { status: 200 });
+  return okResponse(data);
 });
 
 

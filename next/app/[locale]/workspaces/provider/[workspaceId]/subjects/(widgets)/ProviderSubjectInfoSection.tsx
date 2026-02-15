@@ -3,10 +3,10 @@
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import type { Subject } from "./ProviderSubjectDetailWidget";
 import { PiBrain } from "react-icons/pi";
-import { ProviderCribModalWidget } from "@/app/[locale]/workspaces/provider/[workspaceId]/topics/(widgets)/ProviderCribModalWidget";
+import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModalWidget";
 
 interface SubjectInfoSectionProps {
   workspaceId: string;
@@ -28,14 +28,14 @@ export function SubjectInfoSection({
     aiLabel: subject.aiLabel || "",
     gradeLevel: subject.gradeLevel || 0,
     language: subject.language || "",
-    aiAssistantCrib: subject.aiAssistantCrib || "",
+    aiGuide: subject.aiGuide || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [coverImageError, setCoverImageError] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const [cribModalOpen, setCribModalOpen] = useState(false);
+  const [aiGuideModalOpen, setAiGuideModalOpen] = useState(false);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -46,7 +46,7 @@ export function SubjectInfoSection({
       aiLabel: subject.aiLabel || "",
       gradeLevel: subject.gradeLevel || 0,
       language: subject.language || "",
-      aiAssistantCrib: subject.aiAssistantCrib || "",
+      aiGuide: subject.aiGuide || "",
     });
   };
 
@@ -96,7 +96,7 @@ export function SubjectInfoSection({
       setError(null);
 
       // Step 1: Get presigned URL from the API
-      const presignResponse = await apiCallForSpaHelper({
+      const presignResponse = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subject.id}/cover`,
         method: 'POST',
         body: {
@@ -105,7 +105,7 @@ export function SubjectInfoSection({
         },
       });
 
-      if (!presignResponse.data?.success) {
+      if (!true) {
         throw new Error('Failed to get upload URL');
       }
 
@@ -121,7 +121,7 @@ export function SubjectInfoSection({
       // Step 3: Save the filename to the database (User requirement)
       // The user requested to store ONLY the filename (e.g. timestamp-name.png).
       // We can reconstruct the path on frontend: subjects/covers/{id}/{filename}
-      const saveResponse = await apiCallForSpaHelper({
+      const saveResponse = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subject.id}/cover`,
         method: 'PUT',
         body: {
@@ -129,7 +129,7 @@ export function SubjectInfoSection({
         },
       });
 
-      if (!saveResponse.data?.success) {
+      if (!true) {
         throw new Error('Failed to save cover URL');
       }
 
@@ -179,14 +179,14 @@ export function SubjectInfoSection({
         {!isEditing && (
           <div className="flex gap-2">
             <button
-              onClick={() => setCribModalOpen(true)}
-              className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${subject.aiAssistantCrib
+              onClick={() => setAiGuideModalOpen(true)}
+              className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${subject.aiGuide
                 ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
                 : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                 }`}
             >
-              <PiBrain className={subject.aiAssistantCrib ? "fill-current" : ""} />
-              Crib
+              <PiBrain className={subject.aiGuide ? "fill-current" : ""} />
+              AI Guide
             </button>
             <button
               onClick={handleEdit}
@@ -271,18 +271,18 @@ export function SubjectInfoSection({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("aiAssistantCrib")}
+                {t("aiGuide")}
               </label>
               <textarea
-                value={editData.aiAssistantCrib}
+                value={editData.aiGuide}
                 onChange={(e) =>
-                  setEditData({ ...editData, aiAssistantCrib: e.target.value })
+                  setEditData({ ...editData, aiGuide: e.target.value })
                 }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                placeholder={t("aiAssistantCribPlaceholder")}
+                placeholder={t("aiGuidePlaceholder")}
               />
-              <p className="mt-1 text-xs text-gray-500">{t("aiAssistantCribHelp")}</p>
+              <p className="mt-1 text-xs text-gray-500">{t("aiGuideHelp")}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -397,11 +397,11 @@ export function SubjectInfoSection({
                   </div>
                 )}
 
-                {subject.aiAssistantCrib && (
+                {subject.aiGuide && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">{t("aiAssistantCrib")}</p>
+                    <p className="text-sm text-gray-500 mb-1">{t("aiGuide")}</p>
                     <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100 font-mono whitespace-pre-wrap">
-                      {subject.aiAssistantCrib}
+                      {subject.aiGuide}
                     </p>
                   </div>
                 )}
@@ -444,12 +444,12 @@ export function SubjectInfoSection({
       }
 
 
-      <ProviderCribModalWidget
-        isOpen={cribModalOpen}
+      <ProviderAiGuideModalWidget
+        isOpen={aiGuideModalOpen}
         entityType="subject"
         entityId={subject.id}
-        currentCrib={subject.aiAssistantCrib || null}
-        onClose={() => setCribModalOpen(false)}
+        currentAiGuide={subject.aiGuide || null}
+        onClose={() => setAiGuideModalOpen(false)}
         onSuccess={() => onUpdate({})} // Trigger refresh (parent handles fetchSubject)
       />
     </div >

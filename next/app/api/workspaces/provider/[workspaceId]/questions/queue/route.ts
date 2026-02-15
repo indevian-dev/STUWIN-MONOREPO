@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { authData, module }) => {
@@ -9,7 +9,7 @@ export const POST = unifiedApiHandler(
     if (queueApiKey) {
       const providedKey = request.headers.get("x-api-key");
       if (providedKey !== queueApiKey) {
-        return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
+        return errorResponse("Invalid API key", 401, "UNAUTHORIZED");
       }
     }
 
@@ -18,10 +18,10 @@ export const POST = unifiedApiHandler(
 
     try {
       const result = await module.jobs.processQuestionQueue(accountId);
-      return NextResponse.json(result, { status: 200 });
+      return okResponse(result);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to process queue";
-      return NextResponse.json({ error: errorMessage }, { status: 500 });
+      return serverErrorResponse(errorMessage);
     }
   },
 );

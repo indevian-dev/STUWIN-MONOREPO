@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/student/current/learning-conversations/[id]/chat
@@ -13,22 +14,19 @@ export const POST = unifiedApiHandler(
             const { message } = body;
 
             if (!message) {
-                return NextResponse.json({ success: false, error: "Message is required" }, { status: 400 });
+                return errorResponse("Message is required", 400);
             }
 
             const result = await module.aiSession.addMessage(sessionId, message);
 
             if (!result.success) {
-                return NextResponse.json({ success: false, error: result.error });
+                return errorResponse(result.error);
             }
 
-            return NextResponse.json({
-                success: true,
-                data: result.data,
-            });
+            return okResponse(result.data);
         } catch (error) {
             log.error("Learning conversation chat error", error);
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+            return errorResponse("Invalid request", 400);
         }
     },
     {

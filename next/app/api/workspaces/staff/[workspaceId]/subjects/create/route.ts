@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { SubjectCreateSchema } from '@/lib/domain/learning/learning.inputs';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module }) => {
@@ -8,10 +9,7 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
 
     const parsed = SubjectCreateSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Validation failed' },
-        { status: 400 }
-      );
+      return errorResponse(parsed.error.errors[0]?.message || "Validation failed");
     }
 
     const { title, description, aiLabel, language, gradeLevel } = parsed.data;
@@ -28,12 +26,12 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+      return errorResponse(result.error, 400);
     }
 
-    return NextResponse.json({ subject: result.data }, { status: 201 });
+    return createdResponse(result.data);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to create subject';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

@@ -14,7 +14,7 @@
   "instruction3": "Пустые строки будут проигнорированы",
   "jsonInstructions": "Вставьте JSON массив объектов тем:",
   "jsonInstruction1": "Каждый объект должен иметь свойство 'name' или 'title'",
-  "jsonInstruction2": "Поддерживается: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveForAi",
+  "jsonInstruction2": "Поддерживается: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveAiGeneration",
   "jsonExample": "Показать пример JSON",
   "topicsList": "Список тем",
   "topicsPlaceholder": "Введение в физику\nЗаконы движения Ньютона\nКинематика и динамика\n...",

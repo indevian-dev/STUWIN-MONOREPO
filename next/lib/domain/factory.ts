@@ -21,6 +21,8 @@ import { QuestionService } from "./question/question.service";
 import { QuizService } from "./quiz/quiz.service";
 import { HomeworkService } from "./homework/homework.service";
 import { AiSessionService } from "./ai-session/ai-session.service";
+import { SearchService } from "./search/search.service";
+import { SearchRepository } from "./search/search.repository";
 
 // Repositories
 import { LearningRepository } from "./learning/learning.repository";
@@ -176,7 +178,8 @@ export class ModuleFactory {
             this.ctx,
             db,
             new SystemPromptService(new SystemPromptRepository(db), this.ctx, db),
-            this.semanticMastery
+            this.semanticMastery,
+            this.search,
         );
     }
 
@@ -259,5 +262,17 @@ export class ModuleFactory {
 
     get reports() {
         return new ReportService(this.ctx);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SEARCH (ParadeDB)
+    // ═══════════════════════════════════════════════════════════════
+
+    get search() {
+        return new SearchService(
+            new SearchRepository(),
+            this.ctx,
+            db,
+        );
     }
 }

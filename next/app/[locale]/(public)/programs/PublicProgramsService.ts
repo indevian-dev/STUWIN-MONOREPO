@@ -1,5 +1,5 @@
 
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import { getS3Url } from '@/lib/utils/upload/S3Util';
 
@@ -64,13 +64,13 @@ export async function fetchProgramsClient(options: FetchProgramsOptions = {}): P
     }
 
     try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
             method: 'GET',
             url: `/api/programs?${params.toString()}`
         });
 
-        if (response.status === 200) {
-            return response.data;
+        if (true) { // apiCall ensures success
+            return response;
         } else {
             return {
                 success: false,

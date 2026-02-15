@@ -16,6 +16,7 @@ import { inArray, eq, and, sql } from "drizzle-orm";
 import { PromptFlowType } from "@/lib/domain/ai-prompt/intelligence.types";
 import { SystemPromptService } from "../ai-prompt/system-prompt.service";
 import { SemanticMasteryService } from "../semantic-mastery/semantic-mastery.service";
+import { SearchService } from "../search/search.service";
 
 /**
  * QuizService - Manages quiz lifecycle, scoring, analysis, and mastery tracking
@@ -26,7 +27,8 @@ export class QuizService extends BaseService {
         private readonly ctx: AuthContext,
         private readonly db: Database,
         private readonly systemPrompts: SystemPromptService,
-        private readonly semanticMastery: SemanticMasteryService
+        private readonly semanticMastery: SemanticMasteryService,
+        private readonly searchService?: SearchService,
     ) {
         super();
     }
@@ -52,17 +54,34 @@ export class QuizService extends BaseService {
                 25,
             );
 
-            const conditions = [eq(questionsTable.isPublished, true)];
-            if (subjectId) conditions.push(eq(questionsTable.providerSubjectId, subjectId));
-            if (gradeLevel) conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
-            if (complexity) conditions.push(eq(questionsTable.complexity, complexity));
-            if (language) conditions.push(eq(questionsTable.language, language));
+            // Try ParadeDB (Neon) first, fall back to Supabase
+            let selectedQuestions: Record<string, unknown>[] = [];
 
-            const selectedQuestions = await this.db.select()
-                .from(questionsTable)
-                .where(and(...conditions))
-                .orderBy(sql`RANDOM()`)
-                .limit(validQuestionCount);
+            if (this.searchService) {
+                selectedQuestions = await this.searchService.getQuestionsForQuiz({
+                    workspaceId,
+                    limit: validQuestionCount,
+                    subjectId,
+                    gradeLevel: gradeLevel ? Number(gradeLevel) : null,
+                    complexity,
+                    language,
+                });
+            }
+
+            // Fallback to Supabase if ParadeDB returned nothing
+            if (selectedQuestions.length === 0) {
+                const conditions = [eq(questionsTable.isPublished, true)];
+                if (subjectId) conditions.push(eq(questionsTable.providerSubjectId, subjectId));
+                if (gradeLevel) conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
+                if (complexity) conditions.push(eq(questionsTable.complexity, complexity));
+                if (language) conditions.push(eq(questionsTable.language, language));
+
+                selectedQuestions = await this.db.select()
+                    .from(questionsTable)
+                    .where(and(...conditions))
+                    .orderBy(sql`RANDOM()`)
+                    .limit(validQuestionCount);
+            }
 
             if (selectedQuestions.length === 0) {
                 return { success: false, error: "No questions found matching criteria" };
@@ -77,18 +96,18 @@ export class QuizService extends BaseService {
                 totalQuestions: selectedQuestions.length,
                 status: "in_progress",
                 startedAt: new Date(),
-                questions: selectedQuestions.map(q => q.id),
+                questions: selectedQuestions.map(q => q.id as string),
                 snapshotQuestions: selectedQuestions,
                 snapshotSubjectTitle: null, // Context removed from DB
                 snapshotTopicTitle: null, // Context removed from DB
             });
 
-            const questionsForUser = selectedQuestions.map((q: QuestionEntity) => ({
-                id: q.id,
-                body: q.question,
+            const questionsForUser = selectedQuestions.map((q) => ({
+                id: q.id as string,
+                body: (q.question as string) || null,
                 answers: q.answers,
-                complexity: q.complexity,
-                grade_level: q.gradeLevel,
+                complexity: (q.complexity as string) || null,
+                grade_level: (q.gradeLevel as number) || null,
             }));
 
             return {
@@ -401,7 +420,7 @@ export class QuizService extends BaseService {
         const cribs: string[] = [];
 
         if (params.questionId) {
-            const q = await this.db.select({ crib: questionsTable.aiAssistantCrib }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            const q = await this.db.select({ crib: questionsTable.aiGuide }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
             if (q[0]?.crib) cribs.push(q[0].crib);
         }
 
@@ -417,13 +436,13 @@ export class QuizService extends BaseService {
         }
 
         if (topicId) {
-            const t = await this.db.select({ crib: providerSubjectTopics.aiAssistantCrib, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
+            const t = await this.db.select({ crib: providerSubjectTopics.aiGuide, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
             if (t[0]?.crib) cribs.push(t[0].crib);
             if (!subjectId) subjectId = t[0]?.sid || undefined;
         }
 
         if (subjectId) {
-            const s = await this.db.select({ crib: providerSubjects.aiAssistantCrib }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
+            const s = await this.db.select({ crib: providerSubjects.aiGuide }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
             if (s[0]?.crib) cribs.push(s[0].crib);
         }
 

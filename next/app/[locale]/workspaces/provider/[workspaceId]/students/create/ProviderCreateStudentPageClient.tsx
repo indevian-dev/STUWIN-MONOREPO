@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { PiArrowLeft } from 'react-icons/pi';
 import { Link } from '@/i18n/routing';
@@ -20,7 +20,7 @@ export default function ProviderCreateStudentPageClient() {
   const handleCreate = async (studentData: any) => {
     try {
       setSaving(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/workspaces/provider/${workspaceId}/students/create`,
         body: studentData,

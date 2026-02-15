@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/student/[workspaceId]/homeworks/[id]/initiate
@@ -9,19 +10,16 @@ export const POST = unifiedApiHandler(
     async (request: NextRequest, { module, auth, log, params }: UnifiedContext) => {
         const homeworkId = params?.id as string;
         if (!homeworkId) {
-            return NextResponse.json({ success: false, error: "Homework ID is required" }, { status: 400 });
+            return errorResponse("Homework ID is required", 400);
         }
 
         const result = await module.homework.initiateAiSession(homeworkId);
 
         if (!result.success) {
             log.error("Failed to initiate homework session", { homeworkId, error: result.error });
-            return NextResponse.json({ success: false, error: result.error }, { status: 500 });
+            return serverErrorResponse(result.error);
         }
 
-        return NextResponse.json({
-            success: true,
-            data: result.data,
-        });
+        return okResponse(result.data);
     },
 );

@@ -1,14 +1,11 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PATCH = unifiedApiHandler(async (request, { module, params, log, isValidSlimId }) => {
   const { id } = params as { id: string };
 
   if (!id || !isValidSlimId(id)) {
-    return NextResponse.json(
-      { error: 'Valid notification ID is required' },
-      { status: 400 }
-    );
+    return errorResponse('Valid notification ID is required', 400);
   }
 
   try {
@@ -20,18 +17,12 @@ export const PATCH = unifiedApiHandler(async (request, { module, params, log, is
     const result = await module.support.markAsRead(id);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      return serverErrorResponse(result.error);
     }
 
-    return NextResponse.json({
-      success: true,
-      notification: result.data?.[0]
-    });
+    return okResponse({ success: true, notification: result.data?.[0] });
   } catch (error) {
     log.error('Failed to update student notification', error as Error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Internal server error');
   }
 });

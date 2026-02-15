@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params, auth }) => {
   const resolvedParams = await params;
   const workspaceId = resolvedParams?.workspaceId;
 
   if (!workspaceId) {
-    return NextResponse.json({ error: "Invalid Workspace ID" }, { status: 400 });
+    return errorResponse("Invalid Workspace ID", 400);
   }
 
   // Use the new WorkspaceService to fetch connected organizations
@@ -24,5 +24,5 @@ export const GET = unifiedApiHandler(async (request, { module, params, auth }) =
     isPlatformEnrollment: true // Default for now
   }));
 
-  return NextResponse.json(data, { status: 200 });
+  return okResponse(data);
 });

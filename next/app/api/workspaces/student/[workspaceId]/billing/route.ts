@@ -1,21 +1,15 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (_request, { module, log }) => {
     try {
         const status = await module.payment.getSubscriptionStatus();
 
-        return NextResponse.json({
-            success: true,
-            data: status,
-        });
+        return okResponse(status);
     } catch (error) {
         log.error('Billing status fetch error', error as Error);
-        return NextResponse.json(
-            { success: false, error: 'Internal server error' },
-            { status: 500 }
-        );
+        return serverErrorResponse('Internal server error');
     }
 });
 
@@ -25,10 +19,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, log }) =
         const { tierId, couponCode, language } = body;
 
         if (!tierId) {
-            return NextResponse.json(
-                { success: false, error: 'tierId is required' },
-                { status: 400 }
-            );
+            return errorResponse('tierId is required', 400);
         }
 
         const { workspaceId } = params as { workspaceId: string };
@@ -39,15 +30,9 @@ export const POST = unifiedApiHandler(async (request, { module, params, log }) =
             language: language || 'az'
         });
 
-        return NextResponse.json({
-            success: true,
-            data: result,
-        });
+        return okResponse(result);
     } catch (error: any) {
         log.error('Payment initiation error', error as Error);
-        return NextResponse.json(
-            { success: false, error: error.message || 'Payment failed' },
-            { status: 400 }
-        );
+        return errorResponse(error.message || 'Payment failed', 400);
     }
 });

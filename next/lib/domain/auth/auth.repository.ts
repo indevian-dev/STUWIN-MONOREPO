@@ -298,7 +298,7 @@ export class AuthRepository extends BaseRepository {
         firstName: string;
         lastName?: string;
         passwordHash: string;
-        sessionsGroupId: string;
+        sessionsGroupId?: string;
         accountId: string;
         workspaceId: string;
     }, tx?: DbClient) {
@@ -312,7 +312,7 @@ export class AuthRepository extends BaseRepository {
                 phone: params.phone,
                 firstName: params.firstName,
                 lastName: params.lastName,
-                sessionsGroupId: params.sessionsGroupId,
+                ...(params.sessionsGroupId ? { sessionsGroupId: params.sessionsGroupId } : {}),
                 emailIsVerified: false,
                 phoneIsVerified: false,
             }).returning();

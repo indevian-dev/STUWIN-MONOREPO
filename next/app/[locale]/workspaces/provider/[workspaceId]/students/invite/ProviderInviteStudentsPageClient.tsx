@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { PiArrowLeft, PiEnvelope } from 'react-icons/pi';
 import { Link } from '@/i18n/routing';
@@ -20,18 +20,14 @@ export default function ProviderInviteStudentsPageClient() {
   const handleInvite = async (invitationData: any) => {
     try {
       setSending(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/workspaces/provider/${workspaceId}/students/invite`,
         body: invitationData,
       });
 
-      if (response.status === 200) {
-        toast.success(t('invitations_sent_successfully'));
+              toast.success(t('invitations_sent_successfully'));
         router.push(`/workspaces/provider/${workspaceId}/students`);
-      } else {
-        toast.error(t('error_sending_invitations'));
-      }
     } catch (error) {
       ConsoleLogger.error('Error sending invitations:', error);
       toast.error(t('error_sending_invitations'));

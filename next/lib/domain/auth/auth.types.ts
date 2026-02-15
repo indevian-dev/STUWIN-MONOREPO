@@ -3,18 +3,6 @@ export interface Timestamps {
     updatedAt: Date;
 }
 
-export interface Session {
-    id: string;
-    sessionsGroupId: string;
-    accountId: string;
-    expireAt: Date;
-    ip?: string;
-    device?: string;
-    browser?: string;
-    os?: string;
-    metadata?: Record<string, unknown>;
-}
-
 // ═══════════════════════════════════════════════════════════════
 // AUTH MODULE TYPES
 // ═══════════════════════════════════════════════════════════════
@@ -39,15 +27,6 @@ export interface UserPrivateAccess extends Timestamps {
     isActive: boolean;
 }
 
-export interface UserCreateInput {
-    email: string;
-    password: string;
-    name?: string;
-    lastName?: string;
-    phone?: string;
-    provider?: string;
-}
-
 // ═══════════════════════════════════════════════════════════════
 // ACCOUNT
 // ═══════════════════════════════════════════════════════════════
@@ -58,9 +37,14 @@ export interface AccountPrivateAccess extends Timestamps {
     suspended: boolean;
 }
 
-export interface AccountCreateInput {
-    userId: string;
-    isPersonal?: boolean;
-    role?: string;
-}
+// ═══════════════════════════════════════════════════════════════
+// INPUT TYPES
+// ═══════════════════════════════════════════════════════════════
 
+export interface UserCreateInput {
+    email: string;
+    password: string;
+    name?: string;
+    lastName?: string;
+    phone?: string;
+}

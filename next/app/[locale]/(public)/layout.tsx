@@ -16,7 +16,7 @@ import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHead
 import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
 import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
 import { PublicFooterWidget } from '@/app/[locale]/(public)/(layout)/footer/(widgets)/PublicFooterWidget';
-import type { DomainNavConfig } from '@/types';
+import type { DomainNavConfig } from '@stuwin/shared/types';
 
 
 interface PublicLayoutProps {

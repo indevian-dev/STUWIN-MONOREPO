@@ -26,19 +26,10 @@
       "@/*": [
         "./*"
       ],
-      "@/types": [
+      "@stuwin/shared/types": [
         "../_shared.types/index"
       ],
-      "@/types/auth/*": [
-        "../_shared.types/auth/*"
-      ],
-      "@/types/domain": [
-        "../_shared.types/domain/index"
-      ],
-      "@/types/domain/*": [
-        "../_shared.types/domain/*"
-      ],
-      "@/types/*": [
+      "@stuwin/shared/types/*": [
         "../_shared.types/*"
       ],
       "@/lib/domain/types": [

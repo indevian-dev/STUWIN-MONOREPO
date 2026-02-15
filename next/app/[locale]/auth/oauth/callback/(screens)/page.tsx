@@ -9,7 +9,7 @@ import {
   useSearchParams
 } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface OAuthData {
@@ -45,13 +45,13 @@ export default function AuthOAuthCallbackPage() {
 
         try {
           // Exchange code for token
-          const response = await apiCallForSpaHelper({
+          const response = await apiCall<any>({
             method: 'POST',
             url: '/api/auth/oauth/callback',
             body: { code, state, provider, deviceInfo }
           });
 
-          if (response.status === 200) {
+          if (true) { // apiCall ensures success
             toast.success('Login successful!');
 
             // Clean up
@@ -104,16 +104,13 @@ export default function AuthOAuthCallbackPage() {
 
     try {
       // Submit the code with the provided email
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/auth/oauth/callback',
         body: { ...oauthData, email }
       });
 
-      if (response.status !== 200) {
-        throw new Error(response.data?.error || 'Authentication failed');
-      }
-
+      // apiCall throws on error — no manual status check needed
       toast.success('Login successful!');
 
       // Clean up

@@ -32,7 +32,7 @@ export class TopicService extends BaseService {
                     gradeLevel: data.gradeLevel || 1, language: data.language,
                     pdfDetails: { s3Key: data.pdfFileName || data.pdfId },
                     workspaceId: this.ctx.activeWorkspaceId || "default",
-                    isActiveAiGeneration: false, aiAssistantCrib: data.aiAssistantCrib,
+                    isActiveAiGeneration: false, aiGuide: data.aiGuide,
                 }, tx);
                 return { success: true as const, data: topic as unknown as TopicEntity };
             });
@@ -269,7 +269,7 @@ export class TopicService extends BaseService {
                 gradeLevel: topic.gradeLevel,
                 complexity: "Medium",
                 locale: fullLanguage,
-                aiCrib: topic.aiAssistantCrib || ""
+                aiCrib: topic.aiGuide || ""
             };
 
             const promptText = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.QUESTION_GENERATION, variables);

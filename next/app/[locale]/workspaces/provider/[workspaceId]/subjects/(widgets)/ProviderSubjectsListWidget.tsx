@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { useTranslations } from "next-intl";
 import { PiPlus, PiX, PiBook } from "react-icons/pi";
 import { toast } from "react-toastify";
@@ -18,14 +18,8 @@ interface Subject {
   slug: string;
   isActive: boolean;
   aiLabel: string | null;
-  aiAssistantCrib: string | null;
+  aiGuide: string | null;
   createdAt: string;
-}
-
-interface SubjectsResponse {
-  success: boolean;
-  data: Subject[];
-  error?: string;
 }
 
 export function ProviderSubjectsListWidget() {
@@ -57,16 +51,11 @@ export function ProviderSubjectsListWidget() {
       setLoading(true);
       setError(null);
 
-      const response = await apiCallForSpaHelper({
+      const data = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects`,
         method: "GET",
       });
-
-      if (response.status === 200 && response.data?.success && response.data?.data) {
-        setSubjects(response.data.data);
-      } else {
-        setError(response.data?.error || t("errorFetchingSubjects"));
-      }
+        setSubjects(data);
     } catch (err) {
       setError(t("errorFetchingSubjects"));
       console.error("Failed to fetch subjects:", err);
@@ -82,20 +71,15 @@ export function ProviderSubjectsListWidget() {
     e.preventDefault();
     try {
       setCreating(true);
-      const response = await apiCallForSpaHelper({
+      const data = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects`,
         method: "POST",
         body: newSubject,
       });
-
-      if (response.status === 200 && response.data?.success) {
         toast.success(t("subjectCreatedSuccessfully"));
         setIsModalOpen(false);
         setNewSubject({ title: "", slug: "", description: "", language: "az", gradeLevel: 1 });
         fetchSubjects();
-      } else {
-        toast.error(response.data?.error || t("errorCreatingSubject"));
-      }
     } catch (err) {
       toast.error(t("errorCreatingSubject"));
       console.error("Failed to create subject:", err);

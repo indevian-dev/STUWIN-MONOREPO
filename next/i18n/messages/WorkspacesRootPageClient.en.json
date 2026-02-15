@@ -1,10 +1,15 @@
 {
     "control_center": "Control Center",
-    "welcome_back": "Welcome back,",
+    "welcome_back": "Welcome back",
     "create": "CREATE",
     "discover": "DISCOVER",
     "my_workspaces": "My Workspaces",
     "discover_organizations": "Discover Organizations",
     "system_alert": "System Alert",
-    "retry": "RETRY"
+    "retry": "RETRY",
+    "select_workspace_message": "Select a workspace to get started",
+    "create_new_workspace": "Create New Workspace",
+    "no_active_workspaces_message": "You don't have any active workspaces yet.",
+    "start_onboarding_cta": "Create your first workspace →",
+    "go_to_workspace": "Go to workspace"
 }

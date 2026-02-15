@@ -13,6 +13,34 @@ const createStudentEndpoint = createRouteFactory({
   needPhoneVerification: true
 });
 
+// Student Permission Declarations
+export const PERMISSIONS = {
+  // General access
+  STUDENT_ACCESS: "Access student dashboard",
+  STUDENT_ACCOUNT_READ: "View own account",
+
+  // Provider interactions
+  STUDENT_PROVIDER_READ: "View providers",
+  STUDENT_PROVIDER_APPLICATION_READ: "View applications",
+  STUDENT_PROVIDER_APPLICATION_CREATE: "Create applications",
+
+  // Learning content
+  STUDENT_QUESTION_READ: "View questions",
+  STUDENT_QUIZ_TAKE: "Take quizzes",
+  STUDENT_QUIZ_READ: "View quiz results",
+
+  // AI learning sessions
+  STUDENT_LEARNING_READ: "View learning conversations",
+  STUDENT_LEARNING_CREATE: "Start learning conversations",
+  STUDENT_LEARNING_UPDATE: "Send messages",
+
+  // Homework
+  STUDENT_HOMEWORK_READ: "View homework",
+  STUDENT_HOMEWORK_CREATE: "Create homework",
+  STUDENT_HOMEWORK_UPDATE: "Update homework",
+  STUDENT_HOMEWORK_DELETE: "Delete homework",
+} as const;
+
 // Merge all student endpoints (APIs and pages)
 export const studentEndpoints: EndpointsMap = {
   // ============================================

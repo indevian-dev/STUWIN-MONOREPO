@@ -72,5 +72,6 @@
   "staff_workspaces": "Рабочие области персонала",
   "student_workspaces": "Рабочие области студентов",
   "parent_workspaces": "Рабочие области родителей",
-  "workspaces": "Рабочие области"
+  "workspaces": "Рабочие области",
+  "invitations": "Приглашения"
 }

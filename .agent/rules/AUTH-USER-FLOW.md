@@ -12,10 +12,11 @@
 | `next/lib/domain/auth/otp.types.ts` | `OtpType`, `OtpPurpose` |
 | `next/lib/domain/auth/verification.service.ts` | Email/phone verification flow |
 | `next/lib/domain/auth/password.util.ts` | Hashing, comparison, strength validation |
-| `next/lib/middleware/authenticators/IdentityAuthenticator.ts` | JWT decoding, session validation, `AuthData` resolution |
-| `next/lib/middleware/authenticators/SessionAuthenticator.ts` | Session cookie management |
+| `next/lib/middleware/authenticators/SessionStore.ts` | Redis-backed session management (create, validate, refresh, destroy) |
 | `next/lib/middleware/authenticators/CookieAuthenticator.ts` | Cookie-based auth helpers |
 | `next/lib/middleware/authenticators/OAuthAuthenticator.ts` | OAuth flow (Google, etc.) |
+| `next/lib/middleware/authorizers/CoreAuthorizer.ts` | Request validation — returns `ApiValidationResult` with `AuthContext` + `AuthValidationData` |
+| `next/lib/routes/types.ts` | `AuthValidationData` — session/user/account metadata |
 | `next/app/api/auth/` | Auth API routes (login, register, verify, reset, OAuth) |
 
 ## Identity vs Authorization
@@ -25,16 +26,24 @@
 ## Token Strategy
 | Token | Storage | Purpose |
 |---|---|---|
-| Session Token | HttpOnly cookie | Primary persistence |
+| Session Token | HttpOnly cookie + Redis via `SessionStore` | Primary persistence |
 | Access Token | Short-lived JWT | Internal request auth |
 | Refresh Token | Rotated | Long-lived session renewal |
 
+## Auth Data Types
+| Type | File | Purpose |
+|---|---|---|
+| `AuthContext` | `base/types.ts` | `userId`, `accountId`, `permissions`, `activeWorkspaceId` — injected into services |
+| `AuthValidationData` | `routes/types.ts` | `user`, `account`, `session` objects — validation metadata from `CoreAuthorizer` |
+| `HandlerLogger` | `routes/types.ts` | Typed logger interface for route handlers |
+
 ## Auth Flow
-1. User logs in → gets `session_token` cookie
-2. Middleware verifies `session_token`
-3. User navigates to `/workspaces/<type>/<id>`
-4. Interceptor checks membership + role for that workspace
-5. ✅ Granted or ❌ Redirected to 403 / Onboarding
+1. User logs in → `SessionStore.create()` stores session in Redis → `session_token` cookie set
+2. `CoreAuthorizer.validateEndpointRequest()` validates session via `SessionStore.validate()`
+3. Returns `ApiValidationResult` with `AuthContext` + `AuthValidationData`
+4. `withApiHandler` constructs `ApiHandlerContext` (guest fallback if no auth)
+5. `unifiedApiHandler` wraps into `UnifiedContext` with guaranteed non-optional fields
+6. Route handler receives `{ auth, module, authData, log, params }`
 
 ## OTP Module
 | File | Definition |
@@ -45,7 +54,8 @@
 
 ## Rules
 - **ALWAYS** use `AuthService` for login/signup — never raw SQL inserts for users
-- **ALWAYS** use `ctx.accountId` / `ctx.userId` from `unifiedApiHandler` — never re-parse cookies
+- **ALWAYS** use `auth.accountId` / `auth.userId` from `UnifiedContext` — never re-parse cookies
+- **ALWAYS** use `SessionStore` for session operations (create, validate, refresh, destroy)
 - **ALWAYS** use `OtpService` for OTP flows — never generate OTPs manually
 - **NEVER** store sensitive state (`isLoggedIn`) in `localStorage` for security checks
 - **NEVER** access `auth.repository` directly from routes — always go through `auth.service`

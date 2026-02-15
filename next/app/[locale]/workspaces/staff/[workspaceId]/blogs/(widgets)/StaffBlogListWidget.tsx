@@ -6,7 +6,7 @@ import {
 } from 'react';
 import Link
   from 'next/link';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useRouter } from 'next/navigation';
 import Image
   from 'next/image';
@@ -32,17 +32,14 @@ export default function StaffBlogListWidget() {
   useEffect(() => {
     async function fetchblogs() {
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: '/api/workspaces/staff/blogs'
         });
 
-        if (response.status !== 200) {
-          ConsoleLogger.log('error', response.data);
-          return;
-        }
+        // apiCall throws on error — no manual status check needed
 
-        setblogsList(response.data.blogs || []);
+        setblogsList(response.blogs || []);
 
       } catch (error) {
         ConsoleLogger.log(error);
@@ -55,22 +52,16 @@ export default function StaffBlogListWidget() {
   const handleDelete = async (blogId: number) => {
     if (window.confirm('Are you sure you want to delete this blog?')) {
       setIsDeleting(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'DELETE',
         url: `/api/workspaces/staff/blogs/delete/${blogId}`
       });
 
       setIsDeleting(false);
 
-      if (response.status === 200) {
-        setblogsList((prevblogs) =>
-          prevblogs.filter((blog) => blog.id !== blogId));
-        toast.success('Blog Deleted!');
-        return;
-      }
-
-      ConsoleLogger.log('Failed to delete blog');
-      toast.error('Failed to delete blog');
+      setblogsList((prevblogs) =>
+        prevblogs.filter((blog) => blog.id !== blogId));
+      toast.success('Blog Deleted!');
     }
   };
 
@@ -80,25 +71,19 @@ export default function StaffBlogListWidget() {
 
   const handlePublishToggle = async (blog: Blog) => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'PATCH',
         url: `/api/workspaces/staff/blogs/publish/${blog.id}`,
         body: JSON.stringify({ published: !isPublished(blog) })
       });
 
-      if (response.status === 200) {
-        toast.success('Blog publish status updated!');
-        // Update the local state
-        setblogsList((prevblogs) =>
-          prevblogs.map((prevblog) =>
-            prevblog.id === blog.id ? { ...prevblog, published: !prevblog.published } : prevblog
-          )
-        );
-        return;
-      }
-
-      ConsoleLogger.log('error', response.data);
-      toast.error('Failed to update blog status');
+      toast.success('Blog publish status updated!');
+      // Update the local state
+      setblogsList((prevblogs) =>
+        prevblogs.map((prevblog) =>
+          prevblog.id === blog.id ? { ...prevblog, published: !prevblog.published } : prevblog
+        )
+      );
 
     } catch (error) {
       ConsoleLogger.log(error);
@@ -112,25 +97,19 @@ export default function StaffBlogListWidget() {
 
   const handleHomePageToggle = async (blog: Blog) => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'PATCH',
         url: `/api/workspaces/staff/blogs/homepage/${blog.id}`,
         body: JSON.stringify({ home_page: !isHomePage(blog) })
       });
 
-      if (response.status === 200) {
-        toast.success('Blog homepage status updated!');
-        // Update the local state
-        setblogsList((prevblogs) =>
-          prevblogs.map((prevblog) =>
-            prevblog.id === blog.id ? { ...prevblog, home_page: !prevblog.home_page } : prevblog
-          )
-        );
-        return;
-      }
-
-      ConsoleLogger.log('error', response.data);
-      toast.error('Failed to update homepage status');
+      toast.success('Blog homepage status updated!');
+      // Update the local state
+      setblogsList((prevblogs) =>
+        prevblogs.map((prevblog) =>
+          prevblog.id === blog.id ? { ...prevblog, home_page: !prevblog.home_page } : prevblog
+        )
+      );
 
     } catch (error) {
       ConsoleLogger.log(error);

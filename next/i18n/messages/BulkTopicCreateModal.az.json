@@ -14,7 +14,7 @@
   "instruction3": "Boş sətirlər nəzərə alınmayacaq",
   "jsonInstructions": "Mövzu obyektlərinin JSON massivini yapışdırın:",
   "jsonInstruction1": "Hər obyektdə 'name' və ya 'title' xüsusiyyəti olmalıdır",
-  "jsonInstruction2": "Dəstəklənir: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveForAi",
+  "jsonInstruction2": "Dəstəklənir: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveAiGeneration",
   "jsonExample": "JSON Nümunəsini Göstər",
   "topicsList": "Mövzular Siyahısı",
   "topicsPlaceholder": "Fizikaya Giriş\nNyutonun Hərəkət Qanunları\nKinematika və Dinamika\n...",

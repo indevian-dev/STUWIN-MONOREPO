@@ -1,6 +1,6 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {
   const { searchParams } = new URL(request.url);
@@ -24,15 +24,12 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   });
 
   if (!result.success || !(result as any).data) {
-    return NextResponse.json({ error: (result as any).error || "Failed" }, { status: 500 });
+    return serverErrorResponse((result as any).error || "Failed");
   }
 
   const { questions, pagination } = (result as any).data;
 
-  return NextResponse.json({
-    questions,
-    ...pagination
-  });
+  return okResponse({ questions, ...pagination });
 });
 
 

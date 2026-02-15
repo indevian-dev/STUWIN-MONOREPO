@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const DELETE = unifiedApiHandler(
   async (request: NextRequest, { module, auth, log, params }: UnifiedContext) => {
@@ -7,7 +8,7 @@ export const DELETE = unifiedApiHandler(
     const id = params?.id as string;
 
     if (!id) {
-      return NextResponse.json({ error: "Invalid quiz ID" }, { status: 400 });
+      return errorResponse("Invalid quiz ID", 400);
     }
 
     log.info("Deleting quiz", { quizId: id, accountId });
@@ -17,27 +18,17 @@ export const DELETE = unifiedApiHandler(
 
       if (!result.success) {
         if (result.error === "Quiz not found or access denied") {
-          return NextResponse.json({ error: result.error }, { status: 404 });
+          return errorResponse(result.error, 404);
         }
-        return NextResponse.json({ error: result.error }, { status: 500 });
+        return serverErrorResponse(result.error);
       }
 
       log.info("Quiz deleted", { quizId: id });
 
-      return NextResponse.json(
-        {
-          operation: "success",
-          message: "Quiz deleted successfully",
-          deletedQuizId: id,
-        },
-        { status: 200 },
-      );
+      return okResponse({ operation: "success", deletedQuizId: id }, "Quiz deleted successfully");
     } catch (error) {
       log.error("Error deleting quiz", error);
-      return NextResponse.json(
-        { error: "Error deleting quiz" },
-        { status: 500 },
-      );
+      return serverErrorResponse("Error deleting quiz");
     }
   },
 );

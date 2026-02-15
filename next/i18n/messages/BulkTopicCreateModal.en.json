@@ -14,7 +14,7 @@
   "instruction3": "Empty lines will be ignored",
   "jsonInstructions": "Paste a JSON array of topic objects:",
   "jsonInstruction1": "Each object must have 'name' or 'title' property",
-  "jsonInstruction2": "Supports: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveForAi",
+  "jsonInstruction2": "Supports: title, name, start_page, end_page, gradeLevel, chapterNumber, body, isActiveAiGeneration",
   "jsonExample": "View JSON Example",
   "topicsList": "Topics List",
   "topicsPlaceholder": "Introduction to Physics\nNewton's Laws of Motion\nKinematics and Dynamics\n...",

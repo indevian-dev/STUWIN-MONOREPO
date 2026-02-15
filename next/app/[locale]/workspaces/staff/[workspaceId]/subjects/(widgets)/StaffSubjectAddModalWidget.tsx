@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface StaffSubjectAddModalWidgetProps {
@@ -37,7 +37,7 @@ export function StaffSubjectAddModalWidget({
         return;
       }
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/workspaces/staff/subjects/create',
         params: {},
@@ -51,20 +51,16 @@ export function StaffSubjectAddModalWidget({
         }
       });
 
-      if (response.status === 200 || response.status === 201) {
-        // Reset form
-        setTitle('');
-        setDescription('');
-        setAiLabel('');
-        setCover('');
-        setIsActive(true);
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setAiLabel('');
+      setCover('');
+      setIsActive(true);
 
-        // Notify parent and close
-        onSuccess?.();
-        onClose();
-      } else {
-        setError(response.data?.error || 'Failed to create subject');
-      }
+      // Notify parent and close
+      onSuccess?.();
+      onClose();
     } catch (err) {
       ConsoleLogger.error('Error creating subject:', err);
       setError('Failed to create subject');

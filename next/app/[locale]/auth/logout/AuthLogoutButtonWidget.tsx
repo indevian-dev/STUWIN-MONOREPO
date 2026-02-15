@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from '@/i18n/routing'
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient'
+import { apiCall } from '@/lib/utils/http/SpaApiClient'
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 export default function AuthLogoutButtonWidget() {
@@ -10,7 +10,7 @@ export default function AuthLogoutButtonWidget() {
   const handleLogout = async () => {
     try {
       // Call the API route to clear cookies server-side using handleApiCall
-      await apiCallForSpaHelper({
+      await apiCall<any>({
         method: 'POST',
         url: '/api/auth/logout'
       })

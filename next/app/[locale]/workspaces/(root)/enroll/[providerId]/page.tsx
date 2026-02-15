@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { PiArrowLeft, PiCheckCircleBold, PiBuildingsBold, PiCreditCardBold, PiLightningBold, PiStudentBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
@@ -36,12 +36,12 @@ export default function EnrollmentPage() {
 
     const checkEnrollmentStatus = async () => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/billing/subscriptions`,
                 method: "GET",
             });
-            if ((response as any).success && Array.isArray(response.data)) {
-                const access = response.data.find((item: any) => item.workspace.id === providerId);
+            if ((response as any).success && Array.isArray(response)) {
+                const access = response.find((item: any) => item.workspace.id === providerId);
                 if (access) {
                     setExistingAccess(access);
                     setHasUsedTrial(true); // If record exists, trial is considered used/started
@@ -54,7 +54,7 @@ export default function EnrollmentPage() {
 
     const fetchProvider = async () => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/providers/${providerId}`,
                 method: "GET",
             });
@@ -88,7 +88,7 @@ export default function EnrollmentPage() {
         try {
             if (useTrial) {
                 // Free Trial / Direct Enrollment
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     url: "/api/workspaces/onboarding",
                     method: "POST",
                     body: {
@@ -110,7 +110,7 @@ export default function EnrollmentPage() {
                 }
             } else {
                 // Paid Enrollment
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     url: "/api/workspaces/billing/initiate",
                     method: "POST",
                     body: {
@@ -123,7 +123,7 @@ export default function EnrollmentPage() {
                 let targetWorkspaceId = existingAccess?.workspace?.id;
 
                 if (!targetWorkspaceId) {
-                    const onboardingRes = await apiCallForSpaHelper({
+                    const onboardingRes = await apiCall<any>({
                         url: "/api/workspaces/onboarding",
                         method: "POST",
                         body: {
@@ -144,7 +144,7 @@ export default function EnrollmentPage() {
                 }
 
                 // Now Initiate Payment
-                const payRes = await apiCallForSpaHelper({
+                const payRes = await apiCall<any>({
                     url: "/api/workspaces/billing/initiate",
                     method: "POST",
                     body: {

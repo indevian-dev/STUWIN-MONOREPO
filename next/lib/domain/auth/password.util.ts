@@ -4,7 +4,7 @@ import type {
   PasswordValidationResult,
   HashPasswordResult,
   VerifyPasswordResult,
-} from "@/types/auth/password";
+} from "@stuwin/shared/types/auth/password";
 
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
 

@@ -4,7 +4,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { DomainNavConfig } from '@/types';
+import { DomainNavConfig } from '@stuwin/shared/types';
 import { GlobalProfileAvatarTile } from '@/app/[locale]/(global)/(tiles)/GlobalProfileAvatarTile';
 import { GlobalNotificationBadgeTile } from '@/app/[locale]/(global)/(tiles)/GlobalNotificationBadgeTile';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';

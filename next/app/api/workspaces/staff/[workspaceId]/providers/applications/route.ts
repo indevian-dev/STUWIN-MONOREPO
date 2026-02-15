@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
-
+import { serverErrorResponse, paginatedResponse } from '@/lib/middleware/responses/ApiResponse';
 export const GET = unifiedApiHandler(async (request: NextRequest, { module }) => {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -10,13 +10,13 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module }) =>
     const result = await module.workspace.staffListProviderApplications({ page, pageSize, search });
 
     if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 500 });
+        return serverErrorResponse(result.error);
     }
 
-    return NextResponse.json({
-        data: result.applications,
-        total: result.total,
+    return paginatedResponse(result.applications, {
         page: result.page,
         pageSize: result.pageSize,
-    }, { status: 200 });
+        total: result.total,
+        totalPages: Math.ceil(result.total / result.pageSize),
+    });
 });

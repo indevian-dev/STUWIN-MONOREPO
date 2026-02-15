@@ -1,6 +1,6 @@
 'use client';
 
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { isValidSlimId } from '@/lib/utils/ids/SlimUlidUtil';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -86,22 +86,19 @@ export async function getProviders(options: GetProvidersOptions): Promise<Provid
       params.searchType = searchType;
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers`,
       params,
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch Providers');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      providers: response.data.data || [],
-      total: response.data.total || 0,
-      page: response.data.page || page,
-      pageSize: response.data.pageSize || pageSize,
+      providers: response || [],
+      total: response.total || 0,
+      page: response.page || page,
+      pageSize: response.pageSize || pageSize,
       error: null
     };
   } catch (error: any) {
@@ -126,23 +123,16 @@ export async function getProviderById(workspaceId: string, providerId: string): 
       throw new Error('Valid Provider ID is required');
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers/${providerId}`,
       params: {},
       body: {}
     });
 
-    if (response.status === 404) {
-      throw new Error('Provider not found');
-    }
-
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch Provider');
-    }
-
+    // apiCall throws on error (including 404) — no manual status check needed
     return {
-      provider: response.data,
+      provider: response,
       error: null
     };
   } catch (error: any) {
@@ -412,22 +402,19 @@ export async function getProviderApplications(options: GetProviderApplicationsOp
       params.search = search.trim();
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications`,
       params,
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch Provider applications');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      applications: response.data.applications || [],
-      total: response.data.total || 0,
-      page: response.data.page || page,
-      pageSize: response.data.pageSize || pageSize,
+      applications: response.applications || [],
+      total: response.total || 0,
+      page: response.page || page,
+      pageSize: response.pageSize || pageSize,
       error: null
     };
   } catch (error: any) {
@@ -452,20 +439,17 @@ export async function approveProviderApplication(workspaceId: string, applicatio
       throw new Error('Valid application ID is required');
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'PUT',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications/update/${applicationId}`,
       params: {},
       body: { approved: true }
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to approve Provider application');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      application: response.data.data.application,
-      provider: response.data.data.provider,
+      application: response.application,
+      provider: response.provider,
       error: null
     };
   } catch (error: any) {
@@ -496,7 +480,7 @@ export async function rejectProviderApplication(
       throw new Error('Rejection reason is required');
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'PUT',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications/update/${applicationId}`,
       params: {},
@@ -506,12 +490,9 @@ export async function rejectProviderApplication(
       }
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to reject Provider application');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      application: response.data.data.application,
+      application: response.application,
       error: null
     };
   } catch (error: any) {

@@ -21,6 +21,7 @@ export const PERMISSIONS = {
   STAFF_ACCOUNT_UPDATE: "Update account information",
   STAFF_ACCOUNT_DELETE: "Delete accounts",
   STAFF_ACCOUNT_MEDIA_UPLOAD: "Upload account media files",
+  STAFF_ACCOUNT_MEDIA_DELETE: "Delete account media files",
 
   // User permissions
   STAFF_USER_READ: "View user information",
@@ -29,6 +30,8 @@ export const PERMISSIONS = {
   STAFF_USER_DELETE: "Delete users",
   STAFF_USER_MEDIA_UPLOAD: "Upload user media files",
   STAFF_USER_MEDIA_DELETE: "Delete user media files",
+  STAFF_USER_RESET_PASSWORD: "Reset user passwords",
+  STAFF_USER_SWITCH_ACCOUNT: "Switch to user accounts",
 
   // Subject permissions
   STAFF_SUBJECT_READ: "View subjects",
@@ -62,6 +65,7 @@ export const PERMISSIONS = {
   STAFF_QUESTION_APPROVE: "Approve questions for publishing",
   STAFF_QUESTION_SYNC: "Sync questions to search",
   STAFF_QUESTION_PUBLISH: "Publish questions",
+  STAFF_QUESTION_BULK_OPERATIONS: "Bulk question operations",
 
   // Provider permissions
   STAFF_PROVIDER_READ: "View provider organizations",

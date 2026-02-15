@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, authData, log }) => {
   const accountId = authData.account.id;
@@ -14,7 +14,7 @@ export const GET = unifiedApiHandler(async (request, { module, authData, log }) 
     const result = await module.support.getNotifications(accountId);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      return serverErrorResponse(result.error);
     }
 
     const notifications = result.data || [];
@@ -25,23 +25,16 @@ export const GET = unifiedApiHandler(async (request, { module, authData, log }) 
 
     const unreadCount = notifications.filter((n: any) => !n.markAsRead).length;
 
-    return NextResponse.json({
-      notifications: paginatedNotifications,
-      pagination: {
+    return okResponse({ notifications: paginatedNotifications, pagination: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
         hasNext: page < Math.ceil(total / limit),
         hasPrev: page > 1
-      },
-      unread_count: unreadCount
-    });
+      }, unread_count: unreadCount });
   } catch (error) {
     log.error('Failed to fetch student notifications', error as Error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Internal server error');
   }
 });

@@ -1,13 +1,13 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil'; // If needed for legacy ID gen
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
   const { id, workspaceId } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    return errorResponse("Invalid ID", 400);
   }
 
   const questionId = id as string;
@@ -17,7 +17,7 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
   // Fetch question to get author ID
   const qResult = await module.question.getById(questionId);
   if (!qResult.success || !qResult.data) {
-    return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    return errorResponse("Question not found", 404, "NOT_FOUND");
   }
   const question = qResult.data;
 
@@ -60,16 +60,13 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
   }
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return serverErrorResponse(result.error);
   }
 
-  return NextResponse.json({
-    message: `Question ${approved ? 'approved' : 'rejected'} successfully`,
-    data: {
+  return okResponse({
       questionId,
       approved,
       reasons: approved ? null : reasons,
       reasonText: approved ? null : reasonText
-    }
-  }, { status: 200 });
+    }, `Question ${approved ? 'approved' : 'rejected'} successfully`);
 });

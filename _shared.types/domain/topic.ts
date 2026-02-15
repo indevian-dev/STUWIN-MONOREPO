@@ -16,7 +16,7 @@ export namespace Topic {
         aiSummary: string | null;
         isActiveAiGeneration: boolean;
         workspaceId: string;
-        aiAssistantCrib: string | null;
+        aiGuide: string | null;
         pdfDetails: TopicPdfDetails | null;
         questionsStats: TopicQuestionsStats | null;
         parentTopicId: string | null;
@@ -62,7 +62,7 @@ export namespace Topic {
         questionsStats?: TopicQuestionsStats;
         parentTopicId?: string;
         language?: string;
-        aiAssistantCrib?: string;
+        aiGuide?: string;
         aiSummary?: string;
     }
 

@@ -1,19 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import slugify from 'slugify';
 
 export const PUT = unifiedApiHandler(async (request: NextRequest, { params, authData, module, log }) => {
     if (!params) {
-        return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+        return errorResponse("Missing parameters");
     }
     const { id } = await params;
     if (!id) {
-        return NextResponse.json({ error: 'Invalid blog ID' }, { status: 400 });
+        return errorResponse("Invalid blog ID");
     }
 
     try {
         if (!authData) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
         }
 
         const body = await request.json();
@@ -40,18 +41,18 @@ export const PUT = unifiedApiHandler(async (request: NextRequest, { params, auth
         if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
 
         if (Object.keys(updateData).length === 0) {
-            return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+            return errorResponse("No fields to update");
         }
 
         const updatedBlog = await module.content.contentRepo.updateBlog(id, updateData);
 
         if (!updatedBlog) {
-            return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
+            return errorResponse("Blog not found", 404, "NOT_FOUND");
         }
-        return NextResponse.json({ blog: updatedBlog }, { status: 200 });
+        return okResponse(updatedBlog);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to update blog';
         if (log) log.error("Failed to update blog", error);
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return serverErrorResponse(errorMessage);
     }
 });

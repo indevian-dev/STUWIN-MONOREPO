@@ -1,8 +1,9 @@
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { CookieAuthenticator } from "@/lib/middleware/authenticators/CookieAuthenticator";
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module }) => {
   try {
@@ -11,10 +12,7 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
 
     // Validate input
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      );
+      return errorResponse("Email and password are required", 400);
     }
 
     // Use AuthService from ModuleFactory
@@ -28,20 +26,11 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
     });
 
     if (!result.success || !result.data) {
-      return NextResponse.json(
-        {
-          error: result.error,
-          formError: result.formError,
-        },
-        { status: result.status }
-      );
+      return errorResponse(result.error, result.status);
     }
 
     // Create minimal response
-    const response = NextResponse.json({
-      success: true,
-      message: "Logged in successfully"
-    }, { status: 200 });
+    const response = okResponse({ success: true, message: "Logged in successfully" });
 
     const { session, expireAt } = result.data;
 
@@ -57,10 +46,6 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
     return authCookiesResponse;
   } catch (error) {
     ConsoleLogger.error("Error in login route:", error);
-    return NextResponse.json(
-      { error: "Server error occurred" },
-      { status: 500 }
-    );
+    return serverErrorResponse("Server error occurred");
   }
 });
-

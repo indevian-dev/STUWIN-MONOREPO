@@ -138,22 +138,38 @@ export class WorkspaceRepository extends BaseRepository {
 
     /**
      * Lists all workspaces the account has access to.
-     * Unified query via workspace_accesses.
+     * Includes both target workspaces (provider, staff) AND via workspaces (student personal).
+     * Uses UNION to collect all unique workspace IDs from both columns.
      */
     async listUserWorkspaces(accountId: string, tx?: DbClient) {
         const client = tx ?? this.db;
 
-        // JOIN workspace_accesses -> workspaces
-        // We want unique workspaces.
-        const result = await client
-            .selectDistinct({
-                workspace: workspaces
-            })
+        // Get all unique workspace IDs from both target_workspace_id and via_workspace_id
+        const wsIds = await client
+            .selectDistinct({ id: workspaceAccesses.targetWorkspaceId })
             .from(workspaceAccesses)
-            .innerJoin(workspaces, eq(workspaceAccesses.targetWorkspaceId, workspaces.id))
             .where(eq(workspaceAccesses.actorAccountId, accountId));
 
-        return result.map(r => r.workspace);
+        const viaIds = await client
+            .selectDistinct({ id: workspaceAccesses.viaWorkspaceId })
+            .from(workspaceAccesses)
+            .where(eq(workspaceAccesses.actorAccountId, accountId));
+
+        // Merge and deduplicate
+        const allIds = [...new Set([
+            ...wsIds.map(r => r.id).filter(Boolean),
+            ...viaIds.map(r => r.id).filter(Boolean),
+        ])] as string[];
+
+        if (allIds.length === 0) return [];
+
+        // Fetch all workspaces by collected IDs
+        const result = await client
+            .select()
+            .from(workspaces)
+            .where(sql`${workspaces.id} IN (${sql.join(allIds.map(id => sql`${id}`), sql`, `)})`);
+
+        return result;
     }
 
     /**

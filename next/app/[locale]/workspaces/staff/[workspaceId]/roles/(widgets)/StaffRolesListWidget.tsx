@@ -6,7 +6,7 @@ import {
     useMemo
 } from 'react';
 import { useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { Link } from '@/i18n/routing';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
@@ -51,14 +51,14 @@ export function StaffRolesListWidget() {
     const fetchRoles = async () => {
         setLoading(true);
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/staff/${workspaceId}/roles`,
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-            const data = await response.data;
+            const data = await response;
             setRoles(data.roles || []);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to fetch roles';
@@ -84,7 +84,7 @@ export function StaffRolesListWidget() {
         setCreateError(null);
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/staff/${workspaceId}/roles/create`,
                 method: 'POST',
                 headers: {
@@ -93,8 +93,8 @@ export function StaffRolesListWidget() {
                 body: JSON.stringify(newRole)
             });
 
-            if (response.data.role) {
-                setRoles([...roles, response.data.role]);
+            if (response.role) {
+                setRoles([...roles, response.role]);
                 setIsModalOpen(false);
                 setNewRole({ name: '', description: '', forWorkspaceType: 'student', permissions: [] });
             }

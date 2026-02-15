@@ -4,7 +4,7 @@ import {
     useEffect,
     useState
 } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 
@@ -16,11 +16,11 @@ export function StaffAddPermissionsWidget() {
     useEffect(() => {
         const fetchRoutes = async () => {
             try {
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     url: '/api/workspaces/routes',
                     method: 'GET',
                 });
-                const data = response.data;
+                const data = response;
                 setRoutes(data);
             } catch (error) {
                 setError(error instanceof Error ? error : new Error('Failed to fetch routes'));

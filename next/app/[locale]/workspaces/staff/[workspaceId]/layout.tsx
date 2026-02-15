@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { withLayoutAuth } from "@/lib/middleware/handlers";
 import { StaffLayoutClient } from "./StaffLayoutClient";
-import type { AuthData } from "@/types";
+import type { AuthData } from "@stuwin/shared/types";
 
 interface StaffLayoutProps {
   children: ReactNode;

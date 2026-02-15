@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
 import { QuestionGenerationService } from "@/lib/domain/question/question-generation.service";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { auth, log }: UnifiedContext) => {
@@ -35,10 +36,7 @@ export const POST = unifiedApiHandler(
 
       // Validation
       if (!subject_id || !grade_level || !topic?.trim()) {
-        return NextResponse.json(
-          { error: "Subject, Grade level, and Topic are required" },
-          { status: 400 },
-        );
+        return errorResponse("Subject, Grade level, and Topic are required", 400);
       }
 
       // Check if using per-complexity counts
@@ -53,10 +51,10 @@ export const POST = unifiedApiHandler(
         const mediumCount = count_medium || 0;
         const hardCount = count_hard || 0;
         if (easyCount + mediumCount + hardCount === 0) {
-          return NextResponse.json({ error: "Total count must be > 0" }, { status: 400 });
+          return errorResponse("Total count must be > 0", 400);
         }
       } else if (!complexity) {
-        return NextResponse.json({ error: "Complexity is required" }, { status: 400 });
+        return errorResponse("Complexity is required", 400);
       }
 
       // Get subject context
@@ -67,7 +65,7 @@ export const POST = unifiedApiHandler(
       if (topic_id) {
         topicData = await QuestionGenerationService.fetchTopicById(topic_id);
         if (!topicData) {
-          return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+          return errorResponse("Topic not found", 404, "NOT_FOUND");
         }
       } else {
         topicData = {
@@ -109,7 +107,7 @@ export const POST = unifiedApiHandler(
       }
 
       if (!generatedQuestions || generatedQuestions.length === 0) {
-        return NextResponse.json({ error: "AI did not generate any questions" }, { status: 500 });
+        return serverErrorResponse("AI did not generate any questions");
       }
 
       // Save questions
@@ -123,20 +121,10 @@ export const POST = unifiedApiHandler(
         language,
       });
 
-      return NextResponse.json(
-        {
-          message: `Successfully generated ${saveResult.savedQuestions.length} question(s)`,
-          questions: saveResult.savedQuestions,
-          topicStatsUpdated: saveResult.topicStatsUpdated,
-        },
-        { status: 201 },
-      );
+      return createdResponse(saveResult.savedQuestions, `Successfully generated ${saveResult.savedQuestions.length} question(s)`);
     } catch (error) {
       log.error("Error generating questions", error);
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to generate questions" },
-        { status: 500 },
-      );
+      return serverErrorResponse(error instanceof Error ? error.message : "Failed to generate questions");
     }
   },
 );

@@ -5,7 +5,7 @@ import {
     useEffect
 } from 'react';
 import { useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalPaginationTile } from '@/app/[locale]/(global)/(tiles)/GlobalPaginationTile';
 import { toast } from 'react-toastify';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
@@ -68,7 +68,7 @@ export function StaffUsersListWidget() {
         const fetchUsers = async () => {
             try {
                 setLoading(true);
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     method: 'GET',
                     url: `/api/workspaces/staff/${workspaceId}/users`,
                     params: {
@@ -78,13 +78,12 @@ export function StaffUsersListWidget() {
                     },
                     body: {}
                 });
-                const data = await response.data;
                 // Ensure accounts is always an array for each user
-                setUsers((data.users || []).map((u: User) => ({
+                setUsers((response.users || []).map((u: User) => ({
                     ...u,
                     accounts: Array.isArray(u.accounts) ? u.accounts.filter(Boolean) : []
                 })));
-                setTotalPages(Math.ceil(data.total / data.pageSize));
+                setTotalPages(Math.ceil(response.total / response.pageSize));
             } catch (error) {
                 setError(error as Error);
             } finally {
@@ -99,12 +98,11 @@ export function StaffUsersListWidget() {
         // Fetch available roles
         const fetchRoles = async () => {
             try {
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     method: 'GET',
                     url: `/api/workspaces/staff/${workspaceId}/roles`
                 });
-                const data = await response.data;
-                setRoles(data.roles || []);
+                setRoles(response.roles || []);
             } catch (error) {
                 ConsoleLogger.error('Error fetching roles:', error);
             }
@@ -136,30 +134,23 @@ export function StaffUsersListWidget() {
 
     const handleCreateAccount = async (userId: string) => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/staff/${workspaceId}/users/create`,
                 body: { userId }
             });
 
-            if (response.status === 200) {
-                // Refresh the users list to show the new account
-                const updatedResponse = await apiCallForSpaHelper({
-                    method: 'GET',
-                    url: `/api/workspaces/staff/${workspaceId}/users`,
-                    params: {
-                        page,
-                        ...(search && { search: search }),
-                        ...(search && { searchType: searchType })
-                    }
-                });
-                const data = await updatedResponse.data;
-                setUsers(data.users);
-            } else if (response.status === 409) {
-                toast.error('Personal account already exists for this user');
-            } else {
-                toast.error('Failed to create account');
-            }
+            // Refresh the users list to show the new account
+            const updatedResponse = await apiCall<any>({
+                method: 'GET',
+                url: `/api/workspaces/staff/${workspaceId}/users`,
+                params: {
+                    page,
+                    ...(search && { search: search }),
+                    ...(search && { searchType: searchType })
+                }
+            });
+            setUsers(updatedResponse.users);
         } catch (error) {
             setError(error as Error);
         }
@@ -167,30 +158,26 @@ export function StaffUsersListWidget() {
 
     const handleSuspendToggle = async (accountId: number, suspended: boolean) => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/users/${accountId}`,
                 body: JSON.stringify({ suspended })
             });
 
-            if (response.status === 200) {
-                toast.success(`Account ${suspended ? 'suspended' : 'unsuspended'} successfully`);
-                // Update the users list to reflect the change
-                setUsers(users.map(user => {
-                    if (user.accounts?.[0]?.id === accountId) {
-                        return {
-                            ...user,
-                            accounts: [{
-                                ...user.accounts?.[0],
-                                suspended
-                            }]
-                        };
-                    }
-                    return user;
-                }));
-            } else {
-                toast.error('Failed to update account status');
-            }
+            toast.success(`Account ${suspended ? 'suspended' : 'unsuspended'} successfully`);
+            // Update the users list to reflect the change
+            setUsers(users.map(user => {
+                if (user.accounts?.[0]?.id === accountId) {
+                    return {
+                        ...user,
+                        accounts: [{
+                            ...user.accounts?.[0],
+                            suspended
+                        }]
+                    };
+                }
+                return user;
+            }));
         } catch (error) {
             ConsoleLogger.error('Error updating account status:', error);
             toast.error('Error updating account status');
@@ -203,7 +190,7 @@ export function StaffUsersListWidget() {
         }
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'DELETE',
                 url: `/api/workspaces/staff/${workspaceId}/users/delete`,
                 body: {
@@ -211,13 +198,9 @@ export function StaffUsersListWidget() {
                 }
             });
 
-            if (response.status === 200) {
-                toast.success('User deleted successfully');
-                // Remove the user from the local state
-                setUsers(users.filter(user => user.id !== userId));
-            } else {
-                toast.error('Failed to delete user');
-            }
+            toast.success('User deleted successfully');
+            // Remove the user from the local state
+            setUsers(users.filter(user => user.id !== userId));
         } catch (error) {
             ConsoleLogger.error('Error deleting user:', error);
             toast.error('Error deleting user');
@@ -279,33 +262,29 @@ export function StaffUsersListWidget() {
         }
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/users/${selectedAccountId}`,
                 body: JSON.stringify({ role: selectedRole })
             });
 
-            if (response.status === 200) {
-                toast.success('Role assigned successfully');
-                setIsRoleModalOpen(false);
+            toast.success('Role assigned successfully');
+            setIsRoleModalOpen(false);
 
-                // Update local user state to reflect role assignment
-                const updatedUsers = users.map(user => {
-                    if (user.accounts?.[0]?.id === selectedAccountId) {
-                        return {
-                            ...user,
-                            accounts: [{
-                                ...user.accounts?.[0],
-                                role: selectedRole
-                            }]
-                        };
-                    }
-                    return user;
-                });
-                setUsers(updatedUsers);
-            } else {
-                toast.error('Failed to assign role');
-            }
+            // Update local user state to reflect role assignment
+            const updatedUsers = users.map(user => {
+                if (user.accounts?.[0]?.id === selectedAccountId) {
+                    return {
+                        ...user,
+                        accounts: [{
+                            ...user.accounts?.[0],
+                            role: selectedRole
+                        }]
+                    };
+                }
+                return user;
+            });
+            setUsers(updatedUsers);
         } catch (error) {
             ConsoleLogger.error('Error assigning role:', error);
             toast.error('Error assigning role');
@@ -320,7 +299,7 @@ export function StaffUsersListWidget() {
         }
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/users/update`,
                 body: {
@@ -329,12 +308,8 @@ export function StaffUsersListWidget() {
                 }
             });
 
-            if (response.status === 200) {
-                toast.success('Password updated successfully');
-                setIsPasswordModalOpen(false);
-            } else {
-                toast.error('Failed to update password');
-            }
+            toast.success('Password updated successfully');
+            setIsPasswordModalOpen(false);
         } catch (error) {
             ConsoleLogger.error('Error updating password:', error);
             toast.error('Error updating password');
@@ -343,7 +318,7 @@ export function StaffUsersListWidget() {
 
     const handleVerifyToggle = async (userId: string, field: string, value: boolean) => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/users/update`,
                 body: {
@@ -352,14 +327,9 @@ export function StaffUsersListWidget() {
                 }
             });
 
-            if (response.status === 200) {
-                const payload = await response.data;
-                const updated = payload.user;
-                setUsers(users.map(u => u.id === userId ? { ...u, ...updated } : u));
-                toast.success(`${field === 'email_is_verified' ? 'Email' : 'Phone'} ${value ? 'verified' : 'unverified'}`);
-            } else {
-                toast.error('Failed to update verification');
-            }
+            const updated = response.user;
+            setUsers(users.map(u => u.id === userId ? { ...u, ...updated } : u));
+            toast.success(`${field === 'email_is_verified' ? 'Email' : 'Phone'} ${value ? 'verified' : 'unverified'}`);
         } catch (error) {
             ConsoleLogger.error('Error updating verification:', error);
             toast.error('Error updating verification');
@@ -372,7 +342,7 @@ export function StaffUsersListWidget() {
         }
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/staff/${workspaceId}/users/assign-provider`,
                 body: {
@@ -380,29 +350,22 @@ export function StaffUsersListWidget() {
                 }
             });
 
-            if (response.status === 201) {
-                const data = await response.data;
-                toast.success(`Provider account created successfully! Account ID: ${data.account.id}, Provider ID: ${data.provider.id}`);
+            toast.success(`Provider account created successfully! Account ID: ${response.account.id}, Provider ID: ${response.provider.id}`);
 
-                // Refresh users list
-                const updatedResponse = await apiCallForSpaHelper({
-                    method: 'GET',
-                    url: `/api/workspaces/staff/${workspaceId}/users`,
-                    params: {
-                        page,
-                        ...(activeSearch && { search: activeSearch }),
-                        ...(activeSearch && { searchType: activeSearchType })
-                    }
-                });
-                const refreshedData = await updatedResponse.data;
-                setUsers((refreshedData.users || []).map((u: User) => ({
-                    ...u,
-                    accounts: Array.isArray(u.accounts) ? u.accounts.filter(Boolean) : []
-                })));
-            } else {
-                const errorData = await response.data;
-                toast.error(errorData.error || 'Failed to create provider account');
-            }
+            // Refresh users list
+            const updatedResponse = await apiCall<any>({
+                method: 'GET',
+                url: `/api/workspaces/staff/${workspaceId}/users`,
+                params: {
+                    page,
+                    ...(activeSearch && { search: activeSearch }),
+                    ...(activeSearch && { searchType: activeSearchType })
+                }
+            });
+            setUsers((updatedResponse.users || []).map((u: User) => ({
+                ...u,
+                accounts: Array.isArray(u.accounts) ? u.accounts.filter(Boolean) : []
+            })));
         } catch (error) {
             ConsoleLogger.error('Error creating provider account:', error);
             toast.error('Error creating provider account');

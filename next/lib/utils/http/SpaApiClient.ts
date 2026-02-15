@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import type { ApiError } from '@/types';
-import type { AuthContextPayload } from '@/types/auth/authData';
+import type { ApiError } from '@stuwin/shared/types';
+import type { AuthContextPayload } from '@stuwin/shared/types/auth/authData';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 
@@ -189,7 +189,7 @@ async function executeRequest({
 
   } catch (error) {
     const axiosErr = error as AxiosError;
-    let status: number | undefined = axiosErr.response?.status;
+    const status: number | undefined = axiosErr.response?.status;
     const errorData = (axiosErr.response?.data as any) || {};
     const errorCode = errorData?.code || errorData?.type;
 
@@ -267,4 +267,26 @@ export async function retryAfter2FA(originalRequest: FetchOptions): Promise<Axio
   return apiCallForSpaHelper({ method, url, params, body, headers });
 }
 
+/**
+ * Typed API call wrapper that unwraps the standard response envelope.
+ * Usage: const subjects = await apiCall<Subject[]>({ method: 'GET', url: '/api/...' });
+ */
+export async function apiCall<T>(options: FetchOptions): Promise<T> {
+  const response = await apiCallForSpaHelper(options);
+  const body = response.data;
 
+  // Standard envelope: { success, data, error }
+  if (body && typeof body.success === 'boolean') {
+    if (!body.success) {
+      throw createApiError(
+        body.error?.message ?? 'Unknown error',
+        response.status,
+        body.error?.code
+      );
+    }
+    return body.data as T;
+  }
+
+  // Fallback: return raw body for non-enveloped responses (legacy)
+  return body as T;
+}

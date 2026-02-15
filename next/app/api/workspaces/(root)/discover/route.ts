@@ -2,8 +2,8 @@
 // GET /api/workspaces/discover - Discover Public Workspaces
 // ═══════════════════════════════════════════════════════════════
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/discover
@@ -23,16 +23,10 @@ export const GET = unifiedApiHandler(async (request, { auth, module }) => {
             throw new Error(result.error || "Failed to fetch discovery list");
         }
 
-        return NextResponse.json(result);
+        return okResponse(result);
     } catch (error) {
         console.error('Error in discovery API:', error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: error instanceof Error ? error.message : 'Discovery failed',
-            },
-            { status: 500 }
-        );
+        return serverErrorResponse(error instanceof Error ? error.message : 'Discovery failed',);
     }
 }, {
     authRequired: true,

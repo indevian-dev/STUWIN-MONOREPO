@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module }) => {
@@ -10,23 +11,23 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module }) =>
   const result = await module.content.managePrompts({ page, limit, search });
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return serverErrorResponse(result.error);
   }
 
-  return NextResponse.json(result.data, { status: 200 });
+  return okResponse(result.data);
 });
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { authData, module }) => {
   if (!authData) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
   }
 
   const body = await request.json();
   const result = await module.content.createPrompt(body);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: (result as any).code || 500 });
+    return errorResponse(result.error, (result as any).code || 500);
   }
 
-  return NextResponse.json({ prompt: result.data }, { status: 201 });
+  return createdResponse(result.data);
 });

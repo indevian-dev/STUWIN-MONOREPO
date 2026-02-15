@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 export const GET = unifiedApiHandler(async (request, { module }) => {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
@@ -15,8 +15,8 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   });
 
   if (!result.data) {
-    return NextResponse.json({ error: 'Failed to fetch organizations' }, { status: 500 });
+    return serverErrorResponse("Failed to fetch organizations");
   }
 
-  return NextResponse.json(result.data, { status: 200 });
+  return okResponse(result.data);
 });

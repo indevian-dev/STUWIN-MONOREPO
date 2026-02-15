@@ -276,7 +276,7 @@ export const providerSubjects = pgTable("provider_subjects", {
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
     gradeLevel: integer("grade_level"),
     language: varchar("language"),
-    aiAssistantCrib: text("ai_assistant_crib"),
+    aiGuide: text("ai_guide"),
     files: json("files"),
 });
 
@@ -295,7 +295,7 @@ export const providerSubjectTopics = pgTable("provider_subject_topics", {
     workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
     language: varchar("language"),
-    aiAssistantCrib: text("ai_assistant_crib"),
+    aiGuide: text("ai_guide"),
     pdfDetails: jsonb("pdf_details").$type<TopicPdfDetails>(),
     questionsStats: jsonb("questions_stats").$type<TopicQuestionsStats>(),
 });
@@ -317,7 +317,8 @@ export const providerQuestions = pgTable("provider_questions", {
     workspaceId: varchar("workspace_id").references(() => workspaces.id),
     providerSubjectTopicId: varchar("provider_subject_topic_id").references(() => providerSubjectTopics.id),
     isPublished: boolean("is_published").default(false),
-    aiAssistantCrib: text("ai_assistant_crib"),
+    aiGuide: text("ai_guide"),
+    visualData: jsonb("visual_data"),
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -364,7 +365,7 @@ export const studentHomeworks = pgTable("student_homeworks", {
     snapshotSubjectTitle: varchar("snapshot_subject_title"),
     snapshotTopicTitle: varchar("snapshot_topic_title"),
     aiReport: jsonb("ai_report"),
-    aiAssistantCrib: text("ai_assistant_crib"),
+    aiGuide: text("ai_guide"),
 });
 
 export const studentQuizzes = pgTable("student_quizzes", {
@@ -503,7 +504,7 @@ export const docs = pgTable("docs", {
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-export const systemPromptsCrib = pgTable("system_prompts_crib", {
+export const aiSystemGuides = pgTable("ai_system_guides", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     body: text("body"),

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DomainNavConfig } from '@/types';
+import { DomainNavConfig } from '@stuwin/shared/types';
 import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 
 interface GlobalHeaderWidgetProps {

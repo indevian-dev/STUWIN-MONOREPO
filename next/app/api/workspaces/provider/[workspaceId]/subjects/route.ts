@@ -1,19 +1,16 @@
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { SubjectCreateSchema } from "@/lib/domain/learning/learning.inputs";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const workspaceId = params.workspaceId;
   const result = await module.subject.getWorkspaceSubjects(workspaceId);
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ success: false, error: result.error || "Failed" }, { status: 500 });
+    return serverErrorResponse(result.error || "Failed");
   }
 
-  return NextResponse.json({
-    success: true,
-    data: result.data
-  });
+  return okResponse(result.data);
 });
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
@@ -22,10 +19,7 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
 
   const parsed = SubjectCreateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({
-      success: false,
-      error: parsed.error.errors[0]?.message || "Validation failed"
-    }, { status: 400 });
+    return errorResponse(parsed.error.errors[0]?.message || "Validation failed", 400);
   }
 
   const result = await module.subject.create({
@@ -37,11 +31,8 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
   });
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ success: false, error: result.error || "Failed" }, { status: 500 });
+    return serverErrorResponse(result.error || "Failed");
   }
 
-  return NextResponse.json({
-    success: true,
-    data: result.data
-  });
+  return okResponse(result.data);
 });

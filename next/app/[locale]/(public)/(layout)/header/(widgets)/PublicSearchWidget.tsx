@@ -9,7 +9,7 @@ import React, {
 import { Link } from '@/i18n/routing';
 import Image
     from 'next/image';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import {
     PiMagnifyingGlassLight,
@@ -68,15 +68,15 @@ export function PublicSearchWidget({ hideOnCardFilters = false }: PublicSearchWi
                 params.cityId = selectedCity;
             }
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: '/api/cards/search',
                 params,
                 body: {}
             });
 
-            // Fix: Use response.data instead of response.json()
-            const data = response.data;
+            // Fix: Use response instead of response.json()
+            const data = response;
             setSearchResults(data.cards || []);
         } catch (error) {
             ConsoleLogger.error('Error fetching search results:', error);
@@ -100,9 +100,9 @@ export function PublicSearchWidget({ hideOnCardFilters = false }: PublicSearchWi
     useEffect(() => {
         const fetchCities = async () => {
             try {
-                const response = await apiCallForSpaHelper({ method: 'GET', url: '/api/cities', params: {}, body: {} });
+                const response = await apiCall<any>({ method: 'GET', url: '/api/cities', params: {}, body: {} });
 
-                const data = response.data.cities;
+                const data = response.cities;
                 setCities(data);
             } catch (error) {
                 ConsoleLogger.error('Error fetching cities:', error);

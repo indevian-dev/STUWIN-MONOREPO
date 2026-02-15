@@ -6,7 +6,7 @@ import {
 } from 'react';
 import Image
     from 'next/image';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import supabase
     from '@/lib/integrations/supabase/public-role.client';

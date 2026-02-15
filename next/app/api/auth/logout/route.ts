@@ -1,19 +1,14 @@
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { CookieAuthenticator } from "@/lib/middleware/authenticators/CookieAuthenticator";
+import { okResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { authData, log }) => {
   try {
     log.info("Logout request initiated");
 
-    const response = NextResponse.json(
-      {
-        success: true,
-        message: "Logged out successfully",
-      },
-      { status: 200 }
-    );
+    const response = okResponse({ success: true, message: "Logged out successfully",  });
 
     const { authCookiesResponse } = CookieAuthenticator.clearAuthCookies({ response });
 
@@ -22,13 +17,7 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { authData, l
   } catch (error) {
     log.error("Logout error", error as Error);
 
-    const response = NextResponse.json(
-      {
-        success: true,
-        message: "Logged out successfully",
-      },
-      { status: 200 }
-    );
+    const response = okResponse({ success: true, message: "Logged out successfully",  });
 
     const { authCookiesResponse } = CookieAuthenticator.clearAuthCookies({ response });
     return authCookiesResponse;

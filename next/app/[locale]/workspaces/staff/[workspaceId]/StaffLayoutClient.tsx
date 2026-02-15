@@ -31,8 +31,8 @@ import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHead
 import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
 import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
 import { loadClientSideCoLocatedTranslations } from '@/i18n/i18nClientSide';
-import type { AuthData } from '@/types';
-import type { DomainNavConfig } from '@/types';
+import type { AuthData } from '@stuwin/shared/types';
+import type { DomainNavConfig } from '@stuwin/shared/types';
 
 // Context for auth data in console pages
 export const StaffAuthContext = createContext<AuthData | null>(null);

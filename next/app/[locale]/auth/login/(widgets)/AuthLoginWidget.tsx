@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import Image
   from 'next/image';
 import { Link } from '@/i18n/routing';
@@ -70,17 +70,13 @@ export function AuthLoginWidget() {
 
       localStorage.setItem('auth_provider', provider);
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/auth/oauth/initiate`,
         body: { deviceInfo, provider }
       });
 
-      if (response.status !== 200) {
-        throw new Error(t('login_failed_credentials'));
-      }
-
-      const url = response.data.url;
+      const url = response.url;
       if (url) {
         window.location.href = url; // Navigate to the URL returned by the OAuth response
       } else {
@@ -97,7 +93,7 @@ export function AuthLoginWidget() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/auth/login',
         headers: {
@@ -112,32 +108,18 @@ export function AuthLoginWidget() {
 
       ConsoleLogger.log('response', response);
 
-      if (response.status === 200) {
-        ConsoleLogger.log('Login successful!');
-        toast.success(t('login_successful'));
+      ConsoleLogger.log('Login successful!');
+      toast.success(t('login_successful'));
 
-        // Update auth profile context using refreshProfile
-        await refreshProfile();
-        ConsoleLogger.log('✅ Auth context updated via refreshProfile');
+      // Update auth profile context using refreshProfile
+      await refreshProfile();
+      ConsoleLogger.log('✅ Auth context updated via refreshProfile');
 
-        // Wait for auth state to settle and toast to show
-        await new Promise(resolve => setTimeout(resolve, 800));
+      // Wait for auth state to settle and toast to show
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-        const redirectPath = (returnUrl && returnUrl !== '/') ? returnUrl : '/workspaces';
-        router.replace(redirectPath);
-
-      } else if (response.status === 201) {
-        // Form validation errors
-        setFormErrors({
-          email: response.data.formError.email,
-          password: response.data.formError.password
-        });
-        toast.error(t('login_failed_credentials'));
-      } else {
-        // Other errors
-        const errorMsg = response.data?.error || 'Unknown error';
-        toast.error(t('login_error', { message: errorMsg }));
-      }
+      const redirectPath = (returnUrl && returnUrl !== '/') ? returnUrl : '/workspaces';
+      router.replace(redirectPath);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error(t('login_error', { message: errorMessage }));

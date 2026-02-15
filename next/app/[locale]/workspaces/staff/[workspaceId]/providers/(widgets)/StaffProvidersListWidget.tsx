@@ -5,7 +5,7 @@ import {
     useEffect
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import Pagination
     from '../../ui/pagination';
 import { toast } from 'react-toastify';
@@ -62,7 +62,7 @@ export function StaffProvidersListWidget() {
     const fetchProviders = async () => {
         try {
             setLoading(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: `/api/workspaces/staff/${workspaceId}/providers`,
                 params: {
@@ -75,14 +75,10 @@ export function StaffProvidersListWidget() {
                 body: {}
             });
 
-            if (response.status === 200) {
-                const data = response.data;
-                // API returns { data: [...], total: ... }
-                setProviders(data.data || []);
-                setTotalPages(Math.ceil(data.total / (data.pageSize || 10)));
-            } else {
-                setError('Failed to fetch Providers');
-            }
+            const data = response;
+            // API returns { data: [...], total: ... }
+            setProviders(data.data || []);
+            setTotalPages(Math.ceil(data.total / (data.pageSize || 10)));
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             setError(errorMessage);
@@ -117,19 +113,15 @@ export function StaffProvidersListWidget() {
 
     const handleProviderAction = async (ProviderId: number, action: string, value: boolean) => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'PATCH',
                 url: `/api/workspaces/staff/${workspaceId}/providers/${ProviderId}`,
                 body: { [action]: value }
             });
 
-            if (response.status === 200) {
-                toast.success(`Provider ${action} updated successfully`);
-                fetchProviders(); // Refresh the list
-                closeModal();
-            } else {
-                toast.error(`Failed to update Provider ${action}`);
-            }
+            toast.success(`Provider ${action} updated successfully`);
+            fetchProviders(); // Refresh the list
+            closeModal();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             toast.error(`Error updating Provider: ${errorMessage}`);
@@ -138,19 +130,15 @@ export function StaffProvidersListWidget() {
 
     const handleDeleteProvider = async (ProviderId: number) => {
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'DELETE',
                 url: `/api/workspaces/staff/${workspaceId}/providers/${ProviderId}`,
                 body: {}
             });
 
-            if (response.status === 200) {
-                toast.success('Provider deleted successfully');
-                fetchProviders();
-                closeModal();
-            } else {
-                toast.error('Failed to delete Provider');
-            }
+            toast.success('Provider deleted successfully');
+            fetchProviders();
+            closeModal();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             toast.error(`Error deleting Provider: ${errorMessage}`);

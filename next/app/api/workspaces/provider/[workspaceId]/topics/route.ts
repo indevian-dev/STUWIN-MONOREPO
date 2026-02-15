@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/handlers/ApiInterceptor';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 // GET /api/workspaces/provider/topics - List all topics
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, log }: UnifiedContext) => {
@@ -13,9 +13,9 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module, log 
   if (id) {
     const result = await module.topic.getById(id);
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 404 });
+      return errorResponse(result.error, 404);
     }
-    return NextResponse.json({ topic: result.data }, { status: 200 });
+    return okResponse(result.data);
   }
 
   // Build filters
@@ -26,11 +26,9 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module, log 
   const result = await module.topic.list(filters);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return serverErrorResponse(result.error);
   }
 
   log.info('Topics fetched', { count: result.data?.length });
-  return NextResponse.json({
-    topics: result.data
-  }, { status: 200 });
+  return okResponse(result.data);
 });

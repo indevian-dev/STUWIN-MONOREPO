@@ -23,7 +23,7 @@ export interface TopicData {
     gradeLevel: number | null;
     topicQuestionsRemainingToGenerate: number | null;
     topicGeneralQuestionsStats: number | null;
-    aiAssistantCrib: string | null;
+    aiGuide: string | null;
 }
 
 export interface GeneratedQuestion {
@@ -50,7 +50,7 @@ export class QuestionGenerationService {
 
             return {
                 label: `${subject.name} (Grade ${subject.gradeLevel})`,
-                crib: subject.aiAssistantCrib || null,
+                crib: subject.aiGuide || null,
             };
         } catch (error) {
             ConsoleLogger.error("Failed to fetch subject context", error);
@@ -81,7 +81,7 @@ export class QuestionGenerationService {
                 gradeLevel: (topic.gradeLevel as number) || null, // Ensure number type if bigint
                 topicQuestionsRemainingToGenerate: topic.questionsStats?.remaining || 0,
                 topicGeneralQuestionsStats: topic.questionsStats?.total || 0,
-                aiAssistantCrib: topic.aiAssistantCrib || null,
+                aiGuide: topic.aiGuide || null,
             };
         } catch (error) {
             ConsoleLogger.error("Failed to fetch topic", error);
@@ -118,7 +118,7 @@ export class QuestionGenerationService {
         // Build combined crib from subject + topic
         const cribParts: string[] = [];
         if (typeof subjectContext === 'object' && subjectContext.crib) cribParts.push(`[Subject Crib] ${subjectContext.crib}`);
-        if (topicData.aiAssistantCrib) cribParts.push(`[Topic Crib] ${topicData.aiAssistantCrib}`);
+        if (topicData.aiGuide) cribParts.push(`[Topic Crib] ${topicData.aiGuide}`);
         const assistantCrib = cribParts.length > 0 ? cribParts.join('\n') : undefined;
 
         // Default params
@@ -259,11 +259,11 @@ export class QuestionGenerationService {
             const cribParts: string[] = [];
             if (subjectId) {
                 const subj = await db.query.providerSubjects.findFirst({ where: eq(providerSubjects.id, String(subjectId)) });
-                if (subj?.aiAssistantCrib) cribParts.push(subj.aiAssistantCrib);
+                if (subj?.aiGuide) cribParts.push(subj.aiGuide);
             }
             if (topicId) {
                 const t = await db.query.providerSubjectTopics.findFirst({ where: eq(providerSubjectTopics.id, String(topicId)) });
-                if (t?.aiAssistantCrib) cribParts.push(t.aiAssistantCrib);
+                if (t?.aiGuide) cribParts.push(t.aiGuide);
             }
             if (cribParts.length > 0) combinedCrib = cribParts.join('\n');
         } catch (err) {
@@ -282,7 +282,7 @@ export class QuestionGenerationService {
             language,
             isPublished: true,
             explanationGuide: { model: modelName, action: actionName },
-            aiAssistantCrib: combinedCrib,
+            aiGuide: combinedCrib,
         }));
 
         const savedQuestions = await db

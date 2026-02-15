@@ -1,12 +1,12 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PUT = unifiedApiHandler(async (request, { module, params, auth }) => {
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    return errorResponse("Invalid ID", 400);
   }
 
   const questionId = id as string;
@@ -19,7 +19,7 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
     complexity,
     grade_level,
     explanation_guide,
-    ai_assistant_crib
+    ai_guide
   } = body;
 
   const hasUpdates = [
@@ -30,11 +30,11 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
     complexity,
     grade_level,
     explanation_guide,
-    ai_assistant_crib
+    ai_guide
   ].some(v => v !== undefined && v !== null);
 
   if (!hasUpdates) {
-    return NextResponse.json({ error: 'At least one field must be updated' }, { status: 400 });
+    return errorResponse('At least one field must be updated', 400);
   }
 
   // Prepare update data
@@ -46,16 +46,13 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
   if (complexity !== undefined) updateData.complexity = complexity;
   if (grade_level !== undefined) updateData.gradeLevel = parseInt(String(grade_level));
   if (explanation_guide !== undefined) updateData.explanationGuide = explanation_guide;
-  if (ai_assistant_crib !== undefined) updateData.aiAssistantCrib = ai_assistant_crib;
+  if (ai_guide !== undefined) updateData.aiGuide = ai_guide;
 
   const result = await module.question.update(questionId, updateData);
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ error: result.error || "Update failed" }, { status: 500 });
+    return serverErrorResponse(result.error || "Update failed");
   }
 
-  return NextResponse.json({
-    message: 'Question updated successfully',
-    question: result.data
-  }, { status: 200 });
+  return okResponse(result.data, 'Question updated successfully');
 });

@@ -1,0 +1,598 @@
+================================================================================
+  STUWIN MONOREPO — COMPLETE ARCHITECTURE REFERENCE
+  For replicating folder structure, code organization, workspace auth, and DI.
+================================================================================
+
+TABLE OF CONTENTS
+1.  MONOREPO TOP-LEVEL STRUCTURE
+2.  SHARED TYPES (_shared.types/)
+3.  NEXT.JS APP TOP LEVEL
+4.  DATABASE LAYER
+5.  DOMAIN LAYER & DI
+6.  MIDDLEWARE PIPELINE
+7.  ROUTE SYSTEM
+8.  APP DIRECTORY — PAGES
+9.  APP DIRECTORY — API ROUTES
+10. INTEGRATIONS & NOTIFICATIONS
+11. I18N / LOCALIZATION
+12. FULL AUTH FLOW — END TO END
+13. HOW TO REPLICATE IN A NEW PROJECT
+\n
+================================================================================
+1. MONOREPO TOP-LEVEL STRUCTURE
+================================================================================
+
+STUWIN-MONOREPO/
+├── _shared.types/          # Cross-platform type definitions (web + mobile)
+│   ├── auth/               # AuthData, AuthContext, AuthContextPayload
+│   ├── domain/             # Entity types shared across platforms
+│   ├── common/             # Logger, pagination, generic types
+│   ├── api/                # API contract types
+│   ├── ui/                 # UI-related types
+│   ├── validation/         # Shared validation schemas
+│   └── index.ts            # Barrel export
+├── next/                   # Next.js web application (main app)
+├── expo/                   # React Native mobile app
+├── _scripts/               # Build/deploy scripts
+├── .agent/                 # AI agent rules & workflows
+└── .ai-files/              # AI-generated reference files
+
+KEY: _shared.types/ is the SINGLE SOURCE OF TRUTH for types used by both next/ and expo/.
+\n
+================================================================================
+2. SHARED TYPES (_shared.types/)
+================================================================================
+
+// _shared.types/auth/authData.ts
+
+export interface AuthData {
+  user: { id: string; email: string; };
+  account: { id: string; suspended?: boolean; };
+  workspace: {
+    type: 'student' | 'provider' | 'eduorg' | 'staff';
+    id: string;
+    role: string;
+  };
+  permissions: string[];
+  sessionId: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+}
+
+export interface AuthContext {
+  userId: string;
+  accountId: string;
+  activeWorkspaceId?: string;
+  workspaceType?: string;
+  role?: string;
+  permissions?: string[];
+  subscriptionActive?: boolean;
+}
+
+export interface AuthContextPayload {
+  action: 'login' | 'register' | 'switch_account' | 'refresh' | 'verify' | 'logout' | 'initial';
+  user?: { id: string; email?: string; firstName?: string; lastName?: string; };
+  account?: { id: string; subscribedUntil?: string; subscriptionType?: string; };
+  workspaces?: Array<{ id: string; type: string; title: string; }>;
+  workspaceId?: string;
+  workspaceRole?: string;
+}
+\n
+================================================================================
+3. NEXT.JS APP — TOP LEVEL
+================================================================================
+
+next/
+├── app/                    # Next.js App Router
+│   ├── [locale]/           # i18n locale prefix (en, az, ru)
+│   │   ├── auth/           # Login, register, verify pages
+│   │   ├── workspaces/     # Workspace-scoped pages
+│   │   │   ├── provider/[workspaceId]/  # Provider dashboard
+│   │   │   ├── student/[workspaceId]/   # Student dashboard
+│   │   │   └── staff/[workspaceId]/     # Staff admin dashboard
+│   │   └── layout.tsx      # Root layout
+│   └── api/                # API route handlers
+├── lib/                    # Core business logic
+│   ├── database/           # Drizzle ORM setup & schema
+│   ├── domain/             # Domain services & repositories (DDD)
+│   ├── middleware/          # Auth, validation, error handling
+│   ├── routes/             # Centralized route/endpoint configs
+│   ├── integrations/       # Third-party services
+│   ├── notifications/      # Email, SMS, Push
+│   ├── utils/              # Utility functions
+│   └── logging/            # Structured logging
+├── i18n/                   # Internationalization
+└── drizzle.config.ts
+
+TECH STACK: Bun, Next.js App Router, Drizzle ORM + postgres-js, Redis (Upstash),
+            AWS S3 (Cloudflare R2), Custom session-based auth, Axiom logging, Zod
+\n
+================================================================================
+4. DATABASE LAYER (next/lib/database/)
+================================================================================
+
+--- index.ts ---
+
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
+
+const queryClient = postgres(process.env.DATABASE_URL!);
+export const db = drizzle(queryClient, { schema });
+export type Database = typeof db;
+export type DbClient = Database | Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+--- schema.ts (Key Tables) ---
+
+export const users = pgTable("users", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    email: text("email").notNull().unique(),
+    firstName: text("first_name"),
+    lastName: text("last_name"),
+    emailIsVerified: boolean("email_is_verified").default(false),
+    phoneIsVerified: boolean("phone_is_verified").default(false),
+});
+
+export const accounts = pgTable("accounts", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    userId: varchar("user_id").references(() => users.id),
+    suspended: boolean("suspended").default(false),
+    subscribedUntil: timestamp("subscribed_until"),
+});
+
+export const workspaces = pgTable("workspaces", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    type: varchar("type").notNull(),     // 'student' | 'provider' | 'staff' | 'parent'
+    title: text("title").notNull(),
+    profile: jsonb("profile"),
+    isActive: boolean("is_active").default(true),
+    isBlocked: boolean("is_blocked").default(false),
+});
+
+export const workspaceRoles = pgTable("workspace_roles", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    name: varchar("name").notNull().unique(),
+    permissions: jsonb("permissions").default({}),
+    forWorkspaceType: varchar("for_workspace_type"),
+});
+
+export const workspaceAccesses = pgTable("workspace_accesses", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    actorAccountId: varchar("actor_account_id").references(() => accounts.id),
+    targetWorkspaceId: varchar("target_workspace_id").references(() => workspaces.id),
+    viaWorkspaceId: varchar("via_workspace_id").references(() => workspaces.id),
+    accessRole: varchar("access_role").references(() => workspaceRoles.name),
+    subscribedUntil: timestamp("subscribed_until"),
+});
+
+ACCESS MODEL:
+  Direct Access:  targetWorkspaceId === viaWorkspaceId  (staff/admin of workspace)
+  Linked Access:  targetWorkspaceId !== viaWorkspaceId  (student enrolled in provider)
+\n
+================================================================================
+5. DOMAIN LAYER & DI (next/lib/domain/)
+================================================================================
+
+Directory Layout:
+  domain/
+  ├── base/
+  │   ├── base.service.ts     # abstract BaseService with handleError()
+  │   ├── base.repository.ts  # BaseRepository with db injection
+  │   └── types.ts            # Re-exports from _shared.types
+  ├── factory.ts              # ModuleFactory (DI Container)
+  ├── auth/                   ├── workspace/           ├── role/
+  ├── subject/                ├── topic/               ├── question/
+  ├── quiz/                   ├── homework/            ├── ai-session/
+  ├── content/                ├── support/             ├── jobs/
+  ├── payment/                ├── semantic-mastery/    └── ai-prompt/
+
+Module File Naming:
+  <module>.service.ts     # Business logic (extends BaseService)
+  <module>.repository.ts  # DB queries (extends BaseRepository)
+  <module>.types.ts       # Entity interfaces, enums
+  <module>.inputs.ts      # Zod schemas + input DTOs
+  index.ts                # Barrel export
+
+--- BASE CLASSES ---
+
+export abstract class BaseService {
+    protected handleError(error: unknown, context: string): void {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.error(`[${context}] Error:`, message, error);
+    }
+}
+
+export class BaseRepository {
+    constructor(protected readonly db: DbClient) { }
+}
+
+--- CONSTRUCTOR INJECTION PATTERN ---
+
+export class WorkspaceService extends BaseService {
+    constructor(
+        public readonly repository: WorkspaceRepository,
+        private readonly ctx: AuthContext,
+        private readonly db: Database
+    ) { super(); }
+}
+
+--- MODULE FACTORY (DI CONTAINER) ---
+
+export class ModuleFactory {
+    constructor(private ctx: AuthContext) { }
+
+    get subject() {
+        return new SubjectService(new SubjectRepository(db), this.ctx, db, this.semanticMastery);
+    }
+    get workspace() {
+        return new WorkspaceService(new WorkspaceRepository(db), this.ctx, db);
+    }
+    get auth() {
+        return new AuthService(new AuthRepository(db), new PaymentRepository(db),
+                               new OtpService(new OtpRepository(db)), this.ctx);
+    }
+    get quiz() { /* ... */ }
+    get mail() { return new MailService(this.ctx); }
+    // ... 20+ lazy getters
+}
+
+RULES:
+  - ALWAYS extend BaseService/BaseRepository
+  - ALWAYS register in ModuleFactory as lazy getters
+  - ALWAYS use private readonly constructor injection
+  - NEVER instantiate services in routes — use module.<getter>
+  - NEVER use 'any' — define proper interfaces
+\n
+================================================================================
+6. MIDDLEWARE PIPELINE (next/lib/middleware/)
+================================================================================
+
+Directory Layout:
+  middleware/
+  ├── authenticators/
+  │   ├── CookieAuthenticator.ts   # Read/write session cookie
+  │   ├── SessionStore.ts          # 3-Layer Redis session cache
+  │   └── OAuthAuthenticator.ts    # Google/Apple/Facebook OAuth
+  ├── authorizers/
+  │   └── CoreAuthorizer.ts        # 7-step validation pipeline
+  ├── handlers/
+  │   ├── ApiInterceptor.ts        # withApiHandler + unifiedApiHandler
+  │   └── ViewInterceptor.tsx      # Server Component auth wrapper
+  ├── validators/
+  │   └── RouteValidator.ts        # Match request URL to EndpointConfig
+  └── responses/
+      ├── ApiResponse.ts           # okResponse, errorResponse, serverErrorResponse
+      └── ResponseResponder.ts     # Standard HTTP error responses
+
+--- REQUEST LIFECYCLE ---
+
+  Client Request → Cookie: session=abc-123
+       │
+       ▼
+  withApiHandler (ApiInterceptor.ts)
+  ├─ 1. RouteValidator.validateEndpoint()       → Match URL to EndpointConfig
+  ├─ 2. CoreAuthorizer.validateEndpointRequest() → 7-step auth pipeline
+  ├─ 3. Build ApiHandlerContext
+  ├─ 4. Call handler(request, context)           → YOUR CODE RUNS HERE
+  └─ 5. Post-processing (logging, session TTL refresh)
+       │
+       ▼  (if using unifiedApiHandler)
+  unifiedApiHandler
+  ├─ Creates ModuleFactory(authContext)
+  ├─ Builds UnifiedContext: { params, auth, module, log, db }
+  └─ Calls handler with full DI context
+
+--- SESSION STORE (3-LAYER REDIS CACHE) ---
+
+  L1: sess:{sessionId}        → Session + User Identity  (TTL: 14 days)
+  L2: ws:{accountId}:{wsId}   → Workspace Access + Role  (TTL: 10 min)
+  L3: role:{roleName}         → Permission Definitions   (TTL: 1 hour)
+  Rev: acct_sess:{accountId}  → SET of sessionIds        (TTL: 14 days)
+
+  resolve(sessionId, workspaceId):
+    1. GET sess:{sessionId}  → user identity (L1)
+    2. GET ws:{accountId}:{workspaceId}  → role (L2) — if miss, DB fallback & cache
+    3. GET role:{roleName}  → permissions (L3) — if miss, DB fallback & cache
+    → BEST CASE: 3 Redis GETs, 0 DB QUERIES
+
+--- CORE AUTHORIZER (7-STEP PIPELINE) ---
+
+  Step 1: Validate session (cookie → Redis → DB fallback)
+  Step 2: Validate account status (not suspended)
+  Step 3: Validate workspace type matches endpoint config
+  Step 4: Validate permissions (user has required permission)
+  Step 5: Validate email verification (if endpoint requires it)
+  Step 6: Validate phone verification (if endpoint requires it)
+  Step 7: Validate subscription status (if endpoint requires it)
+
+--- COOKIE AUTHENTICATOR ---
+
+  const COOKIES = { SESSION: 'session' };
+  const COOKIE_OPTIONS = { httpOnly: true, secure: isProd, sameSite: isProd ? 'strict' : 'lax', path: '/' };
+
+  CookieAuthenticator.getAuthCookies()   → Read session cookie
+  CookieAuthenticator.setAuthCookies()   → Set session cookie (14-day maxAge)
+  CookieAuthenticator.clearAuthCookies() → Clear on logout (maxAge: 0)
+\n
+================================================================================
+7. ROUTE SYSTEM (next/lib/routes/)
+================================================================================
+
+Directory Layout:
+  routes/
+  ├── types.ts                    # EndpointConfig, EndpointsMap
+  ├── RouteFactory.ts             # createRouteFactory()
+  ├── helpers.ts                  # Response helpers, pagination
+  ├── index.ts                    # Combines all endpoint maps
+  ├── auth/AuthRoutes.ts
+  ├── public/PublicRoutes.ts
+  ├── system/SystemRoutes.ts
+  └── workspaces/
+      ├── WorkspaceRootRoutes.ts
+      ├── provider/ProviderRoutes.ts   # 100+ provider endpoints + permissions
+      ├── student/StudentRoutes.ts
+      └── staff/StaffRoutes.ts
+
+--- ENDPOINT CONFIG TYPE ---
+
+interface EndpointConfig {
+    method: string | string[];
+    authRequired: boolean;
+    permission?: string;
+    needEmailVerification?: boolean;
+    needPhoneVerification?: boolean;
+    workspace?: 'student' | 'provider' | 'staff';
+    type?: 'page' | 'api';
+    collectActionLogs?: boolean;
+    rateLimit?: { windowMs: number; maxRequests: number; };
+}
+
+--- ROUTE FACTORY PATTERN ---
+
+const createProviderEndpoint = createRouteFactory({
+  workspace: 'provider',
+  needEmailVerification: true,
+  needPhoneVerification: true
+});
+
+export const providerEndpoints: EndpointsMap = {
+  "/workspaces/provider/:workspaceId": createProviderEndpoint({
+    method: "GET", authRequired: true, permission: "PROVIDER_ACCESS", type: "page",
+  }),
+  "/api/workspaces/provider/:workspaceId/subjects": createProviderEndpoint({
+    method: "GET", authRequired: true, permission: "PROVIDER_SUBJECT_READ", type: "api",
+  }),
+  // ... 100+ more endpoints
+};
+
+--- PERMISSIONS (example for Provider) ---
+
+export const PERMISSIONS = {
+  PROVIDER_SUBJECT_READ: "View subjects",
+  PROVIDER_TOPIC_CREATE: "Create new topics",
+  PROVIDER_QUESTION_GENERATE: "Generate questions with AI",
+  PROVIDER_QUIZ_READ: "View quizzes",
+  PROVIDER_STAFF_READ: "View organization staff",
+  // ... 40+ permissions per workspace type
+};
+
+--- ALL ENDPOINTS COMBINED ---
+
+export const allEndpoints: EndpointsMap = {
+  ...authEndpoints,
+  ...workspacesRootEndpoints,
+  ...providerEndpoints,
+  ...studentEndpoints,
+  ...staffEndpoints,
+  ...publicEndpoints,
+  ...systemApis,
+};
+\n
+================================================================================
+8-9. APP DIRECTORY — PAGES & API ROUTES
+================================================================================
+
+--- PAGES ---
+
+next/app/[locale]/workspaces/
+├── provider/[workspaceId]/
+│   ├── page.tsx              # Provider dashboard
+│   ├── (widgets)/            # Widget components (co-located)
+│   ├── subjects/page.tsx
+│   ├── topics/page.tsx
+│   ├── questions/page.tsx
+│   └── members/page.tsx
+├── student/[workspaceId]/
+│   ├── page.tsx              # Student dashboard
+│   ├── subjects/page.tsx
+│   └── quizzes/page.tsx
+└── staff/[workspaceId]/
+    ├── page.tsx              # Staff admin
+    ├── providers/page.tsx
+    └── users/page.tsx
+
+--- API ROUTE HANDLER PATTERN ---
+
+// next/app/api/workspaces/provider/[workspaceId]/subjects/route.ts
+
+import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { SubjectCreateSchema } from "@/lib/domain/learning/learning.inputs";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+
+export const GET = unifiedApiHandler(async (request, { module, params }) => {
+  const workspaceId = params.workspaceId;
+  const result = await module.subject.getWorkspaceSubjects(workspaceId);
+  if (!result.success || !result.data) return serverErrorResponse(result.error || "Failed");
+  return okResponse(result.data);
+});
+
+export const POST = unifiedApiHandler(async (request, { module, params }) => {
+  const workspaceId = params.workspaceId;
+  const body = await request.json();
+
+  const parsed = SubjectCreateSchema.safeParse(body);
+  if (!parsed.success) return errorResponse(parsed.error.errors[0]?.message, 400);
+
+  const result = await module.subject.create({ ...parsed.data, workspaceId });
+  if (!result.success || !result.data) return serverErrorResponse(result.error || "Failed");
+  return okResponse(result.data);
+});
+
+KEY PATTERNS:
+  1. Always use unifiedApiHandler() — provides { module, params, auth, log, db }
+  2. Access services via module.<service>.<method>()
+  3. Validate with Zod from <module>.inputs.ts
+  4. Return via okResponse(), errorResponse(), serverErrorResponse()
+  5. NEVER instantiate services directly
+\n
+================================================================================
+10-11. INTEGRATIONS, NOTIFICATIONS, I18N, UTILS
+================================================================================
+
+--- INTEGRATIONS ---
+
+  integrations/
+  ├── aws/s3.client.ts            # S3/R2 for file storage
+  ├── axiom/axiom.client.ts       # Structured logging
+  ├── google/google-ai.client.ts  # Gemini AI
+  ├── supabase/supabase.client.ts # Supabase for specific features
+  └── upstash/
+      ├── redis-session.client.ts # Redis for sessions
+      ├── redis-cache.client.ts   # Redis for general cache
+      └── ratelimit.client.ts     # Rate limiting
+
+--- NOTIFICATIONS ---
+
+  notifications/
+  ├── mail.service.ts          # Email via Resend
+  ├── sms.service.ts           # SMS via Twilio
+  └── push.service.ts          # Push via FCM/APNS
+
+--- I18N ---
+
+  i18n/
+  ├── routing.ts               # defineRouting({ locales, defaultLocale })
+  ├── request.ts               # Per-request locale resolution
+  ├── i18nClientSide.ts        # useTranslations() hook
+  ├── i18nServerSide.ts        # getTranslations() for server components
+  └── messages/
+      ├── en/common.json
+      ├── az/common.json
+      └── ru/common.json
+
+  Each widget can have co-located translation files:
+    (widgets)/SubjectListWidget.en.json
+    (widgets)/SubjectListWidget.az.json
+
+--- UTILS ---
+
+  utils/
+  ├── formatting/dateFormat.ts, numberFormat.ts, textFormat.ts
+  ├── http/spa-api-client.ts, server-fetch.ts
+  ├── ids/SlimUlidUtil.ts          # Custom ULID-based ID generation
+  ├── query/queryHelpers.ts        # Drizzle query builders
+  └── upload/uploadHelpers.ts
+\n
+================================================================================
+12. FULL AUTH FLOW — END TO END
+================================================================================
+
+--- LOGIN FLOW ---
+
+1. Client POST /api/auth/login { email, password }
+2. withApiHandler: RouteValidator finds config (authRequired: false)
+3. CoreAuthorizer skips auth for public endpoint
+4. unifiedApiHandler creates ModuleFactory(guestContext)
+5. module.auth.login(email, password):
+   a. Find user by email, verify password (bcrypt)
+   b. SessionStore.create() → Redis pipeline:
+      SET sess:{uuid} {accountId,userId,email,...} EX 1209600 (14 days)
+      SADD acct_sess:{accountId} {uuid}
+6. Handler sets cookie: CookieAuthenticator.setAuthCookies(session)
+7. Client stores httpOnly session cookie
+
+--- AUTHENTICATED REQUEST FLOW ---
+
+1. Client GET /api/workspaces/provider/{wsId}/subjects  Cookie: session=abc-123
+2. withApiHandler:
+   a. RouteValidator → providerEndpoints config (permission: PROVIDER_SUBJECT_READ)
+   b. CoreAuthorizer.validateEndpointRequest({ endpointConfig, workspaceId }):
+      - CookieAuthenticator.getAuthCookies() → session = "abc-123"
+      - SessionStore.resolve("abc-123", wsId):
+        L1: GET sess:abc-123 → user identity
+        L2: GET ws:{accountId}:{wsId} → role (if miss: DB + cache)
+        L3: GET role:{roleName} → permissions (if miss: DB + cache)
+      - 7 Validation Steps:
+        ✓ Session valid  ✓ Not suspended  ✓ Workspace = 'provider'
+        ✓ Has PROVIDER_SUBJECT_READ  ✓ Email verified  ✓ Phone verified
+        ✓ Subscription active
+3. unifiedApiHandler creates ModuleFactory(authContext)
+4. Handler: module.subject.getWorkspaceSubjects(workspaceId)
+5. Returns okResponse(data)
+
+--- 4-LAYER SECURITY ---
+
+  Layer 1: Edge Protection (Cloudflare) — DDoS/Bot mitigation
+  Layer 2: Session Auth — Cookie → Redis → DB (NO JWT in cookies!)
+  Layer 3: Scoped Queries — Auto-filter by workspaceId in service layer
+  Layer 4: Database RLS — Physical DB constraints
+\n
+================================================================================
+13. HOW TO REPLICATE IN A NEW PROJECT
+================================================================================
+
+STEP 1: Create monorepo structure
+  my-project/
+  ├── _shared.types/auth/authData.ts  # AuthData, AuthContext
+  ├── web/                            # Next.js app
+  └── mobile/                         # React Native app
+
+STEP 2: Database layer
+  web/lib/database/ → Drizzle + postgres-js
+  Tables: users, accounts, workspaces, workspace_roles, workspace_accesses
+
+STEP 3: Base classes
+  web/lib/domain/base/ → BaseService, BaseRepository, types.ts
+
+STEP 4: First domain module
+  web/lib/domain/auth/ → auth.service.ts, auth.repository.ts, auth.types.ts
+
+STEP 5: ModuleFactory
+  web/lib/domain/factory.ts → class ModuleFactory { get auth() { ... } }
+
+STEP 6: Middleware
+  web/lib/middleware/authenticators/CookieAuthenticator.ts
+  web/lib/middleware/authenticators/SessionStore.ts (Redis 3-layer)
+  web/lib/middleware/authorizers/CoreAuthorizer.ts (7-step pipeline)
+  web/lib/middleware/handlers/ApiInterceptor.ts (withApiHandler + unifiedApiHandler)
+  web/lib/middleware/responses/ApiResponse.ts
+
+STEP 7: Route configurations
+  web/lib/routes/types.ts → EndpointConfig interface
+  web/lib/routes/RouteFactory.ts
+  web/lib/routes/workspaces/<type>/Routes.ts
+
+STEP 8: API route handlers
+  export const GET = unifiedApiHandler(async (req, { module, params }) => { ... });
+
+STEP 9: Redis for sessions
+  Upstash Redis → SessionStore with L1/L2/L3 cache layers
+
+STEP 10: Workspace types
+  Each workspace type gets: route config, pages, API routes, permissions
+
+--- CRITICAL RULES ---
+
+  1. NEVER instantiate services in routes — use module.<getter>
+  2. ALWAYS use private readonly constructor injection
+  3. ALWAYS extend BaseService/BaseRepository
+  4. ALWAYS scope queries by workspaceId
+  5. ALWAYS define EndpointConfig for every route
+  6. ALWAYS validate with Zod
+  7. ALWAYS use okResponse/errorResponse helpers
+  8. Type catch errors as 'unknown', NEVER use 'any'
+  9. NEVER cross-workspace data access in user-facing code
+
+================================================================================
+  END OF REFERENCE
+================================================================================

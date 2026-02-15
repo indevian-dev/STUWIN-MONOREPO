@@ -4,8 +4,8 @@
 // API for managing background job schedules
 // Pause, resume, trigger, and list jobs
 // ═══════════════════════════════════════════════════════════════
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import type {
   JobControlRequest,
   JobControlResponse,
@@ -20,13 +20,13 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   const result = await module.jobs.listJobs();
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error || 'Failed to list jobs' }, { status: 500 });
+    return errorResponse(result.error || 'Failed to list jobs', 500);
   }
 
   const response: JobListResponse = {
     jobs: result.data,
   };
-  return NextResponse.json(response);
+  return okResponse(response);
 });
 
 /**
@@ -37,10 +37,7 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
   const body: JobControlRequest = await request.json();
   const { jobId, action } = body;
   if (!jobId || !action) {
-    return NextResponse.json(
-      { error: 'Missing jobId or action' },
-      { status: 400 }
-    );
+    return errorResponse("Missing jobId or action");
   }
 
   let result: { success: boolean, message?: string, error?: string };
@@ -56,17 +53,11 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
       result = await module.jobs.triggerJob(jobId);
       break;
     default:
-      return NextResponse.json(
-        { error: 'Invalid action. Must be: pause, resume, or trigger' },
-        { status: 400 }
-      );
+      return errorResponse("Invalid action. Must be: pause, resume, or trigger");
   }
 
   if (!result.success) {
-    return NextResponse.json(
-      { success: false, message: result.error || 'Operation failed' } as JobControlResponse,
-      { status: 500 }
-    );
+    return serverErrorResponse(result.error || 'Operation failed');
   }
 
   // Fetch updated job info
@@ -78,5 +69,5 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
     message: result.message || 'Success',
     job: updatedJob,
   };
-  return NextResponse.json(response);
+  return okResponse(response);
 });

@@ -36,7 +36,6 @@ export function PublicHomeExpertIntelligenceWidget() {
 
             {/* Structural Decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-blue-500/20 via-transparent to-transparent" />
                 <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
             </div>
 

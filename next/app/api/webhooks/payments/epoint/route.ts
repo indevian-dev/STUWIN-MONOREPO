@@ -2,6 +2,7 @@
 import { ModuleFactory } from "@/lib/domain/factory";
 import { NextResponse, NextRequest } from "next/server";
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/webhooks/payments/epoint
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
 
         if (!data || !signature) {
             ConsoleLogger.error("Epoint webhook missing data or signature");
-            return NextResponse.json({ success: false, error: "Missing payload" }, { status: 400 });
+            return errorResponse("Missing payload", 400);
         }
 
         // We need a ModuleFactory but we don't have a user session context here
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
         const isValid = await modules.payment.verifyWebhookSignature(data, signature);
         if (!isValid) {
             ConsoleLogger.error("Epoint webhook signature mismatch");
-            return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
+            return errorResponse("Invalid signature", 401);
         }
 
         const decodedData = JSON.parse(Buffer.from(data, 'base64').toString('utf-8'));
@@ -43,10 +44,10 @@ export async function POST(req: NextRequest) {
         }
 
         // Respond with OK to epoint
-        return NextResponse.json({ status: "ok" });
+        return okResponse("ok");
 
     } catch (error: any) {
         ConsoleLogger.error("Epoint webhook processing error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return serverErrorResponse(error.message);
     }
 }

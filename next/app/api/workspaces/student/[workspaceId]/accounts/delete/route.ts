@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const DELETE = unifiedApiHandler(async (request: NextRequest, { log }) => {
   log.info('Account delete endpoint placeholder');
-  return NextResponse.json({ message: 'Not implemented' }, { status: 501 });
+  return errorResponse('Not implemented', 501, "NOT_IMPLEMENTED");
 });

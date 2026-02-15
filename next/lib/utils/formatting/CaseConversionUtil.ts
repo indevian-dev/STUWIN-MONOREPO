@@ -134,7 +134,7 @@ const user = users[0]; // { created_at: ..., email_is_verified: ... }
 
 // ✅ GOOD - Use the utility
 import { toCamelCaseArray } from '@/lib/utils/formatting/CaseConversionUtil';
-import { User } from '@/types/domain/users';
+import { User } from '@stuwin/shared/types/domain/users';
 
 const usersRaw = await sql`SELECT * FROM users`;
 const users = toCamelCaseArray<User>(usersRaw);

@@ -116,7 +116,7 @@ export class LearningRepository extends BaseRepository {
                     workspaceId: providerSubjectTopics.workspaceId,
                     updatedAt: providerSubjectTopics.updatedAt,
                     language: providerSubjectTopics.language,
-                    aiAssistantCrib: providerSubjectTopics.aiAssistantCrib,
+                    aiGuide: providerSubjectTopics.aiGuide,
                     pdfDetails: providerSubjectTopics.pdfDetails,
                     questionsStats: providerSubjectTopics.questionsStats,
                 })

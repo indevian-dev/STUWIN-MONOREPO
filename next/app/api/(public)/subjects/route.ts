@@ -1,6 +1,6 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {
   try {
@@ -10,12 +10,9 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
       throw new Error((result as any).error || "Failed to fetch subjects");
     }
 
-    return NextResponse.json({ subjects: (result as any).data });
+    return okResponse((result as any).data);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch subjects' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Failed to fetch subjects');
   }
 });
 

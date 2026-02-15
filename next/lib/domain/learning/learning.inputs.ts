@@ -1,7 +1,7 @@
 
 import { z } from "zod";
-import type { Subject } from "@/types/domain/subject";
-import type { Topic } from "@/types/domain/topic";
+import type { Subject } from "@stuwin/shared/types/domain/subject";
+import type { Topic } from "@stuwin/shared/types/domain/topic";
 
 // ═══════════════════════════════════════════════════════════════
 // SUBJECT SCHEMAS
@@ -56,7 +56,7 @@ export const TopicCreateSchema = z.object({
     }).optional(),
 
     language: z.string().optional(),
-    aiAssistantCrib: z.string().optional(),
+    aiGuide: z.string().optional(),
     aiSummary: z.string().optional(),
 }) satisfies z.ZodType<Topic.Create>;
 
@@ -89,7 +89,7 @@ export const QuestionCreateSchema = z.object({
     ]).optional(),
     language: z.string().default('azerbaijani').optional(),
     workspaceId: z.string().optional(),
-    aiAssistantCrib: z.string().optional(),
+    aiGuide: z.string().optional(),
 });
 
 export type QuestionCreateInput = z.infer<typeof QuestionCreateSchema>;

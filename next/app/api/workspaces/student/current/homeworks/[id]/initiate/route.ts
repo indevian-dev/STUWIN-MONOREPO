@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
     async (req: NextRequest, { module, params }: UnifiedContext) => {
@@ -7,13 +8,10 @@ export const POST = unifiedApiHandler(
         const result = await module.homework.initiateAiSession(homeworkId);
 
         if (!result.success) {
-            return NextResponse.json({ success: false, error: result.error });
+            return errorResponse(result.error);
         }
 
-        return NextResponse.json({
-            success: true,
-            data: result.data,
-        });
+        return okResponse(result.data);
     },
     {
         method: "POST",

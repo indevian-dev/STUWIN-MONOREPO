@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(
   async (request: NextRequest, ctx: UnifiedContext) => {
@@ -26,24 +27,15 @@ export const GET = unifiedApiHandler(
       });
 
       if (!result.success || !result.data) {
-        return NextResponse.json({ error: result.error || "Failed to fetch quizzes" }, { status: 500 });
+        return serverErrorResponse(result.error || "Failed to fetch quizzes");
       }
 
       log.info("User quizzes fetched", { count: result.data.quizzes.length, total: result.data.pagination.total });
 
-      return NextResponse.json({
-        operation: "success",
-        quizzes: result.data.quizzes,
-        ...result.data.pagination,
-        hasNextPage: page < result.data.pagination.totalPages,
-        hasPrevPage: page > 1,
-      });
+      return okResponse({ operation: "success", quizzes: result.data.quizzes, ...result.data.pagination, hasNextPage: page < result.data.pagination.totalPages, hasPrevPage: page > 1,  });
     } catch (error) {
       log.error("Error fetching user quizzes", error);
-      return NextResponse.json(
-        { error: "Error fetching quizzes" },
-        { status: 500 },
-      );
+      return serverErrorResponse("Error fetching quizzes");
     }
   },
 );

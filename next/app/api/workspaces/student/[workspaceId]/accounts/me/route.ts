@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/student/[workspaceId]/accounts/me
@@ -13,7 +13,7 @@ export const GET = unifiedApiHandler(async (request, { auth, module, log, params
     const workspaceId = params.workspaceId as string;
 
     if (!accountId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return errorResponse('Unauthorized', 401, "UNAUTHORIZED");
     }
 
     log.debug('Fetching account profile', { accountId, workspaceId });
@@ -23,17 +23,14 @@ export const GET = unifiedApiHandler(async (request, { auth, module, log, params
 
     if (!result.success) {
       log.warn('Failed to fetch account profile', { accountId, error: result.error });
-      return NextResponse.json({ error: result.error }, { status: result.status });
+      return errorResponse(result.error, result.status);
     }
 
     log.info('Account profile fetched', { accountId });
-    return NextResponse.json(result.data);
+    return okResponse(result.data);
   } catch (error) {
     log.error('Error in account profile route', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Internal server error');
   }
 }, {
   authRequired: true

@@ -5,7 +5,7 @@ import React, {
   useEffect
 } from 'react';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { uploadFile } from '@/lib/utils/upload/FileUploadHelper';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import Image
@@ -78,7 +78,7 @@ export function StaffSubjectIconUploadWidget({ subject, setType }: StaffSubjectI
     try {
       // Step 1: Get presigned URL from API
       ConsoleLogger.log('🔗 Getting presigned URL for subject icon...');
-      const signedUrlData = await apiCallForSpaHelper({
+      const signedUrlData = await apiCall<any>({
         method: 'POST',
         url: `/api/workspaces/staff/subjects/media/upload/${subject.id}`,
       });
@@ -104,7 +104,7 @@ export function StaffSubjectIconUploadWidget({ subject, setType }: StaffSubjectI
 
       // Step 3: Update subject icon in database
       ConsoleLogger.log('📝 Updating subject icon in database...');
-      const updateResponse = await apiCallForSpaHelper({
+      const updateResponse = await apiCall<any>({
         method: 'PUT',
         url: `/api/workspaces/staff/subjects/update/${subject.id}`,
         body: { icon: signedUrlData.data.fileName }

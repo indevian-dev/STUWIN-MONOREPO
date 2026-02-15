@@ -15,7 +15,7 @@ export namespace Subject {
         slug?: string;
         isActive: boolean;
         aiLabel?: string;
-        aiAssistantCrib?: string;
+        aiGuide?: string;
         language?: string;
         gradeLevel?: number;
         totalQuestions: number;

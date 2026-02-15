@@ -12,7 +12,7 @@ import {
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image
   from 'next/image';
@@ -98,17 +98,13 @@ export default function AuthRegisterWidget() {
 
   const handleOAuthLogin = async (provider: string) => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/auth/oauth/initiate`,
         body: { deviceInfo, provider }
       });
 
-      if (response.status !== 200) {
-        throw new Error(response.data?.error || t('login_failed_oauth'));
-      }
-
-      const url = response.data.url;
+      const url = response.url;
       if (url) {
         window.location.href = url;
       } else {
@@ -195,7 +191,7 @@ export default function AuthRegisterWidget() {
         phone: cleanedPhone,
       };
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: '/api/auth/register',
         method: 'POST',
         headers: {
@@ -204,41 +200,9 @@ export default function AuthRegisterWidget() {
         body: submissionData,
       });
 
-      const result = await response.data;
-
-      if (!result.success) {
-        if (result.field && result.error) {
-          const newErrors = { ...errors };
-
-          // Handle field-specific errors
-          if (result.field === 'password' && result.validationErrors) {
-            newErrors.password = result.validationErrors;
-          } else if (result.field === 'confirmPassword') {
-            newErrors.confirmPassword = result.error;
-          } else if (result.field === 'name') {
-            newErrors.name = result.error;
-          } else if (result.field === 'email') {
-            newErrors.email = result.error;
-          } else if (result.field === 'phone') {
-            newErrors.phone = result.error;
-          } else {
-            // For system errors (session, scope, tokens, registration), show toast
-            toast.error(result.error || t('registration_failed'));
-          }
-
-          setErrors(newErrors);
-        } else {
-          toast.error(result.message || result.error || t('registration_failed'));
-        }
-        setLoading(false);
-        return;
-      }
-
-      // Auth context is automatically updated by apiCallForSpaHelper via authContextPayload
-      // No need to manually call updateProfileFromLogin
-
+      // apiCall throws on error — success if we reach here
       // Show success message
-      toast.success(result.message || t('registration_successful'));
+      toast.success(response?.message || t('registration_successful'));
 
       // Since new accounts require verification, redirecting to /workspaces 
       // will trigger the appropriate verification flow if needed via middleware/UI wrapper

@@ -7,7 +7,7 @@ import {
 import { useTranslations } from 'next-intl';
 import Link
     from 'next/link';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import Image
     from 'next/image';
@@ -30,7 +30,7 @@ export default function PublicBlogsListWidget() {
     useEffect(() => {
         async function fetchBlogs() {
             try {
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     method: 'GET',
                     url: '/api/blogs',
                     params: {
@@ -39,8 +39,8 @@ export default function PublicBlogsListWidget() {
                     }
                 });
 
-                if (response.data && !response.data.error) {
-                    setBlogsList(response.data.blogs || []);
+                if (response && !response.error) {
+                    setBlogsList(response.blogs || []);
                 }
 
             } catch (error) {

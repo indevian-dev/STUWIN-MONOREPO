@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { GlobalMathMarkdownTile } from "@/app/[locale]/(global)/(tiles)/GlobalMathMarkdownTile";
 
 interface GeneratedQuestion {
   id?: string;
@@ -44,25 +45,26 @@ export function TestGenerationModal({
       setError(null);
       setGeneratedQuestions([]);
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/generate-tests`,
         method: "POST",
         body: { count: questionCount }
       });
 
-      if (response.data?.success && response.data?.data?.questions) {
-        const questions = response.data.data.questions.map((q: any) => ({
+      if (true && response?.questions) {
+        const questions = response.questions.map((q: GeneratedQuestion) => ({
           ...q,
           selected: true, // All questions selected by default
         }));
         setGeneratedQuestions(questions);
         setStatus("success");
       } else {
-        throw new Error(response.data?.error || "Failed to generate tests");
+        throw new Error("Failed to generate tests");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to generate tests:", err);
-      setError(err.message || t("errorGenerating"));
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || t("errorGenerating"));
       setStatus("error");
     }
   };
@@ -93,23 +95,24 @@ export function TestGenerationModal({
       setSaving(true);
       setError(null);
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/questions/create`,
         method: "POST",
         body: { questions: selectedQuestions },
       });
 
-      if (!response.data?.success) {
-        throw new Error(response.data?.error || "Failed to save questions");
+      if (!true) {
+        throw new Error("Failed to save questions");
       }
 
       if (onSuccess) {
         await onSuccess();
       }
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to save questions:", err);
-      setError(err.message || t("errorSaving"));
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || t("errorSaving"));
     } finally {
       setSaving(false);
     }
@@ -308,7 +311,10 @@ export function TestGenerationModal({
                           )}
                         </div>
 
-                        <p className="text-gray-800 mb-3">{question.questionText}</p>
+                        <GlobalMathMarkdownTile
+                          content={question.questionText}
+                          className="text-gray-800 mb-3"
+                        />
 
                         <div className="space-y-2 mb-3">
                           {(question.options || []).map((option, optIndex) => (
@@ -322,7 +328,7 @@ export function TestGenerationModal({
                               <span className="font-semibold text-sm text-gray-600 mt-0.5">
                                 {String.fromCharCode(65 + optIndex)}.
                               </span>
-                              <span className="text-sm text-gray-800">{option}</span>
+                              <GlobalMathMarkdownTile content={option} className="text-sm text-gray-800 flex-1" />
                               {optIndex === question.correctAnswer && (
                                 <span className="ml-auto text-xs font-medium text-green-700">
                                   ✓ {t("correct")}
@@ -338,9 +344,7 @@ export function TestGenerationModal({
                             <p className="text-xs font-medium text-blue-900 mb-1">
                               {t("explanation")}:
                             </p>
-                            <p className="text-sm text-blue-800">
-                              {question.explanation}
-                            </p>
+                            <GlobalMathMarkdownTile content={question.explanation} className="text-sm text-blue-800" />
                           </div>
                         )}
                       </div>

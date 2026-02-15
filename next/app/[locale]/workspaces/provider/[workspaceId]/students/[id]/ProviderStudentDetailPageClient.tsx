@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { PiArrowLeft, PiPencil } from 'react-icons/pi';
 import { Link } from '@/i18n/routing';
@@ -29,24 +29,16 @@ export default function ProviderStudentDetailPageClient({
   const workspaceId = params.workspaceId as string;
   const t = useTranslations('ProviderStudents');
 
-  useEffect(() => {
-    fetchStudent();
-  }, [studentId]);
 
   const fetchStudent = async () => {
     try {
       setLoading(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/students/${studentId}`,
       });
 
-      if (response.status === 200) {
-        setStudent(response.data.student);
-      } else {
-        toast.error(t('error_loading_student'));
-        router.push(`/workspaces/provider/${workspaceId}/students`);
-      }
+      setStudent(response.student);
     } catch (error) {
       ConsoleLogger.error('Error fetching student:', error);
       toast.error(t('error_loading_student'));
@@ -55,6 +47,12 @@ export default function ProviderStudentDetailPageClient({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStudent();
+  }, [studentId]);
+
+
 
   if (loading) return <GlobalLoaderTile />;
 

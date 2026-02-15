@@ -186,7 +186,7 @@ export class LearningService extends BaseService {
         isGlobal?: boolean;
         organizationId?: string;
         workspaceId?: string;
-        aiAssistantCrib?: string;
+        aiGuide?: string;
     }) {
         try {
             // No more regex validation. Store raw title + explicit language/grade
@@ -201,7 +201,7 @@ export class LearningService extends BaseService {
                 cover: data.cover,
                 aiLabel: data.aiLabel,
                 workspaceId: data.workspaceId,
-                aiAssistantCrib: data.aiAssistantCrib,
+                aiGuide: data.aiGuide,
                 createdAt: new Date(),
                 isActive: true
             });
@@ -356,7 +356,7 @@ export class LearningService extends BaseService {
                     pdfDetails: { s3Key: data.pdfFileName || data.pdfId },
                     workspaceId: this.ctx.activeWorkspaceId || "default",
                     isActiveAiGeneration: false,
-                    aiAssistantCrib: data.aiAssistantCrib,
+                    aiGuide: data.aiGuide,
                 }, tx);
 
                 return { success: true as const, data: topic as unknown as TopicEntity };

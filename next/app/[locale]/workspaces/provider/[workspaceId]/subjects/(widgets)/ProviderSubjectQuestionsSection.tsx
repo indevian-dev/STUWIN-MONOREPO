@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
-import { Question as QuestionType } from "@/types/domain/question";
-import { ProviderQuestionListItemWidget } from "@/app/[locale]/workspaces/provider/[workspaceId]/questions/(widgets)/ProviderQuestionListItemWidget";
+import { Question as QuestionType } from "@stuwin/shared/types/domain/question";
+import { ProviderQuestionListItemWidget } from "./ProviderQuestionListItemWidget";
 import { toast } from "react-toastify";
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
-import { ApiResponse } from "@/types";
 import { PiX } from "react-icons/pi";
 
 interface ProviderSubjectQuestionsSectionProps {
@@ -60,24 +59,19 @@ export function ProviderSubjectQuestionsSection({
                 params.append("topicId", topicId);
             }
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: "GET",
                 url: `/api/workspaces/provider/${workspaceId}/questions?${params.toString()}`,
             });
 
-            const result = response.data as ApiResponse<QuestionType.ListQuestionsResponse>;
+            const result = response as any;
 
-            if (result && "success" in result && result.success && result.data) {
-                setQuestions(result.data.questions);
-                setPagination({
-                    total: result.data.total,
-                    totalPages: result.data.totalPages,
-                    pageSize: result.data.pageSize,
-                });
-            } else {
-                ConsoleLogger.error("Failed to fetch questions", result);
-                toast.error(t("errorFetchingQuestions"));
-            }
+            setQuestions(result.questions || []);
+            setPagination({
+                total: result.total || 0,
+                totalPages: result.totalPages || 0,
+                pageSize: result.pageSize || 10,
+            });
         } catch (err) {
             ConsoleLogger.error("Error fetching questions:", err);
             toast.error(t("errorFetchingQuestions"));

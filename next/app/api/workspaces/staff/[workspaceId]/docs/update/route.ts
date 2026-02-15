@@ -1,27 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const PUT = unifiedApiHandler(async (request: NextRequest, { authData, module }) => {
   if (!authData) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
   }
 
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type');
 
   if (!type) {
-    return NextResponse.json({ error: 'Valid doc type is required' }, { status: 400 });
+    return errorResponse("Valid doc type is required");
   }
 
   const body = await request.json();
   const result = await module.content.updatePageContent(type, body);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: (result as any).code || 500 });
+    return errorResponse(result.error, (result as any).code || 500);
   }
 
-  return NextResponse.json({
-    message: 'Doc updated successfully',
-    doc: result.data
-  });
+  return okResponse(result.data, "Doc updated successfully");
 });

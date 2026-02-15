@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, authData, params, log }) => {
   try {
@@ -14,7 +14,7 @@ export const GET = unifiedApiHandler(async (request, { module, authData, params,
     const result = await module.support.getBookmarksContext(accountId, workspaceId, page, limit);
 
     if (!result.success || !result.data) {
-      return NextResponse.json({ error: result.error || 'Failed to retrieve favorites' }, { status: 500 });
+      return serverErrorResponse(result.error || 'Failed to retrieve favorites');
     }
 
     const favorites = result.data.bookmarks.map((row: any) => ({
@@ -33,21 +33,14 @@ export const GET = unifiedApiHandler(async (request, { module, authData, params,
       total: result.data.pagination.total
     });
 
-    return NextResponse.json({
-      message: 'Bookmarks retrieved successfully',
-      favorites,
-      pagination: {
+    return okResponse({ favorites: favorites, pagination: {
         ...result.data.pagination,
         hasNext: page < result.data.pagination.totalPages,
         hasPrev: page > 1
-      }
-    }, { status: 200 });
+      } }, 'Bookmarks retrieved successfully');
 
   } catch (error) {
     log.error('Error retrieving favorite questions', error as Error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve favorites' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Failed to retrieve favorites');
   }
 });

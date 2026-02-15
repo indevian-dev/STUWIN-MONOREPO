@@ -12,7 +12,7 @@ import {
   PiWarning,
   PiBookOpen,
 } from "react-icons/pi";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import type { SubjectPdf } from "./ProviderSubjectDetailWidget";
 
 interface ProviderPdfTopicExtractorWidgetProps {
@@ -86,7 +86,7 @@ export function ProviderPdfTopicExtractorWidget({
       setStage("analyzing");
       setError(null);
 
-      const analysisResponse = await apiCallForSpaHelper({
+      const analysisResponseData = await apiCall<any>({
         method: "POST",
         url: `/api/workspaces/provider/${workspaceId}/topics/analyze-book`,
         body: {
@@ -96,12 +96,12 @@ export function ProviderPdfTopicExtractorWidget({
         },
       });
 
-      if (!analysisResponse.data?.topics) {
+      if (!analysisResponseData?.topics) {
         throw new Error("Failed to extract topics from PDF");
       }
 
       // Set extracted topics
-      const topics: ExtractedTopic[] = analysisResponse.data.topics.map(
+      const topics: ExtractedTopic[] = analysisResponseData.topics.map(
         (topic: any, index: number) => ({
           id: `topic-${index}`,
           name: topic.name || topic.title,
@@ -171,7 +171,7 @@ export function ProviderPdfTopicExtractorWidget({
 
     try {
       // Use the new bulk create API
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: "POST",
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/create`,
         body: {
@@ -186,16 +186,11 @@ export function ProviderPdfTopicExtractorWidget({
           })),
         },
       });
-
-      if (response.data?.success) {
         setStage("complete");
         setTimeout(() => {
           onTopicsCreated?.();
           handleClose();
         }, 2000);
-      } else {
-        throw new Error(response.data?.error || "Failed to create topics");
-      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create topics";

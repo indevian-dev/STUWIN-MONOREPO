@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
-import { FiMapPin, FiCheckCircle, FiDollarSign } from 'react-icons/fi';
+import { FiMapPin, FiCheckCircle } from 'react-icons/fi';
 import { Program, fetchProgramsClient, getProgramLogoUrl } from '../programs/PublicProgramsService';
 
 export function PublicHomeProgramsWidget() {
@@ -106,7 +106,7 @@ export function PublicHomeProgramsWidget() {
                                             <div className="flex items-center gap-1.5 text-lg font-black text-slate-900">
                                                 {price ? (
                                                     <>
-                                                        <FiDollarSign size={20} className="text-brand" />
+                                                        <span className="text-brand text-xl">₼</span>
                                                         <span>
                                                             {price} <span className="text-sm font-bold text-slate-400">{currency} / {period}</span>
                                                         </span>

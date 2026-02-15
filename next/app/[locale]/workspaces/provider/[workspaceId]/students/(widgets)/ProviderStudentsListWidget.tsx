@@ -14,7 +14,7 @@ import {
   PiArrowLeft,
   PiArrowRight
 } from 'react-icons/pi';
-import type { User } from '@/types/domain';
+import type { User } from '@stuwin/shared/types/domain';
 
 interface ProviderStudentsListWidgetProps {
   students: User.Profile[];

@@ -1,19 +1,18 @@
 import { CookieAuthenticator } from '@/lib/middleware/authenticators/CookieAuthenticator';
-import { SessionAuthenticator } from '@/lib/middleware/authenticators/SessionAuthenticator';
-import { getUserData, type GetUserDataResult } from '@/lib/middleware/authenticators/IdentityAuthenticator';
+import { SessionStore, type ResolvedSession } from '@/lib/middleware/authenticators/SessionStore';
 import logger from '@/lib/logging/Logger';
 import type { EndpointConfig } from '@/lib/routes/types';
 import type { ApiValidationResult } from '@/lib/routes/api.types';
+import type { AuthContext } from '@/lib/domain/base/types';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import redis from '@/lib/integrations/upstash/redis-session.client';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES & CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
-type InternalAuthData = GetUserDataResult;
-
 type ValidationCode =
-  | 'UNAUTHORIZED' // Merged: NO_TOKENS, NO_TOKEN, TOKEN_EXPIRED, TOKEN_INVALID, SESSION_INVALID, AUTH_DATA_MISSING
+  | 'UNAUTHORIZED'
   | 'ACCOUNT_SUSPENDED'
   | 'EMAIL_NOT_VERIFIED' | 'PHONE_NOT_VERIFIED'
   | 'PERMISSION_DENIED' | 'WORKSPACE_MISMATCH'
@@ -27,7 +26,7 @@ interface ValidationContext {
   session: string | undefined;
   endpointConfig?: EndpointConfig;
   requiredPermissions: string[];
-  authData?: InternalAuthData;
+  resolved?: ResolvedSession;
   accountId?: string;
   userId?: string;
   workspaceId?: string;
@@ -36,7 +35,7 @@ interface ValidationContext {
 interface StepResult {
   success: boolean;
   code?: ValidationCode;
-  authData?: InternalAuthData;
+  resolved?: ResolvedSession;
   accountId?: string;
   userId?: string;
   needsRefresh?: boolean;
@@ -47,62 +46,49 @@ interface StepResult {
 // ═══════════════════════════════════════════════════════════════
 
 function checkAccountStatus(
-  authData: InternalAuthData | undefined,
+  resolved: ResolvedSession | undefined,
   needEmailVerification: boolean | undefined,
   needPhoneVerification: boolean | undefined
 ): StepResult {
-  if (!authData?.account || !authData?.user) {
+  if (!resolved) {
     return { success: false, code: 'UNAUTHORIZED' };
   }
-  if (authData.account.suspended) {
-    return { success: false, code: 'ACCOUNT_SUSPENDED' };
-  }
 
-  if (needEmailVerification && !authData.user.emailVerified) {
+  if (needEmailVerification && !resolved.emailVerified) {
     return { success: false, code: 'EMAIL_NOT_VERIFIED' };
   }
 
-  if (needPhoneVerification && !authData.user.phoneVerified) {
+  if (needPhoneVerification && !resolved.phoneVerified) {
     return { success: false, code: 'PHONE_NOT_VERIFIED' };
   }
 
   return { success: true };
 }
 
-function hasPermission(authData: InternalAuthData | undefined, permission: string): boolean {
+function hasPermission(resolved: ResolvedSession | undefined, permission: string): boolean {
+  if (!resolved) return false;
+
   // Check if permission is granted by role
-  const hasRolePermission = (authData?.account as any)?.permissions?.includes(permission) ?? false;
-  if (hasRolePermission) {
+  if (resolved.permissions?.includes(permission)) {
     return true;
   }
 
-  // Automatically grant provider permissions to provider accounts
-  if (permission.startsWith('PROVIDER_') && (authData?.account as any)?.workspaceType === 'provider') {
+  // Automatically grant provider permissions to provider workspace context
+  if (permission.startsWith('PROVIDER_') && resolved.workspaceType === 'provider') {
     return true;
   }
 
-  // Automatically grant staff permissions to staff accounts
-  if (permission.startsWith('STAFF_') && (authData?.account as any)?.isStaff === true) {
+  // Automatically grant staff permissions to staff workspace context
+  if (permission.startsWith('STAFF_') && resolved.workspaceType === 'staff') {
     return true;
   }
 
-  // Automatically grant student permissions to student accounts (default for personal accounts)
-  if (permission.startsWith('STUDENT_') && (authData?.account as any)?.isPersonal === true) {
+  // Automatically grant student permissions to student workspace context
+  if (permission.startsWith('STUDENT_') && resolved.workspaceType === 'student') {
     return true;
   }
 
   return false;
-}
-
-function check2FAExpiry(expiryField: string | undefined): StepResult {
-  if (!expiryField) {
-    return { success: false };
-  }
-
-  const expireAt = new Date(expiryField);
-  return {
-    success: expireAt > new Date()
-  };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -111,10 +97,8 @@ function check2FAExpiry(expiryField: string | undefined): StepResult {
 
 class ValidationSteps {
 
-
   static async validateSession(ctx: ValidationContext): Promise<StepResult> {
     if (!ctx.session) {
-      // If auth is NOT required, return success (Guest mode)
       if (ctx.endpointConfig?.authRequired === false) {
         return { success: true };
       }
@@ -123,10 +107,11 @@ class ValidationSteps {
       return { success: false, code: 'UNAUTHORIZED' };
     }
 
-    const { isValid, session: sessionData, needsRollover } = await SessionAuthenticator.verifySession(ctx.session);
+    // Use SessionStore.resolve() — 2 Redis calls on cache hit, 0 DB queries
+    // Pass workspace type from endpoint config to filter correct access record
+    const resolved = await SessionStore.resolve(ctx.session, ctx.workspaceId, ctx.endpointConfig?.workspace);
 
-    if (!isValid || !sessionData) {
-      // If auth is NOT required, return success (Guest mode) despite invalid token
+    if (!resolved) {
       if (ctx.endpointConfig?.authRequired === false) {
         return { success: true };
       }
@@ -135,37 +120,13 @@ class ValidationSteps {
       return { success: false, code: 'UNAUTHORIZED' };
     }
 
-    const { accountId } = sessionData;
-
-    // Load full auth data with workspace context
-    const authData = await getUserData({
-      type: 'account_id',
-      accountId,
-      workspaceId: ctx.workspaceId
-    });
-    logger.debug('User authentication data retrieved', { accountId });
-
-    if (!authData?.account) {
-      // If auth is NOT required, return success (Guest mode)
-      if (ctx.endpointConfig?.authRequired === false) {
-        return { success: true };
-      }
-
-      logger.error('Account not found for valid session');
-      return { success: false, code: 'UNAUTHORIZED', accountId };
-    }
-
-    // Handle Rollover (return it in the result so the interceptor can set the header/cookie)
-    if (needsRollover) {
-      logger.debug('Session needs rollover', { accountId });
-    }
+    logger.debug('Session resolved from cache', { accountId: resolved.accountId });
 
     return {
       success: true,
-      authData,
-      accountId,
-      userId: authData.user?.id,
-      needsRefresh: needsRollover // Re-using needsRefresh flag to trigger cookie update
+      resolved,
+      accountId: resolved.accountId,
+      userId: resolved.userId,
     };
   }
 
@@ -176,12 +137,16 @@ class ValidationSteps {
       needPhoneVerification: ctx.endpointConfig?.needPhoneVerification
     });
 
-    // If guest (no authData) and auth optional, skip status checks
-    if (!ctx.authData && ctx.endpointConfig?.authRequired === false) {
+    // If guest (no resolved data) and auth optional, skip status checks
+    if (!ctx.resolved && ctx.endpointConfig?.authRequired === false) {
       return { success: true };
     }
 
-    const result = checkAccountStatus(ctx.authData, ctx.endpointConfig?.needEmailVerification, ctx.endpointConfig?.needPhoneVerification);
+    const result = checkAccountStatus(
+      ctx.resolved,
+      ctx.endpointConfig?.needEmailVerification,
+      ctx.endpointConfig?.needPhoneVerification
+    );
 
     if (!result.success && result.code) {
       logger.warn(`Account status check failed: ${result.code}`);
@@ -191,15 +156,11 @@ class ValidationSteps {
   }
 
   static validateEmailVerification(ctx: ValidationContext): StepResult {
-    const config = ctx.endpointConfig as any;
-
-    if (!config?.needEmailVerification) {
+    if (!ctx.endpointConfig?.needEmailVerification) {
       return { success: true };
     }
 
-    const user = ctx.authData?.user as any;
-
-    if (!user?.emailVerified) {
+    if (!ctx.resolved?.emailVerified) {
       logger.warn('Email verification required but not verified');
       return { success: false, code: 'EMAIL_NOT_VERIFIED' };
     }
@@ -209,15 +170,11 @@ class ValidationSteps {
   }
 
   static validatePhoneVerification(ctx: ValidationContext): StepResult {
-    const config = ctx.endpointConfig as any;
-
-    if (!config?.needPhoneVerification) {
+    if (!ctx.endpointConfig?.needPhoneVerification) {
       return { success: true };
     }
 
-    const user = ctx.authData?.user as any;
-
-    if (!user?.phoneVerified) {
+    if (!ctx.resolved?.phoneVerified) {
       logger.warn('Phone verification required but not verified');
       return { success: false, code: 'PHONE_NOT_VERIFIED' };
     }
@@ -228,20 +185,9 @@ class ValidationSteps {
 
   static validateWorkspace(ctx: ValidationContext): StepResult {
     const endpointWorkspace = ctx.endpointConfig?.workspace;
-    const accountWorkspace = ctx.authData?.account?.workspaceType;
-    const isStaff = ctx.authData?.account?.isStaff;
+    const accountWorkspace = ctx.resolved?.workspaceType;
 
     if (endpointWorkspace && accountWorkspace && endpointWorkspace !== accountWorkspace) {
-      // Allow STAFF members to access any workspace type
-      if (isStaff) {
-        logger.debug('Workspace mismatch ignored for STAFF member', {
-          endpointWorkspace,
-          accountWorkspace,
-          accountId: ctx.accountId
-        });
-        return { success: true };
-      }
-
       logger.warn('Workspace mismatch', {
         endpointWorkspace,
         accountWorkspace,
@@ -258,21 +204,17 @@ class ValidationSteps {
   }
 
   static validatePermissions(ctx: ValidationContext): StepResult {
-
-    console.log('Validating permissions', {
-      endpointConfig: ctx.endpointConfig,
-      requiredPermissions: ctx.requiredPermissions
-    });
-    // Check endpoint config permission
     const configPermission = ctx.endpointConfig?.permission;
-    if (configPermission && !hasPermission(ctx.authData, configPermission)) {
+
+    // Check endpoint config permission
+    if (configPermission && !hasPermission(ctx.resolved, configPermission)) {
       logger.warn('Permission denied', { permission: configPermission });
       return { success: false, code: 'PERMISSION_DENIED' };
     }
 
     // Check required permissions array
     for (const permission of ctx.requiredPermissions) {
-      if (!hasPermission(ctx.authData, permission)) {
+      if (!hasPermission(ctx.resolved, permission)) {
         logger.warn('Permission denied', { permission });
         return { success: false, code: 'PERMISSION_DENIED' };
       }
@@ -289,61 +231,61 @@ class ValidationSteps {
     return { success: true };
   }
 
-  static validate2FA(ctx: ValidationContext): StepResult {
-    const config = ctx.endpointConfig as any;
-    const tfaType = config?.twoFactorAuthType;
-
-    if (!config?.twoFactorAuth || !tfaType) {
-      return { success: true };
-    }
-
-    const user = ctx.authData?.user as any;
-    let result: StepResult;
-
-    switch (tfaType) {
-      case 'email':
-        result = check2FAExpiry(user?.two_factor_auth_email_expire_at);
-        break;
-      case 'phone':
-        result = check2FAExpiry(user?.two_factor_auth_phone_expire_at);
-        break;
-      default:
-        logger.error('2FA type unknown');
-        return { success: false, code: '2FA_TYPE_UNKNOWN' };
-    }
-
-    if (!result.success) {
-      logger.warn('2FA required', { twoFactorAuthType: tfaType });
-      return {
-        success: false,
-        code: `2FA_${tfaType.toUpperCase()}_REQUIRED` as ValidationCode
-      };
-    }
-
-    logger.debug('2FA validated');
-    return { success: true };
-  }
-
   static validateSubscription(ctx: ValidationContext): StepResult {
     const config = ctx.endpointConfig;
     if (!config?.checkSubscriptionStatus) {
       return { success: true };
     }
 
-    const authData = ctx.authData;
-    const accountSubEnd = authData?.account?.subscribedUntil;
-    const workspaceSubEnd = authData?.account?.workspaceSubscribedUntil;
-
-    const now = new Date();
-    const isSubscribed = (accountSubEnd && new Date(accountSubEnd) > now) ||
-      (workspaceSubEnd && new Date(workspaceSubEnd) > now);
-
-    if (!isSubscribed) {
+    const resolved = ctx.resolved;
+    if (!resolved?.subscribedUntil) {
       logger.warn('Subscription required but not active', { accountId: ctx.accountId });
       return { success: false, code: 'SUBSCRIPTION_REQUIRED' };
     }
 
+    const isSubscribed = resolved.subscribedUntil > Date.now();
+    if (!isSubscribed) {
+      logger.warn('Subscription expired', { accountId: ctx.accountId });
+      return { success: false, code: 'SUBSCRIPTION_REQUIRED' };
+    }
+
     logger.debug('Subscription validated');
+    return { success: true };
+  }
+
+  /**
+   * Validate 2FA requirement.
+   * Checks Redis for a `2fa:{sessionId}` key set during OTP verification.
+   * TTL on this key controls how long a 2FA verification is valid.
+   */
+  static async validate2FA(ctx: ValidationContext): Promise<StepResult> {
+    const config = ctx.endpointConfig;
+    if (!config?.twoFactorAuth) {
+      return { success: true };
+    }
+
+    const resolved = ctx.resolved;
+    if (!resolved?.sessionId) {
+      logger.warn('2FA required but no session available');
+      return { success: false, code: config.twoFactorAuthType === 'phone' ? '2FA_PHONE_REQUIRED' : '2FA_EMAIL_REQUIRED' };
+    }
+
+    // Check Redis for recent 2FA verification
+    const twoFAKey = `2fa:${resolved.sessionId}`;
+    const twoFAVerified = await redis.get(twoFAKey);
+
+    if (!twoFAVerified) {
+      logger.warn('2FA verification required', {
+        accountId: ctx.accountId,
+        type: config.twoFactorAuthType || 'email'
+      });
+      return {
+        success: false,
+        code: config.twoFactorAuthType === 'phone' ? '2FA_PHONE_REQUIRED' : '2FA_EMAIL_REQUIRED'
+      };
+    }
+
+    logger.debug('2FA validated', { sessionId: resolved.sessionId });
     return { success: true };
   }
 }
@@ -380,33 +322,39 @@ export class CoreAuthorizer {
     ctx: ValidationContext
   ): Promise<ApiValidationResult> {
 
-    // Step 1: Validate session & load auth data
+    // Step 1: Validate session & resolve auth data from Redis
     const sessionResult = await ValidationSteps.validateSession(ctx);
     if (!sessionResult.success) {
       return this._createResult('token', sessionResult);
     }
 
-    // Update context with auth data
-    ctx.authData = sessionResult.authData;
+    // Update context with resolved data
+    ctx.resolved = sessionResult.resolved;
     ctx.accountId = sessionResult.accountId;
     ctx.userId = sessionResult.userId;
 
-    // Step 3: Validate account status
+    // Step 2: Validate account status
     const statusResult = ValidationSteps.validateStatus(ctx);
     if (!statusResult.success) {
       return this._createResult('status', statusResult, ctx);
     }
 
-    // Step 4: Validate workspace mismatch
+    // Step 3: Validate workspace mismatch
     const workspaceResult = ValidationSteps.validateWorkspace(ctx);
     if (!workspaceResult.success) {
       return this._createResult('workspace', workspaceResult, ctx);
     }
 
-    // Step 5: Validate permissions
+    // Step 4: Validate permissions
     const permResult = ValidationSteps.validatePermissions(ctx);
     if (!permResult.success) {
       return this._createResult('permission', permResult, ctx);
+    }
+
+    // Step 5: Validate 2FA (if required by endpoint)
+    const twoFAResult = await ValidationSteps.validate2FA(ctx);
+    if (!twoFAResult.success) {
+      return this._createResult('2fa', twoFAResult, ctx);
     }
 
     // Step 6: Validate email verification (if required)
@@ -421,13 +369,7 @@ export class CoreAuthorizer {
       return this._createResult('status', phoneVerifyResult, ctx);
     }
 
-    // Step 8: Validate 2FA
-    const tfaResult = ValidationSteps.validate2FA(ctx);
-    if (!tfaResult.success) {
-      return this._createResult('2fa', tfaResult, ctx);
-    }
-
-    // Step 9: Validate Subscription
+    // Step 8: Validate Subscription
     const subResult = ValidationSteps.validateSubscription(ctx);
     if (!subResult.success) {
       return this._createResult('status', subResult, ctx);
@@ -446,29 +388,46 @@ export class CoreAuthorizer {
     result: StepResult,
     ctx?: ValidationContext
   ): ApiValidationResult {
-    const authData = result.authData || ctx?.authData;
+    const resolved = result.resolved || ctx?.resolved;
     const accountId = result.accountId || ctx?.accountId;
     const userId = result.userId || ctx?.userId;
 
-    // Convert to API format
-    const convertedAuthData = authData ? {
-      user: authData.user!,
-      account: authData.account!,
+    // Build authData from resolved session data
+    const convertedAuthData = resolved ? {
+      user: {
+        id: resolved.userId,
+        email: resolved.email,
+        firstName: resolved.firstName,
+        lastName: resolved.lastName,
+        emailVerified: resolved.emailVerified,
+        phoneVerified: resolved.phoneVerified,
+      },
+      account: {
+        id: resolved.accountId,
+        role: resolved.roleName,
+        permissions: resolved.permissions,
+        workspaceId: resolved.workspaceId,
+        workspaceType: resolved.workspaceType,
+        subscriptionTier: resolved.subscriptionTier,
+        subscribedUntil: resolved.subscribedUntil,
+      },
       session: {
-        id: '',
-        userId: authData.user?.id || '',
-        accountId: authData.account?.id || 0,
+        id: resolved.sessionId,
+        userId: resolved.userId,
+        accountId: resolved.accountId,
         createdAt: '',
         lastActivityAt: ''
       }
     } : undefined;
 
-    const authContext: any = {
+    const authContext: AuthContext = {
       userId: userId || "guest",
       accountId: accountId || "0",
-      permissions: authData?.account?.permissions || [],
-      allowedWorkspaceIds: [], // Not directly available in current GetUserDataResult
-      activeWorkspaceId: authData?.account?.workspaceId
+      permissions: resolved?.permissions || [],
+      activeWorkspaceId: resolved?.workspaceId ?? undefined,
+      workspaceType: resolved?.workspaceType ?? undefined,
+      role: resolved?.roleName ?? undefined,
+      subscriptionActive: resolved?.subscribedUntil ? resolved.subscribedUntil > Date.now() : undefined,
     };
 
     return {

@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/handlers';
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module, auth }: UnifiedContext) => {
   try {
@@ -17,15 +17,11 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, aut
     } = body;
 
     if (!name) {
-      return NextResponse.json({
-        error: 'Topic name is required'
-      }, { status: 400 });
+      return errorResponse('Topic name is required', 400);
     }
 
     if (!subject_id) {
-      return NextResponse.json({
-        error: 'Subject ID is required'
-      }, { status: 400 });
+      return errorResponse('Subject ID is required', 400);
     }
 
     const result = await module.topic.createWithContent(subject_id, {
@@ -38,15 +34,11 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, aut
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+      return errorResponse(result.error, 400);
     }
 
-    return NextResponse.json({
-      topic: result.data
-    }, { status: 201 });
+    return createdResponse(result.data);
   } catch (error) {
-    return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Failed to create topic'
-    }, { status: 500 });
+    return serverErrorResponse(error instanceof Error ? error.message : 'Failed to create topic');
   }
 });

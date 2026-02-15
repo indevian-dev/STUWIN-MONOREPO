@@ -5,7 +5,7 @@ import {
     useState
 } from 'react';
 import { useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import {
     staffEndpoints as endpoints,
     PERMISSIONS
@@ -106,14 +106,14 @@ export function StaffSingleRoleWidget({ id }: StaffSingleRoleWidgetProps) {
 
         const fetchRole = async () => {
             try {
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     url: `/api/workspaces/staff/${workspaceId}/roles/${id}`,
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-                const data = await response.data;
+                const data = response;
                 if (data.role) {
                     setRole(data.role);
                     setPermissions(data.role.permissions || []);
@@ -135,7 +135,7 @@ export function StaffSingleRoleWidget({ id }: StaffSingleRoleWidgetProps) {
             setUpdating(true);
             const hasPermission = permissions.includes(permission);
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/staff/${workspaceId}/roles/${id}/permissions`,
                 method: 'POST',
                 headers: {
@@ -147,14 +147,12 @@ export function StaffSingleRoleWidget({ id }: StaffSingleRoleWidgetProps) {
                 })
             });
 
-            if (response.status === 200) {
-                toast.success('Permission updated successfully');
-                const updatedPermissions = hasPermission
-                    ? permissions.filter((p: string) => p !== permission)
-                    : [...permissions, permission];
+            toast.success('Permission updated successfully');
+            const updatedPermissions = hasPermission
+                ? permissions.filter((p: string) => p !== permission)
+                : [...permissions, permission];
 
-                setPermissions(updatedPermissions);
-            }
+            setPermissions(updatedPermissions);
         } catch (error) {
             ConsoleLogger.error('Failed to update permission:', error);
             toast.error('Failed to update permission');

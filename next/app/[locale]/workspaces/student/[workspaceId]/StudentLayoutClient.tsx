@@ -7,8 +7,6 @@ import {
   PiUserCircle,
   PiHeart,
   PiBell,
-  PiStorefront,
-  PiStorefrontDuotone,
   PiGameController,
   PiListBullets,
   PiBookBookmarkLight,
@@ -22,8 +20,8 @@ import {
 import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget";
 import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget";
 import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget";
-import type { AuthData } from "@/types";
-import type { DomainNavConfig } from "@/types";
+import type { AuthData } from "@stuwin/shared/types";
+import type { DomainNavConfig } from "@stuwin/shared/types";
 
 // Context for auth data in student pages
 export const StudentAuthContext = createContext<AuthData | null>(null);

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { SubjectInfoSection } from "./ProviderSubjectInfoSection";
 import { SubjectMediaLibrarySection } from "./ProviderSubjectMediaLibrarySection";
 import { SubjectTopicsSection } from "./ProviderSubjectTopicsSection";
@@ -26,7 +26,7 @@ export interface Subject {
   gradeLevel: number | null;
   language: string | null;
   createdAt: string;
-  aiAssistantCrib: string | null;
+  aiGuide: string | null;
 }
 
 export interface SubjectPdf {
@@ -62,16 +62,11 @@ export function ProviderSubjectDetailWidget({
       setLoading(true);
       setError(null);
 
-      const response = await apiCallForSpaHelper({
+      const data = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}`,
         method: "GET",
       });
-
-      if (response.data?.success && response.data?.data) {
-        setSubject(response.data.data);
-      } else {
-        setError(t("subjectNotFound"));
-      }
+        setSubject(data);
     } catch (err) {
       setError(t("errorFetchingData"));
       console.error("Failed to fetch subject data:", err);
@@ -87,15 +82,13 @@ export function ProviderSubjectDetailWidget({
 
   const handleSubjectUpdate = async (updatedData: Partial<Subject>) => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/update`,
         method: "PUT",
         body: updatedData,
       });
 
-      if (response.data?.success) {
-        await fetchSubject();
-      }
+              await fetchSubject();
     } catch (err) {
       console.error("Failed to update subject:", err);
       throw err;

@@ -6,10 +6,10 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { ProviderOrganizationEditWidget } from '../(widgets)/ProviderOrganizationEditWidget';
-import type { Provider } from '@/types/domain';
+import type { Provider } from '@stuwin/shared/types/domain';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
@@ -22,24 +22,16 @@ export default function ProviderOrganizationEditPageClient() {
   const workspaceId = params.workspaceId as string;
   const t = useTranslations('ProviderOrganization');
 
-  useEffect(() => {
-    fetchOrganization();
-  }, []);
 
   const fetchOrganization = async () => {
     try {
       setLoading(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/organization`,
       });
 
-      if (response.status === 200) {
-        setOrganization(response.data.organization);
-      } else {
-        toast.error(t('error_loading_organization'));
-        router.push(`/workspaces/provider/${workspaceId}/organization`);
-      }
+      setOrganization(response.organization);
     } catch (error) {
       ConsoleLogger.error('Error fetching organization:', error);
       toast.error(t('error_loading_organization'));
@@ -49,21 +41,24 @@ export default function ProviderOrganizationEditPageClient() {
     }
   };
 
-  const handleSave = async (updatedOrganization: Partial<Provider.PrivateAccess>) => {
+
+
+  useEffect(() => {
+    fetchOrganization();
+  }, []);
+
+
+  const handleSave = async (updatedOrganization: Partial<Provider.UpdateInput>) => {
     try {
       setSaving(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/organization/update`,
         body: updatedOrganization,
       });
 
-      if (response.status === 200) {
-        toast.success(t('organization_updated'));
-        router.push(`/workspaces/provider/${workspaceId}/organization`);
-      } else {
-        toast.error(t('error_updating_organization'));
-      }
+      toast.success(t('organization_updated'));
+      router.push(`/workspaces/provider/${workspaceId}/organization`);
     } catch (error) {
       ConsoleLogger.error('Error updating organization:', error);
       toast.error(t('error_updating_organization'));

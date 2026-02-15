@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { PiPlusBold } from 'react-icons/pi';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 import { loadClientSideCoLocatedTranslations } from '@/i18n/i18nClientSide';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { PiBuildings, PiUserGear, PiStudent, PiBriefcase } from 'react-icons/pi';
 
 interface Workspace {
@@ -28,18 +28,15 @@ export function WorkspacesRootPageClient() {
         const fetchWorkspaces = async () => {
             try {
                 setLoading(true);
-                const response = await apiCallForSpaHelper({
+                // apiCall unwraps the { success, data } envelope — returns data directly
+                const response = await apiCall<{ workspaces: Workspace[]; total: number }>({
                     url: '/api/workspaces/list',
                     method: 'GET'
                 });
 
-                if (response.data && response.data.success) {
-                    setWorkspaces(response.data.data);
-                } else {
-                    throw new Error(response.data?.error?.message || 'Failed to fetch workspaces');
-                }
-            } catch (err: any) {
-                setError(err.message);
+                setWorkspaces(response.workspaces ?? []);
+            } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch workspaces');
             } finally {
                 setLoading(false);
             }

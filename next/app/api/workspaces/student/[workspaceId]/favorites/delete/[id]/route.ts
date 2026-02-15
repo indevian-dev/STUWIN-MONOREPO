@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const DELETE = unifiedApiHandler(async (_request, { module, authData, params, log, isValidSlimId }) => {
   try {
@@ -7,10 +7,7 @@ export const DELETE = unifiedApiHandler(async (_request, { module, authData, par
     const accountId = authData.account.id;
 
     if (!questionId || !isValidSlimId(questionId)) {
-      return NextResponse.json(
-        { error: 'Valid question ID is required' },
-        { status: 400 }
-      );
+      return errorResponse('Valid question ID is required', 400);
     }
 
     log.info('Removing question bookmark', { questionId, accountId });
@@ -19,22 +16,16 @@ export const DELETE = unifiedApiHandler(async (_request, { module, authData, par
 
     if (!result.success || !result.data) {
       if (result.code === 'BOOKMARK_NOT_FOUND') {
-        return NextResponse.json({ error: 'Favorite not found' }, { status: 404 });
+        return errorResponse('Favorite not found', 404, "NOT_FOUND");
       }
-      return NextResponse.json({ error: result.error || 'Failed to remove bookmark' }, { status: 500 });
+      return serverErrorResponse(result.error || 'Failed to remove bookmark');
     }
 
     log.info('Question bookmark removed', { questionId });
-    return NextResponse.json({
-      message: 'Question removed from bookmarks successfully',
-      favorite: result.data
-    }, { status: 200 });
+    return okResponse(result.data, 'Question removed from bookmarks successfully');
 
   } catch (error) {
     log.error('Error removing question bookmark', error as Error);
-    return NextResponse.json(
-      { error: 'Failed to remove question bookmark' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Failed to remove question bookmark');
   }
 });

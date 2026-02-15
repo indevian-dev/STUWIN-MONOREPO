@@ -5,10 +5,6 @@ import { useParams } from "next/navigation";
 import {
   PiHouseLine,
   PiUserCircle,
-  PiBell,
-  PiPackage,
-  PiListBullets,
-  PiPlusCircle,
   PiChartLine,
   PiUsers,
   PiStorefront,
@@ -18,8 +14,8 @@ import {
 import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget";
 import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget";
 import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget";
-import type { AuthData } from "@/types";
-import type { DomainNavConfig } from "@/types";
+import type { AuthData } from "@stuwin/shared/types";
+import type { DomainNavConfig } from "@stuwin/shared/types";
 
 // Context for auth data in provider pages
 export const ProviderAuthContext = createContext<AuthData | null>(null);
@@ -55,15 +51,7 @@ export function ProviderLayoutClient({
     logoSrc: "/logo.svg",
     label: "stuwin.ai",
     subtitle: "Provider",
-    fastNavLinks: [
-      {
-        href: `/workspaces/provider/${workspaceId}/questions/create`,
-        icon: PiPlusCircle,
-        label: "create_question",
-        variant: "primary",
-        showOnMobile: true,
-      },
-    ],
+    fastNavLinks: [],
     menuGroups: {
       main: {
         label: "main",
@@ -82,11 +70,8 @@ export function ProviderLayoutClient({
       },
       libraries: {
         label: "libraries",
-        icon: PiListBullets,
         items: [
           { href: `/workspaces/provider/${workspaceId}/subjects`, icon: PiTagSimple, label: "subjects" },
-          { href: `/workspaces/provider/${workspaceId}/questions`, icon: PiPackage, label: "questions" },
-          { href: `/workspaces/provider/${workspaceId}/topics`, icon: PiListBullets, label: "topics" },
         ],
       },
       pdf_tools: {

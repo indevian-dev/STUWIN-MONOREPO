@@ -1,7 +1,7 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 import { z } from 'zod';
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { searchParams } = new URL(request.url);
@@ -29,18 +29,15 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
   });
 
   if (!result.success || !result.data) {
-    return NextResponse.json({ error: result.error || "Failed" }, { status: 500 });
+    return serverErrorResponse(result.error || "Failed");
   }
 
   const { questions, pagination } = result.data;
 
-  return NextResponse.json({
-    success: true,
-    data: {
+  return okResponse({
       questions,
       ...pagination
-    }
-  });
+    });
 });
 
 // Legacy question create — uses snake_case fields from old frontend
@@ -61,10 +58,7 @@ export const POST = unifiedApiHandler(async (request, { module, auth, params }) 
 
     const parsed = LegacyQuestionCreateSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({
-        error: parsed.error.errors[0]?.message || 'Validation failed',
-        errorCount: parsed.error.errors.length
-      }, { status: 400 });
+      return errorResponse(parsed.error.errors[0]?.message || 'Validation failed', 400);
     }
 
     const {
@@ -79,9 +73,7 @@ export const POST = unifiedApiHandler(async (request, { module, auth, params }) 
 
     // Verify correct_answer is in answers
     if (!answers.includes(correct_answer)) {
-      return NextResponse.json({
-        error: 'Correct answer must be one of the answer options'
-      }, { status: 400 });
+      return errorResponse('Correct answer must be one of the answer options', 400);
     }
 
     const workspaceId = params?.workspaceId as string;
@@ -103,15 +95,10 @@ export const POST = unifiedApiHandler(async (request, { module, auth, params }) 
       throw new Error(result.error);
     }
 
-    return NextResponse.json({
-      message: 'Question created successfully',
-      question: result.data
-    }, { status: 201 });
+    return createdResponse(result.data, 'Question created successfully');
 
   } catch (error) {
     console.error('Error creating question:', error);
-    return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Failed to create question'
-    }, { status: 500 });
+    return serverErrorResponse(error instanceof Error ? error.message : 'Failed to create question');
   }
 });

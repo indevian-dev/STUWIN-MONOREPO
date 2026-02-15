@@ -11,7 +11,7 @@ import {
   ReactNode
 } from 'react';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -95,15 +95,15 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
     isFetchingRef.current = true;
 
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'GET',
         url: `/api/workspaces/dashboard/favorites?page=1&limit=${MAX_FAVORITES}`,
         params: {},
         body: {}
       });
 
-      const idsPayload = response.data?.bookmarks || response.data?.favorites;
-      if (response.status === 200 && idsPayload) {
+      const idsPayload = response?.bookmarks || response?.favorites;
+      if (idsPayload) {
         const ids = new Set<string>(idsPayload.map((id: any) => String(id)));
         setBookmarkIds(ids);
         saveToStorage(accountId, ids);
@@ -155,59 +155,41 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
       const isCurrentlyBookmarked = bookmarkIds.has(questionIdKey);
 
       if (isCurrentlyBookmarked) {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'DELETE',
           url: `/api/workspaces/dashboard/favorites/delete/${questionId}`,
           params: {},
           body: {}
         });
 
-        if (response.status === 200) {
-          setBookmarkIds(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(questionIdKey);
-            if (accountId) saveToStorage(accountId, newSet);
-            return newSet;
-          });
-          toast.success('Removed from bookmarks');
-          return true;
-        } else if (response.status === 401) {
-          return false;
-        } else {
-          toast.error(response.data?.error || 'Failed to remove from bookmarks');
-          return false;
-        }
+        setBookmarkIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(questionIdKey);
+          if (accountId) saveToStorage(accountId, newSet);
+          return newSet;
+        });
+        toast.success('Removed from bookmarks');
+        return true;
       } else {
         if (bookmarkIds.size >= MAX_FAVORITES) {
           setShowLimitModal(true);
           return false;
         }
 
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'POST',
           url: `/api/workspaces/dashboard/favorites/create/${questionId}`,
           params: {},
           body: {}
         });
 
-        if (response.status === 201) {
-          setBookmarkIds(prev => {
-            const newSet = new Set([...prev, questionIdKey]);
-            if (accountId) saveToStorage(accountId, newSet);
-            return newSet;
-          });
-          toast.success('Added to bookmarks');
-          return true;
-        } else if (response.status === 401) {
-          return false;
-        } else if (response.status === 409) {
-          setBookmarkIds(prev => new Set([...prev, questionIdKey]));
-          toast.info('Already bookmarked');
-          return true;
-        } else {
-          toast.error(response.data?.error || 'Failed to add to bookmarks');
-          return false;
-        }
+        setBookmarkIds(prev => {
+          const newSet = new Set([...prev, questionIdKey]);
+          if (accountId) saveToStorage(accountId, newSet);
+          return newSet;
+        });
+        toast.success('Added to bookmarks');
+        return true;
       }
     } catch (error) {
       ConsoleLogger.error('Error toggling favorite question:', error);

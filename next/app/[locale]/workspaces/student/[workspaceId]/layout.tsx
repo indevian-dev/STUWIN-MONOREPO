@@ -1,7 +1,7 @@
 import { withLayoutAuth } from "@/lib/middleware/handlers";
 import { StudentLayoutClient } from "./StudentLayoutClient";
 import type { ReactNode } from "react";
-import type { AuthData } from "@/types";
+import type { AuthData } from "@stuwin/shared/types";
 
 interface StudentLayoutProps {
   children: ReactNode;

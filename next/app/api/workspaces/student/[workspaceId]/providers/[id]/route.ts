@@ -1,14 +1,11 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (_request, { module, params, log, isValidSlimId }) => {
   const { id } = params as { id: string };
 
   if (!id || !isValidSlimId(id)) {
-    return NextResponse.json(
-      { error: 'Valid provider ID is required' },
-      { status: 400 }
-    );
+    return errorResponse('Valid provider ID is required', 400);
   }
 
   log.debug('Fetching provider', { id });
@@ -16,12 +13,9 @@ export const GET = unifiedApiHandler(async (_request, { module, params, log, isV
   const result = await module.workspace.getWorkspace(id);
 
   if (!result) {
-    return NextResponse.json(
-      { error: 'Provider not found' },
-      { status: 404 }
-    );
+    return errorResponse('Provider not found', 404, "NOT_FOUND");
   }
 
   log.info('Provider fetched', { id });
-  return NextResponse.json(result, { status: 200 });
+  return okResponse(result);
 });

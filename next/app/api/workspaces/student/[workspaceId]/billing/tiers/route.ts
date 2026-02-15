@@ -1,20 +1,14 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (_request, { module, log }) => {
     try {
         const result = await module.payment.getAvailableTiers();
 
-        return NextResponse.json({
-            success: true,
-            data: result,
-        });
+        return okResponse(result);
     } catch (error) {
         log.error('Tiers fetch error', error as Error);
-        return NextResponse.json(
-            { success: false, error: 'Internal server error' },
-            { status: 500 }
-        );
+        return serverErrorResponse('Internal server error');
     }
 });

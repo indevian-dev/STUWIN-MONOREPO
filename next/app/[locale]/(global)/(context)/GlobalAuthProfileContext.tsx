@@ -10,7 +10,7 @@ import React, {
     ReactNode
 } from 'react';
 import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import type { AuthContextPayload } from '@/types/auth/authData';
+import type { AuthContextPayload } from '@stuwin/shared/types/auth/authData';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 
@@ -213,10 +213,13 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
                 url: '/api/auth'
             });
 
-            if (response.data) {
+            // response.data is the Axios payload: { success, data: { user, account, ... } }
+            // We need to unwrap the envelope to get user/account at the top level
+            const envelope = response.data;
+            if (envelope?.data) {
                 updateFromAuthPayload({
                     action: 'initial',
-                    ...(response.data as Partial<AuthContextPayload>)
+                    ...(envelope.data as Partial<AuthContextPayload>)
                 });
             }
         } catch (error) {

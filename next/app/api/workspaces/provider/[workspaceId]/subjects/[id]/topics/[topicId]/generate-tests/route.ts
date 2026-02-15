@@ -1,16 +1,13 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request, { module, params, isValidSlimId, log, auth }) => {
   const subjectId = params?.id as string;
   const topicId = params?.topicId as string;
 
   if (!subjectId || !topicId || !isValidSlimId(subjectId) || !isValidSlimId(topicId)) {
-    return NextResponse.json(
-      { success: false, error: "Invalid subject ID or topic ID" },
-      { status: 400 },
-    );
+    return errorResponse("Invalid subject ID or topic ID", 400);
   }
 
   try {
@@ -28,10 +25,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
     const generationResult = await module.topic.generateQuestions(topicId, subjectId, count);
 
     if (!generationResult.success) {
-      return NextResponse.json(
-        { success: false, error: generationResult.error || "Failed to generate questions" },
-        { status: 500 }
-      );
+      return serverErrorResponse(generationResult.error || "Failed to generate questions");
     }
 
     log.info("AI test generation successful", {
@@ -41,10 +35,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
       count: generationResult.data.count
     });
 
-    return NextResponse.json({
-      success: true,
-      data: generationResult.data,
-    });
+    return okResponse(generationResult.data);
   } catch (error: any) {
     log.error("Failed to generate tests", {
       error: error.message,
@@ -54,12 +45,6 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
       accountId: auth.accountId,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to generate tests",
-      },
-      { status: 500 },
-    );
+    return serverErrorResponse("Failed to generate tests");
   }
 });

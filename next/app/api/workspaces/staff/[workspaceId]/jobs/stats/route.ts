@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 
 /**
@@ -11,13 +12,10 @@ export const GET = unifiedApiHandler(
   async (request: NextRequest, { module, log }) => {
     try {
       const stats = await module.jobs.getWorkerStats();
-      return NextResponse.json(stats);
+      return okResponse(stats);
     } catch (error) {
       if (log) log.error("Failed to fetch job stats", error);
-      return NextResponse.json(
-        { error: "Failed to fetch job stats" },
-        { status: 500 }
-      );
+      return serverErrorResponse("Failed to fetch job stats");
     }
   },
 );

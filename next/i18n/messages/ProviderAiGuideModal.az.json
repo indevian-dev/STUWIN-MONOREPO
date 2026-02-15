@@ -1,0 +1,13 @@
+{
+    "title": "AI Bələdçi",
+    "forSubject": "Bu fənn üçün AI davranışını konfiqurasiya edin",
+    "forTopic": "Bu mövzu üçün AI davranışını konfiqurasiya edin",
+    "forQuestion": "Bu sual üçün AI davranışını konfiqurasiya edin",
+    "description": "AI Bələdçi, AI sisteminə bu məzmuna necə yanaşacağı barədə təlimatlar verir. Bu, fənnə və ya mövzuya uyğunlaşdırılmış daha yaxşı suallar, izahlar və tədris materialları yaratmağa kömək edir.",
+    "placeholder": "AI bələdçi təlimatlarını daxil edin...\n\nMəsələn: Praktik tətbiqlərə diqqət yetirin. Başlayanlar üçün uyğun sadə dildən istifadə edin.",
+    "clearGuide": "Bələdçini sil",
+    "cancel": "Ləğv et",
+    "save": "Saxla",
+    "saving": "Saxlanılır...",
+    "errorSaving": "AI bələdçini saxlamaq mümkün olmadı. Yenidən cəhd edin."
+}

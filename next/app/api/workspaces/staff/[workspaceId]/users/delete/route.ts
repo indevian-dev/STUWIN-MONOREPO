@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { z } from "zod";
 
 const DeleteUserSchema = z.object({
@@ -12,14 +13,7 @@ export const DELETE = unifiedApiHandler(async (request: NextRequest, { module })
 
     const parsed = DeleteUserSchema.safeParse(body);
     if (!parsed.success) {
-      const errors = parsed.error.errors.reduce(
-        (acc: Record<string, string>, err) => {
-          acc[String(err.path[0] || 'unknown')] = err.message;
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-      return NextResponse.json({ error: "Validation failed", errors }, { status: 400 });
+      return errorResponse("Validation failed");
     }
 
     const { userId } = parsed.data;
@@ -28,18 +22,12 @@ export const DELETE = unifiedApiHandler(async (request: NextRequest, { module })
 
     if (!result.success) {
       const status = result.status || 500;
-      return NextResponse.json({ error: result.error }, { status });
+      return errorResponse(result.error, status);
     }
 
-    return NextResponse.json(
-      {
-        message: "User deleted successfully",
-        data: result.data,
-      },
-      { status: 200 },
-    );
+    return okResponse(result.data, "User deleted successfully");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Failed to delete user";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

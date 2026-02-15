@@ -3,10 +3,9 @@
 // ═══════════════════════════════════════════════════════════════
 // Creates a new identity (student/teacher) or organization access for the authenticated user
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil';
 import type { CreateWorkspaceRequest } from '@/lib/domain/workspace/workspace.types';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/create
@@ -20,23 +19,11 @@ export const POST = unifiedApiHandler(async (request, { auth, module }) => {
     // Validate input
     const typeStr = workspaceType as string;
     if (!typeStr || !['student', 'teacher', 'organization', 'provider', 'eduorg'].includes(typeStr)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'INVALID_TYPE', message: 'Invalid type. Use: student, teacher, or organization' },
-        },
-        { status: 400 }
-      );
+      return errorResponse('Invalid type. Use: student, teacher, or organization', 400, 'INVALID_TYPE');
     }
 
     if (!title || title.trim().length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'INVALID_TITLE', message: 'Title is required' },
-        },
-        { status: 400 }
-      );
+      return errorResponse('Title is required', 400, 'INVALID_TITLE');
     }
 
     // Map legacy types to new types
@@ -67,23 +54,9 @@ export const POST = unifiedApiHandler(async (request, { auth, module }) => {
       isActive: ws.isActive,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: createdWorkspace,
-    });
+    return okResponse(createdWorkspace);
   } catch (error) {
     console.error('Error creating workspace:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'CREATE_WORKSPACE_FAILED',
-          message: error instanceof Error ? error.message : 'Failed to create workspace',
-        },
-      },
-      { status: 500 }
-    );
+    return serverErrorResponse(error instanceof Error ? error.message : 'Failed to create workspace');
   }
 });
-
-

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { okResponse, errorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 
 /**
@@ -8,26 +8,26 @@ import { unifiedApiHandler } from "@/lib/middleware/handlers";
 export const PUT = unifiedApiHandler(async (req, { module, params, log }) => {
     try {
         const { id } = await params;
-        if (!id) return NextResponse.json({ success: false, error: "Missing ID" }, { status: 400 });
+        if (!id) return errorResponse("Missing ID", 400);
 
         const body = await req.json();
         const coupon = await module.payment.updateCoupon(id, body);
-        return NextResponse.json({ success: true, data: coupon });
+        return okResponse(coupon);
     } catch (error: any) {
         if (log) log.error("Failed to update coupon", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return errorResponse(error.message);
     }
 });
 
 export const DELETE = unifiedApiHandler(async (req, { module, params, log }) => {
     try {
         const { id } = await params;
-        if (!id) return NextResponse.json({ success: false, error: "Missing ID" }, { status: 400 });
+        if (!id) return errorResponse("Missing ID", 400);
 
         await module.payment.deleteCoupon(id);
-        return NextResponse.json({ success: true });
+        return messageResponse("Success");
     } catch (error: any) {
         if (log) log.error("Failed to delete coupon", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return errorResponse(error.message);
     }
 });

@@ -4,7 +4,7 @@ import {
   useState
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import {
@@ -112,28 +112,25 @@ export function PublicProviderApplicationFormWidget() {
     setLoading(true);
 
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/providers/applications/create',
         body: formData
       });
 
-      if (response.status === 200 || response.status === 201) {
-        setSubmitted(true);
-        toast.success('Müraciətiniz uğurla göndərildi!');
-        // Reset form
-        setFormData({
-          Provider_name: '',
-          contact_name: '',
-          email: '',
-          phone: '',
-          voen: '',
-          Provider_address: '',
-          description: ''
-        });
-      } else {
-        toast.error(response.data?.error || 'Xəta baş verdi');
-      }
+      // apiCall throws on error — success if we reach here
+      setSubmitted(true);
+      toast.success('Müraciətiniz uğurla göndərildi!');
+      // Reset form
+      setFormData({
+        Provider_name: '',
+        contact_name: '',
+        email: '',
+        phone: '',
+        voen: '',
+        Provider_address: '',
+        description: ''
+      });
     } catch (error) {
       ConsoleLogger.error('Error submitting application:', error);
       toast.error('Xəta baş verdi. Yenidən cəhd edin');

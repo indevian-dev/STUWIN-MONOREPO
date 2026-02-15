@@ -1,10 +1,15 @@
 {
     "control_center": "Nəzarət Mərkəzi",
-    "welcome_back": "Xoş gəldiniz,",
+    "welcome_back": "Xoş gəldiniz",
     "create": "YARAT",
     "discover": "KƏŞF ET",
     "my_workspaces": "Mənim iş sahələrim",
     "discover_organizations": "Təşkilatları kəşf et",
     "system_alert": "Sistem Xəbərdarlığı",
-    "retry": "TƏKRARLA"
+    "retry": "TƏKRARLA",
+    "select_workspace_message": "Başlamaq üçün iş sahəsini seçin",
+    "create_new_workspace": "Yeni İş Sahəsi Yarat",
+    "no_active_workspaces_message": "Hələ aktiv iş sahəniz yoxdur.",
+    "start_onboarding_cta": "İlk iş sahənizi yaradın →",
+    "go_to_workspace": "İş sahəsinə keç"
 }

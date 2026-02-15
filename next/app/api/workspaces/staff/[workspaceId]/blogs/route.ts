@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import slugify from 'slugify';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {
@@ -21,10 +21,10 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
   });
 
   if (!result.data) {
-    return NextResponse.json({ error: 'Failed to fetch blogs' }, { status: 500 });
+    return serverErrorResponse("Failed to fetch blogs");
   }
 
-  return NextResponse.json(result.data, { status: 200 });
+  return okResponse(result.data);
 });
 
 export const POST = unifiedApiHandler(async (request, { module }) => {
@@ -38,10 +38,7 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
     } = body;
 
     if (!localizedContent || Object.keys(localizedContent).length === 0) {
-      return NextResponse.json(
-        { error: 'Localized content is required' },
-        { status: 400 }
-      );
+      return errorResponse("Localized content is required");
     }
 
     // Use AZ title for slug if available, otherwise any available title
@@ -59,11 +56,11 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
 
     const result = await module.content.createBlog(insertData);
 
-    return NextResponse.json({ blog: result.data }, { status: 201 });
+    return createdResponse(result.data);
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to create blog';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });
 

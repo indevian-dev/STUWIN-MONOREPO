@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
     const workspaceId = params.workspaceId;
@@ -13,10 +14,5 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module, para
         { limit, offset }
     );
 
-    return NextResponse.json({
-        students: result.students,
-        total: result.total,
-        totalPages: result.totalPages,
-        page,
-    });
+    return okResponse({ students: result.students, total: result.total, totalPages: result.totalPages, page: page });
 });

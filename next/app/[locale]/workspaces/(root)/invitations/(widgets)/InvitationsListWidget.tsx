@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { toast } from 'react-toastify';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -33,15 +33,15 @@ export function InvitationsListWidget() {
     const fetchInvitations = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: `/api/workspaces/invitations`
             });
 
-            if (response.data?.success) {
-                setInvitations(response.data.data || []);
+            if (response?.success) {
+                setInvitations(response || []);
             } else {
-                toast.error(response.data?.error || "Failed to load invitations");
+                toast.error(response?.error || "Failed to load invitations");
             }
         } catch (error) {
             ConsoleLogger.error('Error fetching invitations:', error);
@@ -58,18 +58,18 @@ export function InvitationsListWidget() {
     const handleRespond = async (invitationId: string, action: 'approve' | 'decline') => {
         setProcessingId(invitationId);
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/invitations/${invitationId}/respond`,
                 body: { action }
             });
 
-            if (response.data?.success) {
+            if (response?.success) {
                 toast.success(action === 'approve' ? "Invitation accepted!" : "Invitation declined");
                 // Refresh list
                 await fetchInvitations();
             } else {
-                toast.error(response.data?.error || "Failed to respond");
+                toast.error(response?.error || "Failed to respond");
             }
         } catch (error) {
             ConsoleLogger.error('Response error:', error);

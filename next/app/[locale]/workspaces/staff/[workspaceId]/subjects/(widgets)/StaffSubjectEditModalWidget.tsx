@@ -4,8 +4,8 @@ import React, {
   useState,
   useEffect
 } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import { BaseModalProps } from '@/types';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { BaseModalProps } from '@stuwin/shared/types';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -52,23 +52,19 @@ export function StaffSubjectEditModalWidget({
       setError(null);
 
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: `/api/workspaces/staff/subjects/${subjectId}`,
           params: {}
         });
 
-        if (response.status === 200) {
-          const s = response.data.subject;
-          // Ensure defaults if missing
-          setSubject({
-            ...s,
-            language: s.language || 'az',
-            gradeLevel: s.gradeLevel || 1
-          });
-        } else {
-          setError('Failed to fetch subject');
-        }
+        const s = response.subject;
+        // Ensure defaults if missing
+        setSubject({
+          ...s,
+          language: s.language || 'az',
+          gradeLevel: s.gradeLevel || 1
+        });
 
       } catch (error) {
         ConsoleLogger.error('Error fetching subject:', error);
@@ -102,7 +98,7 @@ export function StaffSubjectEditModalWidget({
         return;
       }
 
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'PUT',
         url: `/api/workspaces/staff/subjects/update/${subjectId}`,
         params: {},
@@ -117,12 +113,8 @@ export function StaffSubjectEditModalWidget({
         }
       });
 
-      if (response.status === 200) {
-        onSuccess?.();
-        onClose();
-      } else {
-        setError(response.data?.error || 'Failed to update subject');
-      }
+      onSuccess?.();
+      onClose();
     } catch (error) {
       ConsoleLogger.error('Error updating subject:', error);
       setError('Failed to update subject');

@@ -589,7 +589,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         gradeLevel: topic.gradeLevel as number | null,
                         topicQuestionsRemainingToGenerate: topic.questionsStats?.remaining,
                         topicGeneralQuestionsStats: topic.questionsStats?.total,
-                        aiAssistantCrib: (topic as any).aiAssistantCrib || null,
+                        aiGuide: (topic as any).aiGuide || null,
                     };
 
                     // Generate questions (medium complexity by default for queue)

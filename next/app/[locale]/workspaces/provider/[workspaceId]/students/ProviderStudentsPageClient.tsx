@@ -6,17 +6,17 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { toast } from 'react-toastify';
 import { Link } from '@/i18n/routing';
 import { PiPlusCircle, PiEnvelope } from 'react-icons/pi';
 import { ProviderStudentsListWidget } from './(widgets)/ProviderStudentsListWidget';
-import type { User } from '@/types/domain';
+import type { User } from '@stuwin/shared/types/domain';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 export default function ProviderStudentsPageClient() {
-  const [students, setStudents] = useState<import('@/types').User.Profile[]>([]);
+  const [students, setStudents] = useState<import('@stuwin/shared/types').User.Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,24 +26,17 @@ export default function ProviderStudentsPageClient() {
   const t = useTranslations('ProviderStudents');
   const limit = 20;
 
-  useEffect(() => {
-    fetchStudents();
-  }, [page]);
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/students?page=${page}&limit=${limit}`,
       });
 
-      if (response.status === 200) {
-        setStudents(response.data.students || []);
-        setTotalPages(response.data.totalPages || 1);
-      } else {
-        toast.error(t('error_loading_students'));
-      }
+      setStudents(response.students || []);
+      setTotalPages(response.totalPages || 1);
     } catch (error) {
       ConsoleLogger.error('Error fetching students:', error);
       toast.error(t('error_loading_students'));
@@ -52,21 +45,23 @@ export default function ProviderStudentsPageClient() {
     }
   };
 
+  useEffect(() => {
+    fetchStudents();
+  }, [page]);
+
+
+
   const handleDelete = async (studentId: string | number) => {
     if (!window.confirm(t('confirm_delete_student'))) return;
 
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'DELETE',
         url: `/api/workspaces/provider/${workspaceId}/students/delete/${studentId}`,
       });
 
-      if (response.status === 200) {
-        toast.success(t('student_deleted'));
-        fetchStudents();
-      } else {
-        toast.error(t('error_deleting_student'));
-      }
+      toast.success(t('student_deleted'));
+      fetchStudents();
     } catch (error) {
       ConsoleLogger.error('Error deleting student:', error);
       toast.error(t('error_deleting_student'));

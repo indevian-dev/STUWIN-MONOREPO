@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { PiMagnifyingGlass, PiCheckCircleFill, PiUserCircle, PiArrowLeft, PiArrowRight } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -24,7 +24,7 @@ export default function ParentOnboardingPage() {
 
         try {
             setIsSearching(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/onboarding/search-child?fin=${fin}`,
                 method: "GET",
             } as any);
@@ -56,7 +56,7 @@ export default function ParentOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {

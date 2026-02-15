@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module }) => {
     try {
@@ -7,18 +8,18 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module }) =>
         const type = searchParams.get('type');
 
         if (!type) {
-            return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
+            return errorResponse('Type parameter is required', 400);
         }
 
         const result = await module.content.getPage(type);
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: (result as any).code || 404 });
+            return errorResponse(result.error, (result as any).code || 404);
         }
 
-        return NextResponse.json({ doc: result.data, success: true });
+        return okResponse({ doc: result.data, success: true });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch doc';
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return serverErrorResponse(errorMessage);
     }
 });

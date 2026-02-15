@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { CookieAuthenticator } from "@/lib/middleware/authenticators/CookieAuthenticator";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/auth/register
@@ -29,14 +29,7 @@ export const POST = unifiedApiHandler(
 
       if (!result.success) {
         if (log) log.warn("Registration failed", { email: body.email, error: result.error });
-        return NextResponse.json(
-          {
-            error: result.error || "Registration failed",
-            field: result.formError ? Object.keys(result.formError)[0] : "registration",
-            details: result.formError,
-          },
-          { status: result.status || 400 },
-        );
+        return errorResponse(result.error || "Registration failed", result.status || 400);
       }
 
       // Prepare success response
@@ -45,7 +38,7 @@ export const POST = unifiedApiHandler(
         success: true,
       };
 
-      const response = NextResponse.json(responsePayload, { status: 201 });
+      const response = createdResponse(responsePayload);
 
       // Set authentication cookies if session was created
       if (result.data?.session?.id) {
@@ -62,10 +55,7 @@ export const POST = unifiedApiHandler(
       return response;
     } catch (error) {
       if (log) log.error("Registration route error", error);
-      return NextResponse.json(
-        { error: "An unexpected error occurred during registration" },
-        { status: 500 },
-      );
+      return serverErrorResponse("An unexpected error occurred during registration");
     }
   }
 );

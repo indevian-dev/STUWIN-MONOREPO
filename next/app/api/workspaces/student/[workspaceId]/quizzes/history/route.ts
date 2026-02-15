@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(
   async (request: NextRequest, { module, auth, log, isValidSlimId }: UnifiedContext) => {
@@ -29,7 +30,7 @@ export const GET = unifiedApiHandler(
       });
 
       if (!result.success || !result.data) {
-        return NextResponse.json({ error: result.error || "Failed to fetch quiz history" }, { status: 500 });
+        return serverErrorResponse(result.error || "Failed to fetch quiz history");
       }
 
       const { quizzes, pagination } = result.data;
@@ -43,25 +44,10 @@ export const GET = unifiedApiHandler(
 
       log.info("Quiz history fetched", { count: normalizedQuizzes.length, total: pagination.total });
 
-      return NextResponse.json(
-        {
-          operation: "success",
-          quizzes: normalizedQuizzes,
-          page: pagination.page,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          totalPages: pagination.totalPages,
-          hasNextPage: pagination.page < pagination.totalPages,
-          hasPrevPage: pagination.page > 1,
-        },
-        { status: 200 }
-      );
+      return okResponse({ quizzes: normalizedQuizzes, page: pagination.page, pageSize: pagination.pageSize, total: pagination.total, totalPages: pagination.totalPages, hasNextPage: pagination.page < pagination.totalPages, hasPrevPage: pagination.page > 1 });
     } catch (error) {
       log.error("Error fetching quiz history", error);
-      return NextResponse.json(
-        { error: "Failed to fetch quiz history" },
-        { status: 500 },
-      );
+      return serverErrorResponse("Failed to fetch quiz history");
     }
   },
 );

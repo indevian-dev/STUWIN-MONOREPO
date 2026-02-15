@@ -1,27 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
-
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 export const GET = unifiedApiHandler(async (request: NextRequest, { authData, module, log }) => {
   try {
     if (!authData) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return errorResponse("Unauthorized", 401, "UNAUTHORIZED");
     }
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
     if (!type) {
-      return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
+      return errorResponse("Type parameter is required");
     }
 
     const result = await module.content.getPage(type);
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: (result as any).code || 404 });
+      return errorResponse(result.error, (result as any).code || 404, "NOT_FOUND");
     }
 
-    return NextResponse.json({ doc: result.data, success: true });
+    return okResponse(result.data);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch doc';
     if (log) log.error("Failed to fetch doc", error);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

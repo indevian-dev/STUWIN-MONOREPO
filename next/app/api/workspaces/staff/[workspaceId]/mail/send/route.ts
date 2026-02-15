@@ -1,15 +1,12 @@
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request, { module }) => {
   const body = await request.json();
   const { to_email, to_name, subject, htmlbody, textbody } = body;
 
   if (!to_email || !subject || !htmlbody) {
-    return NextResponse.json(
-      { error: "Missing required fields: to_email, subject, htmlbody" },
-      { status: 400 },
-    );
+    return errorResponse("Missing required fields: to_email, subject, htmlbody");
   }
 
   const result = await module.mail.sendEmail({
@@ -21,16 +18,8 @@ export const POST = unifiedApiHandler(async (request, { module }) => {
   });
 
   if (!result.success) {
-    return NextResponse.json(
-      { error: result.error || "Failed to send email" },
-      { status: 500 },
-    );
+    return serverErrorResponse(result.error || "Failed to send email");
   }
 
-  return NextResponse.json({
-    success: true,
-    message: "Email sent successfully",
-    message_id: result.data?.message_id,
-    status: result.data?.status,
-  });
+  return okResponse(result.data, "Email sent successfully");
 });

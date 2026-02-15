@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import { toast } from 'react-toastify';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -62,14 +62,13 @@ export function StaffManageWorkspacesWidget() {
             const params: Record<string, string> = {};
             params[searchType] = searchQuery.trim();
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: '/api/workspaces/staff/accounts/search',
                 params,
             });
 
-            const data = await response.data;
-            setSearchResults(data?.accounts || []);
+            setSearchResults(response?.accounts || []);
         } catch (error) {
             ConsoleLogger.error('Error searching accounts:', error);
             toast.error('Failed to search accounts');
@@ -85,20 +84,19 @@ export function StaffManageWorkspacesWidget() {
         setWorkspaceTypeFilter('all');
 
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'GET',
                 url: `/api/workspaces/staff/accounts/${account.accountId}/workspaces`,
             });
 
-            const data = await response.data;
-            setWorkspaces(data?.owned?.map((ws: Record<string, unknown>) => ({
+            setWorkspaces(response?.owned?.map((ws: Record<string, unknown>) => ({
                 workspace: ws,
                 access: { accessRole: 'owner', viaWorkspaceId: (ws as Record<string, string>).id, targetWorkspaceId: (ws as Record<string, string>).id }
             })) || []);
 
             // Also add connected workspaces
-            if (data?.connected) {
-                const connectedMapped = data.connected.map((ws: Record<string, unknown>) => ({
+            if (response?.connected) {
+                const connectedMapped = response.connected.map((ws: Record<string, unknown>) => ({
                     workspace: ws,
                     access: { accessRole: (ws as Record<string, string>).relationType || 'member', viaWorkspaceId: '', targetWorkspaceId: (ws as Record<string, string>).id }
                 }));
@@ -120,7 +118,7 @@ export function StaffManageWorkspacesWidget() {
 
         try {
             setAddingToStaff(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: '/api/workspaces/staff/memberships/add-staff',
                 body: {
@@ -130,15 +128,10 @@ export function StaffManageWorkspacesWidget() {
                 },
             });
 
-            if (response.status === 201 || response.status === 200) {
-                toast.success('User added to staff workspace successfully');
-                setShowAddModal(false);
-                // Refresh workspaces
-                handleSelectAccount(selectedAccount);
-            } else {
-                const data = await response.data;
-                toast.error(data?.error || 'Failed to add user to staff workspace');
-            }
+            toast.success('User added to staff workspace successfully');
+            setShowAddModal(false);
+            // Refresh workspaces
+            handleSelectAccount(selectedAccount);
         } catch (error) {
             ConsoleLogger.error('Error adding to staff:', error);
             toast.error('Failed to add user to staff workspace');
@@ -210,8 +203,8 @@ export function StaffManageWorkspacesWidget() {
                                     key={account.accountId}
                                     onClick={() => handleSelectAccount(account)}
                                     className={`bg-light rounded p-4 cursor-pointer transition hover:ring-2 hover:ring-blue-400 ${selectedAccount?.accountId === account.accountId
-                                            ? 'ring-2 ring-blue-500'
-                                            : ''
+                                        ? 'ring-2 ring-blue-500'
+                                        : ''
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">

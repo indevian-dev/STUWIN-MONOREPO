@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 import { loadClientSideCoLocatedTranslations } from '@/i18n/i18nClientSide';
 import Image from 'next/image';
@@ -50,14 +50,14 @@ export function WorkspaceProfileEditWidget() {
         e.preventDefault();
         try {
             setIsSaving(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: '/api/auth/profile',
                 method: 'PATCH',
                 body: JSON.stringify({ firstName, lastName }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            const result = await response.data;
+            const result = await response;
             if (result.error) throw new Error(result.error);
 
             toast.success(t('profile_updated_success'));
@@ -97,7 +97,7 @@ export function WorkspaceProfileEditWidget() {
             console.log('Avatar upload starting (via helper):', { fileName, contentType, size: file.size });
 
             // 1. Get presigned URL
-            const urlResponse = await apiCallForSpaHelper({
+            const urlResponse = await apiCall<any>({
                 url: `/api/auth/avatar?fileName=${fileName}&contentType=${contentType}`,
                 method: 'GET'
             });

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(
     async (request: NextRequest, { module, auth }: UnifiedContext) => {
@@ -10,9 +11,9 @@ export const GET = unifiedApiHandler(
         const result = await module.quiz.getStudentProgress(accountId, subjectId);
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 400 });
+            return errorResponse(result.error, 400);
         }
 
-        return NextResponse.json({ data: result.data });
+        return okResponse(result.data);
     }
 );

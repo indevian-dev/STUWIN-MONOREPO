@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 // GET /api/(public)/questions/by-subject?slug=xyz
 export const GET = unifiedApiHandler(async (request: NextRequest, { module }) => {
@@ -11,10 +12,7 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module }) =>
   const gradeLevel = searchParams.get('gradeLevel') ? parseInt(searchParams.get('gradeLevel')!) : undefined;
 
   if (!slug) {
-    return NextResponse.json(
-      { error: 'Subject slug is required' },
-      { status: 400 }
-    );
+    return errorResponse('Subject slug is required', 400);
   }
 
   const result = await module.question.getBySubject({
@@ -26,14 +24,8 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module }) =>
   });
 
   if (!result.success) {
-    return NextResponse.json(
-      { error: result.error },
-      { status: (result as any).code || 500 }
-    );
+    return errorResponse(result.error, (result as any).code || 500);
   }
 
-  return NextResponse.json(result.data, {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return okResponse(result.data);
 }, { authRequired: false });

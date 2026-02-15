@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/auth/reset/set
@@ -21,12 +22,12 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
 
     if (!result.success) {
       if (log) log.warn("Password reset failed", { email, error: result.error });
-      return NextResponse.json({ error: result.error }, { status: result.status });
+      return errorResponse(result.error, result.status);
     }
 
-    return NextResponse.json(result.data, { status: 200 });
+    return okResponse(result.data);
   } catch (error) {
     if (log) log.error("Password reset route error", error);
-    return NextResponse.json({ error: 'An error occurred while processing your request' }, { status: 500 });
+    return serverErrorResponse('An error occurred while processing your request');
   }
 });

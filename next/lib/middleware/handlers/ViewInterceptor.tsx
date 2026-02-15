@@ -9,7 +9,8 @@ import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
 import { ModuleFactory } from "@/lib/domain/factory";
 import { AuthContext } from "@/lib/domain/base/types";
 import type { EndpointConfig } from "@/lib/routes/types";
-import type { GetUserDataResult } from "@/lib/middleware/authenticators/IdentityAuthenticator";
+import type { AuthData } from "@stuwin/shared/types/auth/authData";
+import type { NextRequest } from "next/server";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -30,10 +31,16 @@ export interface UIAuthOptions {
 }
 
 export interface UIHandlerContext {
-    authData: GetUserDataResult | null;
+    authData: AuthData | null;
     module: ModuleFactory;
     auth: AuthContext;
     path: string;
+}
+
+interface ResolvedPageParams {
+    locale?: string;
+    workspaceId?: string;
+    [key: string]: string | undefined;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -41,10 +48,9 @@ export interface UIHandlerContext {
 // ═══════════════════════════════════════════════════════════════
 
 function getEndpointConfig(pathname: string): UIConfigInfo {
-    // Consolidate all endpoints for validation
-    // allEndpoints is imported from index.ts
-
-    const validation = RouteValidator.validateEndpoint({ nextUrl: { pathname } } as any, allEndpoints);
+    // RouteValidator expects NextRequest; we construct a minimal shape
+    const fakeRequest = { nextUrl: { pathname } } as NextRequest;
+    const validation = RouteValidator.validateEndpoint(fakeRequest, allEndpoints);
     const normalizedPath = validation.normalizedPath || pathname;
 
     if (!validation.isValid || !validation.endpoint) {
@@ -60,20 +66,18 @@ function getEndpointConfig(pathname: string): UIConfigInfo {
     };
 }
 
-function createAuthContext(authData: any): AuthContext {
+function createAuthContext(authData: AuthData | null): AuthContext {
     if (authData) {
         return {
             userId: authData.user.id,
             accountId: typeof authData.account.id === 'string' ? authData.account.id : String(authData.account.id),
             permissions: authData.permissions || [],
-            allowedWorkspaceIds: authData.allowedWorkspaceIds || [],
             activeWorkspaceId: authData.workspace?.id
         };
     }
     return {
         userId: "guest",
         accountId: "0",
-        allowedWorkspaceIds: []
     };
 }
 
@@ -84,7 +88,7 @@ function createAuthContext(authData: any): AuthContext {
 /**
  * Higher-order wrapper for protected Server Components (Pages and Layouts)
  */
-export function withUiAuth<P extends any>(
+export function withUiAuth<P extends object>(
     Component: (props: P & UIHandlerContext) => React.ReactElement | Promise<React.ReactElement>,
     options: UIAuthOptions
 ) {
@@ -103,14 +107,14 @@ export function withUiAuth<P extends any>(
 
     const WrappedComponent = async function ProtectedUIComponent(props: P) {
         // Extract locale from params (standard Next.js pattern)
-        const resolvedParams = await (props as any).params;
+        const resolvedParams = await (props as P & { params: Promise<ResolvedPageParams> }).params;
         const locale = resolvedParams?.locale || "az";
 
         // 1. Handle Public Access
         if (isPublic) {
             const authContext = createAuthContext(null);
-            const module = new ModuleFactory(authContext);
-            return <Component {...(props as any)} authData={null} module={module} auth={authContext} path={explicitPath} />;
+            const services = new ModuleFactory(authContext);
+            return <Component {...props} authData={null} module={services} auth={authContext} path={explicitPath} />;
         }
 
         // 2. Resolve Config
@@ -123,8 +127,8 @@ export function withUiAuth<P extends any>(
 
         if (!authRequired && permissions.length === 0) {
             const authContext = createAuthContext(null);
-            const module = new ModuleFactory(authContext);
-            return <Component {...(props as any)} authData={null} module={module} auth={authContext} path={normalizedPath} />;
+            const services = new ModuleFactory(authContext);
+            return <Component {...props} authData={null} module={services} auth={authContext} path={normalizedPath} />;
         }
 
         // 4. Validate access
@@ -135,7 +139,7 @@ export function withUiAuth<P extends any>(
             workspaceId
         });
 
-        const { isValid, code, authData, accountId, needsRefresh } = authResult;
+        const { isValid, code, authData, accountId } = authResult;
 
 
         // 6. Handle Failures
@@ -176,13 +180,13 @@ export function withUiAuth<P extends any>(
         // 7. Success - Create Service Context
         ConsoleLogger.log(`✓ UI access granted: ${normalizedPath} for account ${accountId}`);
 
-        const authContext = createAuthContext(authData);
-        const module = new ModuleFactory(authContext);
+        const authContext = createAuthContext(authData as AuthData);
+        const services = new ModuleFactory(authContext);
 
         return <Component
-            {...(props as any)}
-            authData={authData as GetUserDataResult}
-            module={module}
+            {...props}
+            authData={authData as AuthData}
+            module={services}
             auth={authContext}
             path={normalizedPath}
         />;

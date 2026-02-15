@@ -1,6 +1,6 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request, { module, log }) => {
     try {
@@ -8,23 +8,14 @@ export const POST = unifiedApiHandler(async (request, { module, log }) => {
         const { code } = body;
 
         if (!code) {
-            return NextResponse.json(
-                { success: false, error: 'Coupon code is required' },
-                { status: 400 }
-            );
+            return errorResponse('Coupon code is required', 400);
         }
 
         const coupon = await module.payment.applyCoupon(code);
 
-        return NextResponse.json({
-            success: true,
-            data: coupon,
-        });
+        return okResponse(coupon);
     } catch (error: any) {
         log.error('Coupon validation error', error as Error);
-        return NextResponse.json(
-            { success: false, error: error.message || 'Invalid coupon' },
-            { status: 400 }
-        );
+        return errorResponse(error.message || 'Invalid coupon', 400);
     }
 });

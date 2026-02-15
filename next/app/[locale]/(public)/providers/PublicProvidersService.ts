@@ -4,9 +4,9 @@ import { getS3Url } from '@/lib/utils/upload/S3Util';
  * Utility functions for fetching and managing educational organizations data
  */
 
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ORGANIZATIONS } from '@/lib/database';
-import type { Organization } from '@/types/domain/organization';
+import type { Organization } from '@stuwin/shared/types/domain/organization';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 
@@ -67,13 +67,13 @@ export async function fetchProvidersClient(options: FetchProvidersOptions = {}):
   }
 
   try {
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/providers?${params.toString()}`
     });
 
-    if (response.status === 200) {
-      return response.data;
+    if (true) { // apiCall ensures success
+      return response;
     } else {
       ConsoleLogger.error('Error fetching Providers:', response);
       return {
@@ -99,13 +99,13 @@ export async function fetchProvidersClient(options: FetchProvidersOptions = {}):
  */
 export async function fetchProviderByIdClient(id: string): Promise<Provider | null> {
   try {
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/providers/${id}`
     });
 
-    if (response.status === 200) {
-      return response.data.Provider || null;
+    if (true) { // apiCall ensures success
+      return response.Provider || null;
     } else {
       ConsoleLogger.error('Error fetching Provider:', response);
       return null;
@@ -151,7 +151,7 @@ interface SubmitProviderApplicationResponse {
  */
 export async function submitProviderApplication(applicationData: any): Promise<SubmitProviderApplicationResponse> {
   try {
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'POST',
       url: '/api/providers/applications/create',
       body: applicationData

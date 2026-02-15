@@ -1,7 +1,7 @@
 
-import { NextResponse } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { z } from "zod";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 const BulkQuestionsSchema = z.object({
   questions: z.array(z.object({
@@ -18,10 +18,7 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
   const topicId = params?.topicId as string;
 
   if (!subjectId || !topicId || !isValidSlimId(subjectId) || !isValidSlimId(topicId)) {
-    return NextResponse.json(
-      { success: false, error: "Invalid subject ID or topic ID" },
-      { status: 400 },
-    );
+    return errorResponse("Invalid subject ID or topic ID", 400);
   }
 
   try {
@@ -29,16 +26,13 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
 
     const parsed = BulkQuestionsSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: parsed.error.errors[0]?.message || "Validation failed" },
-        { status: 400 },
-      );
+      return errorResponse(parsed.error.errors[0]?.message || "Validation failed", 400);
     }
 
     // Validate Topic
     const topicResult = await module.topic.getDetail(topicId, subjectId);
     if (!topicResult.success || !topicResult.data) {
-      return NextResponse.json({ success: false, error: "Topic not found or does not belong to subject" }, { status: 404 });
+      return errorResponse("Topic not found or does not belong to subject", 404);
     }
     const topicData = topicResult.data;
 
@@ -78,13 +72,10 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
       accountId,
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    return okResponse({
         count: createdQuestions.length,
         questions: createdQuestions,
-      },
-    });
+      });
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -94,13 +85,6 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
       topicId
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to add questions to topic",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-      },
-      { status: 500 },
-    );
+    return serverErrorResponse("Failed to add questions to topic");
   }
 });

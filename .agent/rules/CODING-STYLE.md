@@ -66,6 +66,7 @@ export class QuizService extends BaseService {
 | `module.sms` | `SmsService` | ✅ Active |
 | `module.push` | `PushService` | ✅ Active |
 | `module.reports` | `ReportService` | ✅ Active |
+| `module.search` | `SearchService` | ✅ Active |
 | `module.learning` | `LearningService` | ⚠️ Deprecated — use subject/topic/question |
 | `module.activity` | `ActivityService` | ⚠️ Deprecated — use quiz/homework/aiSession |
 
@@ -73,6 +74,8 @@ export class QuizService extends BaseService {
 - **ALWAYS** extend `BaseService` for services, `BaseRepository` for repositories
 - **ALWAYS** register new services in `ModuleFactory` as lazy getters
 - **ALWAYS** use Constructor Injection (`private readonly`) for all dependencies
+- **ALWAYS** type catch clause errors as `unknown` — never `error: any`
+- **ALWAYS** destructure `{ module, auth, log }` from `UnifiedContext` — never `{ ctx }` in routes
 - **NEVER** use `any` type — define proper interfaces in `*.types.ts`
 - **NEVER** instantiate services directly in routes — use the factory
 - **PREFER** split modules over deprecated monoliths

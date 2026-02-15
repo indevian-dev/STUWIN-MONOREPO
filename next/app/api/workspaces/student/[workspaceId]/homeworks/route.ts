@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/student/[workspaceId]/homeworks
@@ -11,13 +12,10 @@ export const GET = unifiedApiHandler(
 
     if (!result.success) {
       log.error("Failed to list homeworks", { error: result.error });
-      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
+      return serverErrorResponse(result.error);
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result.data,
-    });
+    return okResponse(result.data);
   },
 );
 
@@ -31,7 +29,7 @@ export const POST = unifiedApiHandler(
       const body = await request.json();
 
       if (!body.title) {
-        return NextResponse.json({ success: false, error: "Title is required" }, { status: 400 });
+        return errorResponse("Title is required", 400);
       }
 
       const result = await module.homework.submit(auth.accountId, {
@@ -45,16 +43,13 @@ export const POST = unifiedApiHandler(
 
       if (!result.success) {
         log.error("Failed to submit homework", { error: result.error });
-        return NextResponse.json({ success: false, error: result.error }, { status: 400 });
+        return errorResponse(result.error, 400);
       }
 
-      return NextResponse.json({
-        success: true,
-        data: result.data,
-      }, { status: 201 });
+      return createdResponse(result.data);
     } catch (error) {
       log.error("POST homework error", error);
-      return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+      return errorResponse("Invalid request", 400);
     }
   },
 );

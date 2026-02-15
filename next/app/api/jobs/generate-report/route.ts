@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 import { qstashReceiver } from "@/lib/integrations/upstash/qstash.client";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * POST /api/workspaces/jobs/generate-report
@@ -25,17 +26,11 @@ export const POST = unifiedApiHandler(
           url,
         });
         if (!isValid) {
-          return NextResponse.json(
-            { error: "Unauthorized: Invalid signature" },
-            { status: 401 },
-          );
+          return errorResponse("Unauthorized: Invalid signature", 401, "UNAUTHORIZED");
         }
       } catch (verifyError) {
         if (log) log.error("Signature verification failed", verifyError);
-        return NextResponse.json(
-          { error: "Unauthorized: Signature verification failed" },
-          { status: 401 },
-        );
+        return errorResponse("Unauthorized: Signature verification failed", 401, "UNAUTHORIZED");
       }
     }
 
@@ -46,16 +41,13 @@ export const POST = unifiedApiHandler(
     try {
       requestData = JSON.parse(bodyText);
     } catch (e) {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+      return errorResponse("Invalid JSON body", 400);
     }
 
     const { studentId, correlationId } = requestData;
 
     if (!studentId || !correlationId) {
-      return NextResponse.json(
-        { error: "Missing studentId or correlationId" },
-        { status: 400 },
-      );
+      return errorResponse("Missing studentId or correlationId", 400);
     }
 
     // Delegate to JobService
@@ -65,13 +57,10 @@ export const POST = unifiedApiHandler(
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, studentId, error: result.error },
-        { status: result.status || 500 },
-      );
+      return errorResponse(result.error, result.status || 500);
     }
 
-    return NextResponse.json(result);
+    return okResponse(result);
   }
 );
 
@@ -81,9 +70,5 @@ export const POST = unifiedApiHandler(
  * Health check endpoint
  */
 export const GET = unifiedApiHandler(async () => {
-  return NextResponse.json({
-    service: "Generate Report Worker",
-    status: "healthy",
-    timestamp: new Date().toISOString()
-  });
+  return okResponse({ service: "Generate Report Worker", status: "healthy", timestamp: new Date().toISOString() });
 });

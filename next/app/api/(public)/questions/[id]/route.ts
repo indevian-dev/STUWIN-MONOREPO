@@ -1,17 +1,17 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: "Valid question ID is required" }, { status: 400 });
+    return errorResponse("Valid question ID is required", 400);
   }
 
   const questionResult = await module.question.getById(id as string);
 
   if (!questionResult.success || !questionResult.data) {
-    return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    return errorResponse("Question not found", 404, "NOT_FOUND");
   }
 
   const questionData = questionResult.data;
@@ -21,13 +21,11 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { question } = questionData as any; // Type assertion as repo returns joined object now
 
   if (!question.isPublished) {
-    return NextResponse.json({ error: "Question not found or not active" }, { status: 404 });
+    return errorResponse("Question not found or not active", 404, "NOT_FOUND");
   }
 
   // Map to legacy format
   const legacyQuestion = module.question.mapToLegacy(questionData);
 
-  return NextResponse.json({
-    question: legacyQuestion
-  }, { status: 200 });
+  return okResponse(legacyQuestion);
 });

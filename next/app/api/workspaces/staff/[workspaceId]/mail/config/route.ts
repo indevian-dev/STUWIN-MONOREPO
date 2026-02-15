@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
+import { okResponse, errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module }) => {
   const result = await module.mail.getConfig();
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    return serverErrorResponse(result.error);
   }
-  return NextResponse.json(result.data);
+  return okResponse(result.data);
 });
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module }) => {
@@ -14,11 +15,8 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
   const result = await module.mail.updateConfig(body);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: (result as any).code || 500 });
+    return errorResponse(result.error, (result as any).code || 500);
   }
 
-  return NextResponse.json({
-    success: true,
-    message: result.message
-  });
+  return messageResponse(result.message ?? "Config updated successfully");
 });

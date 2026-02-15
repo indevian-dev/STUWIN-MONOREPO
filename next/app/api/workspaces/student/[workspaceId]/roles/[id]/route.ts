@@ -1,15 +1,12 @@
 
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(async (_request, { module, params, log, isValidSlimId }) => {
   const { id } = params as { id: string };
 
   if (!id || !isValidSlimId(id)) {
-    return NextResponse.json(
-      { error: 'Valid role ID is required' },
-      { status: 400 }
-    );
+    return errorResponse('Valid role ID is required', 400);
   }
 
   log.debug('Fetching role', { id });
@@ -17,12 +14,9 @@ export const GET = unifiedApiHandler(async (_request, { module, params, log, isV
   const result = await module.roles.getRole(id);
 
   if (!result.success) {
-    return NextResponse.json(
-      { error: result.error || 'Failed to fetch role' },
-      { status: result.status || 500 }
-    );
+    return errorResponse(result.error || 'Failed to fetch role', result.status);
   }
 
   log.info('Role fetched', { id });
-  return NextResponse.json({ role: result.role });
+  return okResponse(result.role);
 });

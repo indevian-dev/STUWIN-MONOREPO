@@ -1,5 +1,5 @@
 import axiomClient, { AXIOM_ACTION_LOG_DATASET } from '@/lib/integrations/axiom/axiom.client';
-import type { AuthData } from '@/types';
+import type { AuthData } from '@stuwin/shared/types';
 import type { NextRequest } from 'next/server';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';

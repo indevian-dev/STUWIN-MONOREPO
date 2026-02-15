@@ -95,6 +95,28 @@ export class QuestionService extends BaseService {
         }
     }
 
+    async saveVisualData(id: string, visualData: Record<string, unknown>) {
+        try {
+            const updated = await this.repository.update(id, { visualData });
+            if (!updated) return { success: false, error: "Question not found" };
+            return { success: true, data: updated };
+        } catch (error) {
+            this.handleError(error, "saveVisualData");
+            return { success: false, error: "Failed to save visual data" };
+        }
+    }
+
+    async getVisualData(id: string) {
+        try {
+            const question = await this.repository.findById(id);
+            if (!question) return { success: false, error: "Question not found" };
+            return { success: true, data: question.visualData || null };
+        } catch (error) {
+            this.handleError(error, "getVisualData");
+            return { success: false, error: "Failed to get visual data" };
+        }
+    }
+
     mapToLegacy(data: QuestionProviderView) {
         const q = data;
         return {

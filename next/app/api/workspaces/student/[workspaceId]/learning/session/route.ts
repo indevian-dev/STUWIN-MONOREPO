@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/student/[workspaceId]/learning/session
@@ -13,10 +14,7 @@ export const GET = unifiedApiHandler(
             const contextId = searchParams.get('contextId');
 
             if (!contextType || !contextId) {
-                return NextResponse.json({
-                    success: false,
-                    error: "contextType and contextId are required"
-                }, { status: 400 });
+                return errorResponse("contextType and contextId are required", 400);
             }
 
             const result = await module.aiSession.get(
@@ -27,17 +25,14 @@ export const GET = unifiedApiHandler(
 
             if (!result.success) {
                 log.error("Failed to fetch learning session", { contextType, contextId, error: result.error });
-                return NextResponse.json({ success: false, error: result.error });
+                return errorResponse(result.error);
             }
 
-            return NextResponse.json({
-                success: true,
-                data: result.data,
-            });
+            return okResponse(result.data);
 
         } catch (error) {
             log.error("Learning session fetch error", error);
-            return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+            return errorResponse("Invalid request", 400);
         }
     }
 );

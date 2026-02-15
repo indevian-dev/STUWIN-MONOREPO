@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { PiStudent, PiArrowLeft, PiArrowRight, PiCheckCircle, PiMagnifyingGlass, PiBuildings } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -32,12 +32,12 @@ export default function StudentOnboardingPage() {
         try {
             // Fetch providers
             // Using a large limit to get most relevant ones for client-side search for now
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: "/api/providers?pageSize=100",
                 method: "GET",
             });
 
-            const data = response.data as any;
+            const data = response as any;
 
             // API returns { providers: [] } when params are present
             if (data.providers) {
@@ -73,7 +73,7 @@ export default function StudentOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {

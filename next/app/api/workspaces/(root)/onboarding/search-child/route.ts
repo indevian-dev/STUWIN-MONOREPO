@@ -1,5 +1,5 @@
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { NextResponse } from "next/server";
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * GET /api/workspaces/onboarding/search-child?fin=...
@@ -10,12 +10,12 @@ export const GET = unifiedApiHandler(
         const fin = req.nextUrl.searchParams.get("fin");
 
         if (!fin) {
-            return NextResponse.json({ success: false, error: "FIN is required" }, { status: 400 }) as any;
+            return errorResponse("FIN is required", 400) as any;
         }
 
         const result = await module.workspace.findChildWorkspaces(fin);
 
-        return NextResponse.json(result) as any;
+        return okResponse(result) as any;
     },
     {
         method: "GET",

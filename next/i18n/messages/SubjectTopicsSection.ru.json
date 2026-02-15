@@ -2,6 +2,7 @@
   "topics": "Темы",
   "totalTopics": "Всего тем",
   "noTopics": "Нет доступных тем",
+  "loadingTopics": "Загрузка тем...",
   "noTopicsDescription": "У этого предмета пока нет тем",
   "moveUp": "Переместить вверх",
   "moveDown": "Переместить вниз",

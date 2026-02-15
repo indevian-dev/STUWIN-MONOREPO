@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { type ApiHandlerContext, ApiRouteHandler, ApiHandlerOptions } from "@/lib/routes/types";
+import { type ApiHandlerContext, type ApiRouteHandler, type ApiHandlerOptions, type AuthValidationData } from "@/lib/routes/types";
 import { ModuleFactory } from "@/lib/domain/factory";
 import { AuthContext } from "@/lib/domain/base/types";
 
@@ -8,24 +8,18 @@ import { allEndpoints } from '@/lib/routes';
 import { ResponseResponder } from '@/lib/middleware/responses/ResponseResponder';
 import { RouteValidator } from '@/lib/middleware/validators/RouteValidator';
 import { CoreAuthorizer } from '@/lib/middleware/authorizers/CoreAuthorizer';
-import { SessionAuthenticator } from '@/lib/middleware/authenticators/SessionAuthenticator';
-import { CookieAuthenticator } from '@/lib/middleware/authenticators/CookieAuthenticator';
+import { SessionStore } from '@/lib/middleware/authenticators/SessionStore';
 import { db } from "@/lib/database";
 import { isValidSlimId } from "@/lib/utils/ids/SlimUlidUtil";
 import logger, {
     createRequestTimer,
     generateRequestId
 } from '@/lib/logging/Logger';
+type LoggerInstance = typeof logger;
 import { logAccountAction } from '@/lib/logging/ActionLogger';
 import { mapValidationToResponse } from "./ApiErrorMapper";
-import type { ApiValidationResult } from '@/lib/routes/api.types';
-import type { AuthData } from '@/types';
-import type { GetUserDataResult } from '@/lib/middleware/authenticators/IdentityAuthenticator';
 
 
-// ═══════════════════════════════════════════════════════════════
-// BASE API HANDLER (Infrastructure & Security)
-// ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
 // BASE API HANDLER (Infrastructure & Security)
@@ -33,10 +27,10 @@ import type { GetUserDataResult } from '@/lib/middleware/authenticators/Identity
 
 // Helper to centralize API error handling
 function handleApiError(
-    error: any,
+    error: unknown,
     context: {
         request: NextRequest;
-        log: any; // Logger instance
+        log: LoggerInstance;
         requestId: string;
         getElapsed: () => number;
         normalizedPath: string;
@@ -46,7 +40,7 @@ function handleApiError(
     const { log, request, normalizedPath, accountId, getElapsed, requestId } = context;
 
     // 1. Log the error structurally
-    log.error('API Error', error, {
+    log.error('API Error', error instanceof Error ? error : new Error(String(error)), {
         path: normalizedPath,
         method: request.method,
         accountId,
@@ -74,9 +68,9 @@ function handleApiError(
 
 export function withApiHandler(
     handler: ApiRouteHandler,
-    options: ApiHandlerOptions = {}
+    _options: ApiHandlerOptions = {}
 ) {
-    return async (request: NextRequest, context: Record<string, any> = {}) => {
+    return async (request: NextRequest, context: { params: Promise<Record<string, string>> } = { params: Promise.resolve({}) }) => {
         // Initialize request timer and logger
         const getElapsed = createRequestTimer();
         const requestId = request.headers.get('x-request-id') || generateRequestId();
@@ -151,21 +145,16 @@ export function withApiHandler(
                 userId: "guest",
                 accountId: "0",
                 permissions: [],
-                allowedWorkspaceIds: [],
                 activeWorkspaceId: undefined
             };
 
             const handlerContext: ApiHandlerContext = {
-                ...context,
-                authData: authResult.authData || undefined,
+                params: resolvedParams,
+                authData: authResult.authData ?? undefined,
                 ctx: authContext,
-                endpointConfig,
-                requestId,
                 log,
-                db,
-                isValidSlimId,
-                params: resolvedParams
-            } as any;
+                requestId,
+            };
 
             // ═══════════════════════════════════════════════════════════════
             // 3. EXECUTION
@@ -182,20 +171,17 @@ export function withApiHandler(
                 // Fire and forget logging
                 logAccountAction(request, authResult.authData, {
                     statusCode: response.status
-                }).catch(err => log.warn('Action logging failed', { error: err.message }));
+                }).catch((err: Error) => log.warn('Action logging failed', { error: err.message }));
             }
 
-            // Session Rollover
-            if (authResult.needsRefresh && authResult.authData?.session?.id) {
-                const newExpireAt = await SessionAuthenticator.rolloverSession(authResult.authData.session.id);
-                if (newExpireAt) {
-                    CookieAuthenticator.setAuthCookies({
-                        response,
-                        data: {
-                            session: request.cookies.get('session')?.value,
-                            expireAt: newExpireAt
-                        }
-                    });
+            // Session TTL Refresh
+            if (authResult.needsRefresh && authResult.ctx?.accountId) {
+                const sessionId = request.cookies.get('session')?.value;
+                if (sessionId) {
+                    // Fire and forget — just extend the Redis TTL
+                    SessionStore.refresh(sessionId).catch((err: Error) =>
+                        log.warn('Session refresh failed', { error: err.message })
+                    );
                 }
             }
 
@@ -210,7 +196,7 @@ export function withApiHandler(
 
             return addRequestIdHeader(response, requestId);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             return handleApiError(error, {
                 request,
                 log,
@@ -228,13 +214,21 @@ export function withApiHandler(
 // UNIFIED HANDLER (Service Layer Injection)
 // ═══════════════════════════════════════════════════════════════
 
-// Extended context with ModuleFactory
-export type UnifiedContext = ApiHandlerContext & {
+/**
+ * Extended context with guaranteed types for route handlers.
+ * All fields are non-optional — withApiHandler guarantees ctx/log,
+ * and unifiedApiHandler guarantees auth/module/authData.
+ */
+export type UnifiedContext = {
+    params: Record<string, string>;
+    authData: AuthValidationData;
+    ctx: AuthContext;                   // backward-compat alias for auth
+    auth: AuthContext;                  // primary field name
     module: ModuleFactory;
-    auth: AuthContext;
+    log: LoggerInstance;
     db: typeof db;
     isValidSlimId: typeof isValidSlimId;
-    log: any;
+    requestId: string;
 };
 
 // Handler type using UnifiedContext
@@ -244,23 +238,32 @@ export type UnifiedApiHandler = (
 ) => Promise<NextResponse>;
 
 /**
- * Validates request and injects ModuleFactory
+ * Validates request and injects ModuleFactory.
+ * Guarantees auth/module/log/authData are non-optional.
  */
 export function unifiedApiHandler(handler: UnifiedApiHandler, options?: ApiHandlerOptions) {
     return withApiHandler(async (req, ctx) => {
-        const authContext = ctx.ctx || {
-            userId: "guest",
-            accountId: "0",
-            permissions: [],
-            allowedWorkspaceIds: [],
-            activeWorkspaceId: undefined
+        // ctx.ctx is always set by withApiHandler (guest fallback)
+        const authContext = ctx.ctx;
+        const services = new ModuleFactory(authContext);
+
+        // Build guaranteed-shape authData (empty defaults for public routes)
+        const authData: AuthValidationData = ctx.authData ?? {
+            user: { id: authContext.userId },
+            account: { id: authContext.accountId ?? '0' },
+            session: { id: '', userId: authContext.userId, accountId: authContext.accountId ?? '0', createdAt: '', lastActivityAt: '' },
         };
-        const module = new ModuleFactory(authContext);
 
         return handler(req, {
-            ...ctx,
-            module,
-            auth: authContext
+            params: ctx.params,
+            authData,
+            ctx: authContext,
+            auth: authContext,
+            module: services,
+            log: ctx.log as LoggerInstance,
+            db,
+            isValidSlimId,
+            requestId: ctx.requestId,
         });
     }, options);
 }
@@ -283,4 +286,3 @@ function addRequestIdHeader(response: Response, requestId: string): NextResponse
     newResponse.headers.set('X-Request-Id', requestId);
     return newResponse;
 }
-

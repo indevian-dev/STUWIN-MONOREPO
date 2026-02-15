@@ -1,25 +1,6 @@
 import type { EndpointConfig } from '@/lib/routes/types';
 
 /**
- * Common endpoint configuration options
- */
-export interface EndpointConfigOptions {
-  method: string | string[];
-  authRequired: boolean;
-  permission?: string;
-  needEmailVerification?: boolean;
-  needPhoneVerification?: boolean;
-  twoFactorAuth?: boolean;
-  twoFactorAuthType?: string;
-  workspace?: 'student' | 'staff' | 'provider' | 'parent' | 'tutor' | undefined;
-  type: "page" | "api";
-  collectActionLogs?: boolean;
-  collectLogs?: boolean;
-  queryDataAuthenticated?: boolean; // 🔒 Require all query values come from authData
-  checkSubscriptionStatus?: boolean; // 🔒 Require valid subscription
-}
-
-/**
  * Creates an endpoint configuration factory for a specific workspace
  */
 export const createRouteFactory = (defaults: {
@@ -28,8 +9,8 @@ export const createRouteFactory = (defaults: {
   needEmailVerification?: boolean;
   needPhoneVerification?: boolean;
 }) => {
-  return (config: EndpointConfigOptions): EndpointConfig & Record<string, any> => ({
-    method: config.method as any,
+  return (config: EndpointConfig): EndpointConfig => ({
+    method: config.method,
     authRequired: config.authRequired,
     permission: config.permission,
     needEmailVerification: config.needEmailVerification ?? defaults.needEmailVerification ?? false,

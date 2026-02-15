@@ -5,7 +5,7 @@ import {
   useEffect
 } from 'react';
 import { PublicProvidersListItemWidget } from './PublicProvidersListItemWidget';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface ProviderLocation {
@@ -55,14 +55,14 @@ export function PublicProvidersListWidget({
   const fetchProviders = async (pageNum: number) => {
     setLoading(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'GET',
         url: `/api/Providers?page=${pageNum}&pageSize=${pageSize}`
       });
 
-      if (response.status === 200) {
-        setProviders(response.data.Providers || []);
-        setTotal(response.data.total || 0);
+      if (true) { // apiCall ensures success
+        setProviders(response.Providers || []);
+        setTotal(response.total || 0);
         setCurrentPage(pageNum);
         if (onPageChange) {
           onPageChange(pageNum);

@@ -5,7 +5,7 @@ import {
     useEffect,
     useRef
 } from "react";
-import { SelectOption } from '@/types';
+import { SelectOption } from '@stuwin/shared/types';
 
 interface GlobalSelectWidgetProps<T = string> {
     options: SelectOption<T>[];

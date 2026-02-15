@@ -11,7 +11,7 @@ import {
     useSearchParams
 } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { Link } from '@/i18n/routing';
 import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image from 'next/image';
@@ -139,12 +139,12 @@ export function AuthVerificationWidget({
 
             setIsSending(true);
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/auth/verify?type=${type}&target=${encodeURIComponent(targetState.trim())}`,
                 method: 'GET'
             });
 
-            const result = await response.data;
+            const result = await response;
 
             if (result.error) {
                 toast.error(result.message || result.error || t('error_sending_code'));
@@ -189,14 +189,14 @@ export function AuthVerificationWidget({
                 otp
             };
 
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: '/api/auth/verify',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
 
-            const result = await response.data;
+            const result = await response;
 
             if (result.error) {
                 if (result.error === 'Invalid or expired OTP' || result.error === 'Invalid or expired code') {

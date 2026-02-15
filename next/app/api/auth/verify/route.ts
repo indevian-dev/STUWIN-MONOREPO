@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 /**
  * Unified Verification API Endpoint
@@ -18,15 +18,15 @@ export const GET = unifiedApiHandler(async (req, { module, authData }) => {
     const target = searchParams.get('target');
 
     if (!type || !['email', 'phone'].includes(type)) {
-        return NextResponse.json({ error: 'Valid verification type (email or phone) is required' }, { status: 400 });
+        return errorResponse('Valid verification type (email or phone) is required', 400);
     }
 
     if (!target) {
-        return NextResponse.json({ error: `${type === 'email' ? 'Email' : 'Phone number'} is required` }, { status: 400 });
+        return errorResponse(`${type === 'email' ? 'Email' : 'Phone number'} is required`, 400);
     }
 
     if (!authData) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return errorResponse('Unauthorized', 401, "UNAUTHORIZED");
     }
 
     const result = await module.verification.generateOtp({
@@ -36,10 +36,10 @@ export const GET = unifiedApiHandler(async (req, { module, authData }) => {
     });
 
     if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: result.status });
+        return errorResponse(result.error, result.status);
     }
 
-    return NextResponse.json(result.data, { status: result.status });
+    return okResponse(result.data);
 });
 
 /**
@@ -55,15 +55,15 @@ export const POST = unifiedApiHandler(async (req, { module, authData }) => {
         const { type, target, otp } = body;
 
         if (!type || !['email', 'phone'].includes(type)) {
-            return NextResponse.json({ error: 'Valid verification type (email or phone) is required' }, { status: 400 });
+            return errorResponse('Valid verification type (email or phone) is required', 400);
         }
 
         if (!target || !otp) {
-            return NextResponse.json({ error: 'Target and OTP are required' }, { status: 400 });
+            return errorResponse('Target and OTP are required', 400);
         }
 
         if (!authData) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return errorResponse('Unauthorized', 401, "UNAUTHORIZED");
         }
 
         const result = await module.verification.validateOtp({
@@ -75,11 +75,11 @@ export const POST = unifiedApiHandler(async (req, { module, authData }) => {
         });
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: result.status });
+            return errorResponse(result.error, result.status);
         }
 
-        return NextResponse.json(result.data, { status: result.status });
+        return okResponse(result.data);
     } catch (error) {
-        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+        return errorResponse('Invalid request body', 400);
     }
 });

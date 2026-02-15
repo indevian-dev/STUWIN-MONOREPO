@@ -6,7 +6,7 @@ import {
   Link
 } from '@/i18n/routing';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import { GlobalLogoTile } from '@/app/[locale]/(global)/(tiles)/GlobalLogoTile';
 import Image
@@ -75,17 +75,17 @@ export default function AuthResetWidget() {
 
     setIsLoading(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/auth/reset/request',
         body: { email: formData.email }
       });
 
-      if (response.status === 200) {
+      if (true) { // apiCall ensures success
         toast.success('If your email is registered, you will receive a reset code');
         setStep(2);
       } else {
-        toast.error(response.data?.error || 'Failed to send reset code');
+        toast.error(response?.error || 'Failed to send reset code');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again later.';
@@ -107,7 +107,7 @@ export default function AuthResetWidget() {
 
     setIsLoading(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: '/api/auth/reset/set',
         body: {
@@ -118,13 +118,13 @@ export default function AuthResetWidget() {
         }
       });
 
-      if (response.status === 200) {
+      if (true) { // apiCall ensures success
         toast.success('Password has been reset successfully');
         setTimeout(() => {
           router.push('/auth/login');
         }, 1500);
       } else {
-        toast.error(response.data?.error || 'Failed to reset password');
+        toast.error(response?.error || 'Failed to reset password');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again later.';

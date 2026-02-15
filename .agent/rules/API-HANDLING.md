@@ -4,11 +4,11 @@
 | File | Definition |
 |---|---|
 | `next/lib/middleware/handlers/ApiInterceptor.ts` | `withApiHandler()` + `unifiedApiHandler()` — core request pipeline |
-| `next/lib/middleware/handlers/ViewInterceptor.tsx` | SSR page handler for server components |
+| `next/lib/middleware/handlers/ViewInterceptor.tsx` | SSR page handler HOC for protected Server Components |
 | `next/lib/middleware/handlers/ApiErrorMapper.ts` | Standardized error response formatting |
 | `next/lib/routes/RouteFactory.ts` | `createRouteFactory()` + `createEndpoint()` — endpoint config builders |
-| `next/lib/routes/types.ts` | `EndpointConfig`, `EndpointsMap` type definitions |
-| `next/lib/routes/api.types.ts` | `ApiHandlerContext`, `ApiValidationResult` types |
+| `next/lib/routes/types.ts` | `EndpointConfig`, `EndpointsMap`, `ApiHandlerContext`, `AuthValidationData`, `HandlerLogger` |
+| `next/lib/routes/api.types.ts` | `ApiValidationResult`, pagination, response, upload, search types |
 | `next/lib/routes/helpers.ts` | URL builders, path utilities |
 | `next/lib/routes/index.ts` | Barrel — merges all endpoint maps into `allEndpoints` |
 
@@ -23,15 +23,25 @@
 | `next/lib/routes/workspaces/staff/StaffRoutes.ts` | Staff workspace endpoints |
 
 ## `unifiedApiHandler` Pipeline
-Every `route.ts` uses `unifiedApiHandler` which auto-injects:
+Every `route.ts` uses `unifiedApiHandler` which auto-injects fully typed `UnifiedContext`:
 | Injected | Type | Purpose |
 |---|---|---|
 | `module` | `ModuleFactory` | Pre-wired DI container with `AuthContext` |
-| `auth` | `AuthContext` | Current user identity + workspace |
+| `auth` | `AuthContext` | Current user identity + workspace (primary) |
+| `ctx` | `AuthContext` | Backward-compat alias for `auth` |
+| `authData` | `AuthValidationData` | Session/user/account validation metadata |
+| `params` | `Record<string, string>` | URL path parameters |
+| `log` | `LoggerInstance` | Request-scoped structured logger |
 | `db` | `Database` | Raw database client |
-| `params` | `Record` | URL path parameters |
-| `log` | `Logger` | Request-scoped structured logger |
 | `isValidSlimId` | `function` | ID format validation utility |
+| `requestId` | `string` | Request correlation ID |
+
+## Handler Type Chain
+| Type | File | Purpose |
+|---|---|---|
+| `ApiHandlerContext` | `types.ts` | Low-level — constructed by `withApiHandler`. `ctx: AuthContext`, `log: HandlerLogger`, `authData?: AuthValidationData` |
+| `UnifiedContext` | `ApiInterceptor.ts` | High-level — all fields non-optional. Extends with `module`, `auth`, `db`, `isValidSlimId` |
+| `HandlerLogger` | `types.ts` | Interface matching Logger methods routes use (info, warn, error, debug, http, apiComplete) |
 
 ## API Route Structure (`next/app/api/`)
 | Path | Definition |
@@ -76,8 +86,10 @@ type ApiResponse<T> = {
 
 ## Rules
 - **ALWAYS** use `unifiedApiHandler` for API routes — never raw `NextRequest` handlers
+- **ALWAYS** destructure `{ module, auth, params, log }` from `UnifiedContext` — never `{ ctx }`
 - **ALWAYS** validate at the start of the handler (Zod schemas or manual checks)
 - **ALWAYS** place API routes in `next/app/api/` — **NEVER** under `next/app/[locale]/api/`
 - **ALWAYS** include `[workspaceId]` in all staff/provider/student workspace API paths
-- **NEVER** instantiate services directly — use the injected `module` factory
+- **ALWAYS** type catch clause errors as `unknown` — never `any`
+- **NEVER** instantiate `ModuleFactory` directly — use the injected `module` from context
 - **NEVER** use `NextResponse` for non-stream responses without the standard format

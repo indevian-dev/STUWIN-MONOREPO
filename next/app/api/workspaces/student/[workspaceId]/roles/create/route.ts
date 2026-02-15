@@ -1,6 +1,7 @@
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module, log }) => {
   try {
@@ -8,10 +9,7 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
     const { name, permissions } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Role name is required' },
-        { status: 400 }
-      );
+      return errorResponse('Role name is required', 400);
     }
 
     log.info('Creating role', { name });
@@ -22,26 +20,17 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module, log
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || 'Failed to create role' },
-        { status: 500 }
-      );
+      return serverErrorResponse(result.error || 'Failed to create role');
     }
 
     if (result.role) {
       log.info('Role created', { id: result.role.id, name });
-      return NextResponse.json({ role: result.role }, { status: 201 });
+      return createdResponse(result.role);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to retrieve created role' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Failed to retrieve created role');
   } catch (error) {
     log.error('Error in roles create', error as Error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Internal server error');
   }
 });

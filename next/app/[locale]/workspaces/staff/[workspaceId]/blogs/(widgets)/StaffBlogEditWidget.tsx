@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter, useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import Image from 'next/image';
 import Editor from '@/app/[locale]/(global)/(widgets)/GlobalRichTextEditorWidget';
@@ -37,17 +37,14 @@ export default function StaffBlogEditWidget() {
 
     async function fetchBlog() {
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: `/api/workspaces/staff/${workspaceId}/blogs/${blogId}`
         });
 
-        if (response.status !== 200) {
-          toast.error("Failed to fetch blog");
-          return;
-        }
+        // apiCall throws on error — no manual status check needed
 
-        const data = response.data;
+        const data = response;
         setBlog(data.blog);
         setLocalizedContent(data.blog.localizedContent || {});
       } catch (error) {
@@ -67,7 +64,7 @@ export default function StaffBlogEditWidget() {
 
     setSaving(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'PUT',
         url: `/api/workspaces/staff/${workspaceId}/blogs/update/${blogId}`,
         body: {
@@ -77,10 +74,7 @@ export default function StaffBlogEditWidget() {
         }
       });
 
-      if (response.status !== 200) {
-        toast.error(`Error: ${response.data?.error || 'Update failed'}`);
-        return;
-      }
+      // apiCall throws on error — no manual status check needed
 
       toast.success('Blog Updated!');
       router.push(`/workspaces/staff/${workspaceId}/blogs`);
@@ -98,17 +92,14 @@ export default function StaffBlogEditWidget() {
     try {
       const formDataCover = new FormData();
       formDataCover.append('cover', file);
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/workspaces/staff/${workspaceId}/blogs/update/${blogId}/cover`,
         body: formDataCover
       });
 
-      if (response.status !== 200) {
-        toast.error("Failed to update cover image");
-        return;
-      }
-      setBlog(response.data.blog);
+      // apiCall throws on error — no manual status check needed
+      setBlog(response.blog);
       toast.success("Cover image updated");
     } catch (error) {
       ConsoleLogger.log(error);

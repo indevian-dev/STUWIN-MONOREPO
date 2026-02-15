@@ -4,9 +4,20 @@ import {
   useState,
   useEffect
 } from 'react';
+import { GlobalMathMarkdownTile } from '@/app/[locale]/(global)/(tiles)/GlobalMathMarkdownTile';
 
 interface StudentQuizQuestionWidgetProps {
-  question: any;
+  question: {
+    id: string;
+    body?: string;
+    question?: string;
+    questionText?: string;
+    answers?: string[];
+    correctAnswer?: string;
+    complexity?: string;
+    grade_level?: number;
+    subject_title?: string;
+  };
   questionNumber: number;
   totalQuestions: number;
   onAnswer: (questionId: string, answer: string, timeSpent: number) => void;
@@ -75,10 +86,10 @@ export function StudentQuizQuestionWidget({
           )}
           {question.complexity && (
             <span className={`px-3 py-1 text-xs font-medium rounded-full ${question.complexity === 'easy'
-                ? 'bg-green-100 text-green-800'
-                : question.complexity === 'medium'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800'
+              : question.complexity === 'medium'
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-red-100 text-red-800'
               }`}>
               {question.complexity.charAt(0).toUpperCase() + question.complexity.slice(1)}
             </span>
@@ -92,9 +103,10 @@ export function StudentQuizQuestionWidget({
 
         {/* Question Text */}
         <div className='mb-6'>
-          <h3 className='text-xl font-semibold text-gray-800 leading-relaxed'>
-            {question.body || question.question || question.questionText || 'Question text not available'}
-          </h3>
+          <GlobalMathMarkdownTile
+            content={question.body || question.question || question.questionText || 'Question text not available'}
+            className="text-xl font-semibold text-gray-800 leading-relaxed"
+          />
           {process.env.NODE_ENV === 'development' && !question.body && !question.question && (
             <div className='mt-2 text-xs text-red-500'>
               Debug: Question keys - {Object.keys(question).join(', ')}
@@ -104,7 +116,7 @@ export function StudentQuizQuestionWidget({
 
         {/* Answer Options */}
         <div className='space-y-3'>
-          {question.answers && Array.isArray(question.answers) && question.answers.map((answer: any, index: number) => {
+          {question.answers && Array.isArray(question.answers) && question.answers.map((answer: string, index: number) => {
             const answerKey = String.fromCharCode(65 + index); // A, B, C, D
             const isSelected = selectedAnswer === answerKey;
 
@@ -113,20 +125,18 @@ export function StudentQuizQuestionWidget({
                 key={index}
                 onClick={() => handleAnswerSelect(answerKey)}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${isSelected
-                    ? 'border-brand bg-brand/5'
-                    : 'border-gray-200 hover:border-brand/50 hover:bg-gray-50'
+                  ? 'border-brand bg-brand/5'
+                  : 'border-gray-200 hover:border-brand/50 hover:bg-gray-50'
                   }`}
               >
                 <div className='flex items-start'>
                   <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-semibold ${isSelected
-                      ? 'bg-brand text-white'
-                      : 'bg-gray-200 text-gray-700'
+                    ? 'bg-brand text-white'
+                    : 'bg-gray-200 text-gray-700'
                     }`}>
                     {answerKey}
                   </span>
-                  <span className='ml-3 text-gray-800 flex-1'>
-                    {answer}
-                  </span>
+                  <GlobalMathMarkdownTile content={answer} className="ml-3 text-gray-800 flex-1" />
                 </div>
               </button>
             );

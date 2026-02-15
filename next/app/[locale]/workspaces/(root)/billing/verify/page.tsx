@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { PiCheckCircleBold, PiXCircleBold, PiSpinnerBold, PiLightningBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
@@ -27,7 +27,7 @@ export default function PaymentVerifyPage() {
         setIsVerifying(true);
         setStatus('loading');
         try {
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: `/api/workspaces/billing/verify/${transactionId}`,
                 method: "POST"
             });

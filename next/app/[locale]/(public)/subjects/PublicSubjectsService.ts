@@ -1,6 +1,6 @@
 'use client';
 
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 /**
@@ -51,19 +51,16 @@ export async function getSubjects(parentId: string | null = null): Promise<Subje
       params.parent_id = parentId;
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/subjects',
       params,
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch subjects');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      subjects: response.data.subjects || [],
+      subjects: response.subjects || [],
       error: null
     };
   } catch (error: any) {
@@ -84,19 +81,16 @@ export async function getSubjectById(subjectId: string): Promise<SubjectResponse
       throw new Error('Subject ID is required');
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: `/api/subjects/${subjectId}`,
       params: {},
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch subject');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      subject: response.data.subject || null,
+      subject: response.subject || null,
       error: null
     };
   } catch (error: any) {
@@ -113,19 +107,16 @@ export async function getSubjectById(subjectId: string): Promise<SubjectResponse
  */
 export async function getParentSubjects(): Promise<SubjectsResponse> {
   try {
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/subjects',
       params: { parent_id: 'null' },
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch parent subjects');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      subjects: response.data.subjects || [],
+      subjects: response.subjects || [],
       error: null
     };
   } catch (error: any) {
@@ -146,19 +137,16 @@ export async function getSubSubjects(parentId: string): Promise<SubjectsResponse
       throw new Error('Parent ID is required');
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/subjects',
       params: { parent_id: parentId },
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch subsubjects');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      subjects: response.data.subjects || [],
+      subjects: response.subjects || [],
       error: null
     };
   } catch (error: any) {
@@ -197,18 +185,15 @@ export function buildSubjectHierarchy(subjects: Subject[], parentId: string | nu
  */
 export async function getSubjectsHierarchy(): Promise<SubjectHierarchyResponse> {
   try {
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/subjects',
       params: {},
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch subjects hierarchy');
-    }
-
-    const subjects: Subject[] = response.data.subjects || [];
+    // apiCall throws on error — no manual status check needed
+    const subjects: Subject[] = response.subjects || [];
     const hierarchy = buildSubjectHierarchy(subjects);
 
     return {
@@ -318,19 +303,16 @@ export async function getSubjectFilters(subjectIds: string | string[]): Promise<
       return { filters: [], error: null };
     }
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/subjects/filters',
       params: { subject_id: ids.join(',') },
       body: {}
     });
 
-    if (response.status !== 200) {
-      throw new Error(response.data?.error || 'Failed to fetch subject filters');
-    }
-
+    // apiCall throws on error — no manual status check needed
     return {
-      filters: response.data.filters || [],
+      filters: response.filters || [],
       error: null
     };
   } catch (error: any) {

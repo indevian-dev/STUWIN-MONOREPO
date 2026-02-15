@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StaffSubjectAddModalWidget } from './StaffSubjectAddModalWidget';
 import { StaffSubjectEditModalWidget } from './StaffSubjectEditModalWidget';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import { Subject } from '@/types/domain/subject';
-import { ApiResponse, SuccessApiResponse } from '@/types';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { Subject } from '@stuwin/shared/types/domain/subject';
+import { ApiResponse, SuccessApiResponse } from '@stuwin/shared/types';
 
 interface OrganizedSubject extends Subject.PrivateAccess {
   children?: OrganizedSubject[];
@@ -43,14 +43,14 @@ export function StaffSubjectsListWidget() {
   const fetchSubjects = useCallback(async (): Promise<void> => {
     setLoading(true);
 
-    const response = await apiCallForSpaHelper({
+    const response = await apiCall<any>({
       method: 'GET',
       url: '/api/workspaces/staff/subjects',
       params: {}
     });
 
-    if (response.status === 200 && response.data) {
-      const apiResponse = response.data as SuccessApiResponse<{ subjects: Subject.PrivateAccess[] }>;
+    if (response) {
+      const apiResponse = response as SuccessApiResponse<{ subjects: Subject.PrivateAccess[] }>;
       if (apiResponse.success && apiResponse.data) {
         setSubjectsList(apiResponse.data.subjects as OrganizedSubject[]);
       }
@@ -80,16 +80,14 @@ export function StaffSubjectsListWidget() {
   const deleteSubject = async (): Promise<void> => {
     if (!selectedSubjectForDeletion) return;
 
-    const response = await apiCallForSpaHelper({
+    await apiCall<any>({
       method: 'DELETE',
       url: '/api/workspaces/staff/subjects/delete/' + selectedSubjectForDeletion,
       params: {}
     });
 
-    if (response.status === 200) {
-      fetchSubjects();
-      closeDeleteConfirmationModal();
-    }
+    fetchSubjects();
+    closeDeleteConfirmationModal();
   };
 
   const parseSubjectInfo = (title: string) => {

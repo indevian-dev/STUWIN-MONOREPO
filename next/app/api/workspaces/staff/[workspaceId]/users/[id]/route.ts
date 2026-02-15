@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
   try {
     const { id: userId } = params || {};
 
     if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+      return errorResponse("User ID is required");
     }
 
     // Handle potential double-encoding or legacy ID formats
@@ -30,12 +31,12 @@ export const GET = unifiedApiHandler(async (request: NextRequest, { module, para
 
     if (!result.success) {
       const status = result.status || 500;
-      return NextResponse.json({ error: result.error }, { status });
+      return errorResponse(result.error, status);
     }
 
-    return NextResponse.json({ user: result.data?.user }, { status: 200 });
+    return okResponse(result.data?.user);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch user';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return serverErrorResponse(errorMessage);
   }
 });

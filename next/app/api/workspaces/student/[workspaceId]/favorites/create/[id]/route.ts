@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(async (_request, { module, authData, params, log, isValidSlimId }) => {
   try {
@@ -8,10 +8,7 @@ export const POST = unifiedApiHandler(async (_request, { module, authData, param
     const workspaceId = authData.account.workspaceId || "";
 
     if (!questionId || !isValidSlimId(questionId)) {
-      return NextResponse.json(
-        { error: 'Valid question ID is required' },
-        { status: 400 }
-      );
+      return errorResponse('Valid question ID is required', 400);
     }
 
     log.info('Adding question bookmark', { questionId, accountId });
@@ -20,12 +17,12 @@ export const POST = unifiedApiHandler(async (_request, { module, authData, param
     const questionResult = await module.question.getById(questionId);
 
     if (!questionResult.success || !questionResult.data) {
-      return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+      return errorResponse('Question not found', 404, "NOT_FOUND");
     }
 
     const questionPub = questionResult.data;
     if (!questionPub.isPublished) {
-      return NextResponse.json({ error: 'Question is not active' }, { status: 400 });
+      return errorResponse('Question is not active', 400);
     }
 
     // Create bookmark via support module
@@ -37,9 +34,9 @@ export const POST = unifiedApiHandler(async (_request, { module, authData, param
 
     if (!result.success || !result.data) {
       if (result.code === 'ALREADY_BOOKMARKED') {
-        return NextResponse.json({ error: 'Question is already bookmarked' }, { status: 409 });
+        return errorResponse('Question is already bookmarked', 409);
       }
-      return NextResponse.json({ error: result.error || 'Failed to add bookmark' }, { status: 500 });
+      return serverErrorResponse(result.error || 'Failed to add bookmark');
     }
 
     log.info('Question bookmarked', {
@@ -47,17 +44,10 @@ export const POST = unifiedApiHandler(async (_request, { module, authData, param
       favoriteId: result.data.id
     });
 
-    return NextResponse.json({
-      message: 'Question bookmarked successfully',
-      favorite: result.data,
-      questionPublished: questionPub
-    }, { status: 201 });
+    return createdResponse(result.data, 'Question bookmarked successfully');
 
   } catch (error) {
     log.error('Error bookmarking question', error as Error);
-    return NextResponse.json(
-      { error: 'Failed to bookmark question' },
-      { status: 500 }
-    );
+    return serverErrorResponse('Failed to bookmark question');
   }
 });

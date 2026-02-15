@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter, useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import Editor from '@/app/[locale]/(global)/(widgets)/GlobalRichTextEditorWidget';
 
 export default function StaffBlogCreateWidget() {
@@ -35,7 +35,7 @@ export default function StaffBlogCreateWidget() {
 
     setSaving(true);
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         method: 'POST',
         url: `/api/workspaces/staff/${workspaceId}/blogs`,
         body: {
@@ -45,10 +45,7 @@ export default function StaffBlogCreateWidget() {
         },
       });
 
-      if (response.status !== 200 && response.status !== 201) {
-        toast.error(`Error: ${response.data?.error || 'Failed to create blog'}`);
-        return;
-      }
+      // apiCall throws on error — no manual status check needed
 
       toast.success('Blog Created!');
       router.push(`/workspaces/staff/${workspaceId}/blogs`);

@@ -1,7 +1,7 @@
 import { withLayoutAuth } from '@/lib/middleware/handlers';
 import { ProviderLayoutClient } from './ProviderLayoutClient';
 import type { ReactNode } from 'react';
-import type { AuthData } from '@/types';
+import type { AuthData } from '@stuwin/shared/types';
 
 interface ProviderLayoutProps {
   children: ReactNode;

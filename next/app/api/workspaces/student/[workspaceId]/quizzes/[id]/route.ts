@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const GET = unifiedApiHandler(
   async (request: NextRequest, { module, params, auth, log, isValidSlimId }: UnifiedContext) => {
@@ -7,7 +8,7 @@ export const GET = unifiedApiHandler(
     const accountId = auth.accountId;
 
     if (!quizId || !isValidSlimId(quizId)) {
-      return NextResponse.json({ error: "Valid quiz ID is required" }, { status: 400 });
+      return errorResponse("Valid quiz ID is required", 400);
     }
 
     log.debug("Fetching quiz", { quizId });
@@ -16,21 +17,21 @@ export const GET = unifiedApiHandler(
       const result = await module.quiz.getDetail(quizId);
 
       if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 404 });
+        return errorResponse(result.error, 404);
       }
 
       const quiz = result.data;
 
       // Access control: Ensure the quiz belongs to the student
       if (quiz.studentAccountId !== accountId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        return errorResponse("Access denied", 403, "FORBIDDEN");
       }
 
       log.info("Quiz fetched", { quizId });
-      return NextResponse.json({ operation: "success", quiz });
+      return okResponse({ quiz: quiz });
     } catch (error) {
       log.error("Error fetching quiz", error);
-      return NextResponse.json({ error: "Failed to fetch quiz" }, { status: 500 });
+      return serverErrorResponse("Failed to fetch quiz");
     }
   },
 );

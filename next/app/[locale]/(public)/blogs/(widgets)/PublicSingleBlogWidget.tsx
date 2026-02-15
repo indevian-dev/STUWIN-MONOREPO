@@ -5,7 +5,7 @@ import {
   useEffect
 } from 'react';
 import { useParams } from 'next/navigation';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import Image from 'next/image';
 import { isValidSlimId } from '@/lib/utils/ids/SlimUlidUtil';
 
@@ -38,16 +38,16 @@ export default function PublicSingleBlogWidget() {
       if (!blog_id || !isValidSlimId(blog_id)) return;
 
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: '/api/blogs/' + blog_id,
           params: {},
           body: {}
         });
 
-        if (response.data && !response.data.error) {
-          setBlog(response.data.blog || null);
-          setContent(response.data.blog?.content?.content || "");
+        if (response && !response.error) {
+          setBlog(response.blog || null);
+          setContent(response.blog?.content?.content || "");
         }
       } catch (error) {
         ConsoleLogger.error('Error fetching blog:', error);

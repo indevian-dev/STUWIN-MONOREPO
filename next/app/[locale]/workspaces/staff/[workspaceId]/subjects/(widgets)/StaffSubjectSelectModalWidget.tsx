@@ -3,7 +3,7 @@
 
 import React
   from 'react';
-import { BaseModalProps } from '@/types';
+import { BaseModalProps } from '@stuwin/shared/types';
 
 interface SelectOption {
   id: number;

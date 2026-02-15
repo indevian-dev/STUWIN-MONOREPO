@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AuthLoginWidget } from '@/app/[locale]/auth/login/(widgets)/AuthLoginWidget';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { useRouter } from 'next/navigation';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 
@@ -16,12 +16,12 @@ const AuthLoginPage = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await apiCallForSpaHelper({
+      const response = await apiCall<any>({
         url: '/api/auth',
         method: 'GET'
       });
 
-      const data = response.data as any;
+      const data = response as any;
       if (data && data.user) {
         // User is already logged in
         router.replace('/workspaces');

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { module, auth, log }: UnifiedContext) => {
@@ -10,10 +11,7 @@ export const POST = unifiedApiHandler(
       const { quizId, answers, analytics } = body;
 
       if (!quizId || !answers || !Array.isArray(answers)) {
-        return NextResponse.json(
-          { error: "Quiz ID and answers are required" },
-          { status: 400 },
-        );
+        return errorResponse("Quiz ID and answers are required", 400);
       }
 
       log.info("Submitting quiz via module", { quizId, accountId, answersCount: answers.length });
@@ -21,21 +19,15 @@ export const POST = unifiedApiHandler(
       const result = await module.quiz.submit(quizId, accountId, answers, analytics);
 
       if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
+        return errorResponse(result.error, 400);
       }
 
       log.info("Quiz submitted successfully", { quizId, score: result.data?.score });
 
-      return NextResponse.json(
-        { message: "Quiz submitted successfully", quiz: result.data },
-        { status: 200 },
-      );
+      return okResponse(result.data, "Quiz submitted successfully");
     } catch (error) {
       log.error("Error submitting quiz", error);
-      return NextResponse.json(
-        { error: "Failed to submit quiz" },
-        { status: 500 },
-      );
+      return serverErrorResponse("Failed to submit quiz");
     }
   },
 );

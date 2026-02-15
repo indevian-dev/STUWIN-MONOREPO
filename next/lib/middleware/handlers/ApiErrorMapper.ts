@@ -63,14 +63,23 @@ export function mapValidationToResponse(result: ApiValidationResult): NextRespon
             );
 
         case '2FA_EMAIL_REQUIRED':
+            return NextResponse.json(
+                {
+                    error: '2FA verification required',
+                    code: result.code,
+                    type: 'email'
+                },
+                { status: 428 }
+            );
+
         case '2FA_PHONE_REQUIRED':
             return NextResponse.json(
                 {
                     error: '2FA verification required',
                     code: result.code,
-                    twoFactorAuthType: (result as any).twoFactorAuthType
+                    type: 'phone'
                 },
-                { status: 403 }
+                { status: 428 }
             );
 
         default:

@@ -5,7 +5,7 @@ import {
   useEffect
 } from 'react';
 import { PublicProviderCardTile } from '@/app/[locale]/(public)/providers/(tiles)/PublicProviderCardTile';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 interface ProviderLocation {
@@ -36,14 +36,14 @@ export function PublicRelatedProvidersWidget({ currentProviderId, limit = 6 }: P
   useEffect(() => {
     const fetchRelated = async () => {
       try {
-        const response = await apiCallForSpaHelper({
+        const response = await apiCall<any>({
           method: 'GET',
           url: `/api/Providers?pageSize=${limit + 1}`
         });
 
-        if (response.status === 200) {
+        if (true) { // apiCall ensures success
           // Filter out current Provider and limit results
-          const filtered = (response.data.Providers || response.data || [])
+          const filtered = (response.Providers || response || [])
             .filter((Provider: Provider) => Provider.id !== currentProviderId)
             .slice(0, limit);
 

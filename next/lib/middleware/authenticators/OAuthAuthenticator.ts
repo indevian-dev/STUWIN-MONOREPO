@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { db } from '@/lib/database';
-import { OAuthProvider } from '@/types';
-import type { OAuthTokenData, OAuthUserInfo } from '@/types';
+import { OAuthProvider } from '@stuwin/shared/types';
+import type { OAuthTokenData, OAuthUserInfo } from '@stuwin/shared/types';
 import { eq } from 'drizzle-orm';
 import { users, userCredentials } from '@/lib/database/schema';
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
@@ -166,7 +166,7 @@ export async function linkOAuthProvider({
     }
 
     // 2. Check/Get current user's credentials record
-    let userCreds = await db.query.userCredentials.findFirst({
+    const userCreds = await db.query.userCredentials.findFirst({
       where: eq(userCredentials.userId, userId),
     });
 

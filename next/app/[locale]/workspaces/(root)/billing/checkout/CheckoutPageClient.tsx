@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { PiCheckCircleFill, PiArrowsClockwiseBold, PiArrowLeftBold } from 'react-icons/pi';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { apiCall } from '@/lib/utils/http/SpaApiClient';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
 import Link from 'next/link';
 
@@ -31,13 +31,13 @@ export function CheckoutPageClient() {
             try {
                 // Determine API endpoint based on tier ID structure or context
                 // For root workspace billing, we use the root endpoint
-                const response = await apiCallForSpaHelper({
+                const response = await apiCall<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/tiers`
                 });
 
-                if (response.data && Array.isArray(response.data)) {
-                    const foundTier = response.data.find((t: any) => t.id === tierId);
+                if (response && Array.isArray(response)) {
+                    const foundTier = response.find((t: any) => t.id === tierId);
                     if (foundTier) {
                         setTier(foundTier);
                     } else {
@@ -62,13 +62,13 @@ export function CheckoutPageClient() {
         setError(null);
         try {
             setActionLoading('coupon');
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/billing/coupon`,
                 body: { code: couponCode }
             });
-            if (response.data) {
-                setAppliedCoupon(response.data);
+            if (response) {
+                setAppliedCoupon(response);
             }
         } catch (error: any) {
             setAppliedCoupon(null);
@@ -82,7 +82,7 @@ export function CheckoutPageClient() {
         if (!tier) return;
         try {
             setActionLoading('pay');
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 method: 'POST',
                 url: `/api/workspaces/billing/initiate`,
                 body: {
@@ -92,8 +92,8 @@ export function CheckoutPageClient() {
                 }
             });
 
-            if (response.data && response.data.redirectUrl) {
-                window.location.href = response.data.redirectUrl;
+            if (response && response.redirectUrl) {
+                window.location.href = response.redirectUrl;
             } else {
                 setError("Failed to initiate payment. Please try again.");
             }

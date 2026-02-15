@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCallForSpaHelper } from "@/lib/utils/http/SpaApiClient";
+import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { PiBuildings, PiArrowLeft, PiArrowRight, PiCheckCircle } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -32,7 +32,7 @@ export default function ProviderOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCallForSpaHelper({
+            const response = await apiCall<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {

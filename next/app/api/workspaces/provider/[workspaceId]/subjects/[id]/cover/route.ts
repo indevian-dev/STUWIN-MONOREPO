@@ -1,21 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from 'next/server';
 import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { errorResponse, okResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { params, module }) => {
     const subjectId = params?.id as string;
     if (!subjectId) {
-      return NextResponse.json({ success: false, error: "Invalid subject ID" }, { status: 400 });
+      return errorResponse("Invalid subject ID", 400);
     }
 
     const { fileName, fileType } = await request.json();
     const result = await module.subject.getCoverUploadUrl(subjectId, fileName, fileType);
 
     if (!result.success) {
-      return NextResponse.json({ success: false, error: result.error }, { status: (result as any).code || 500 });
+      return errorResponse(result.error, 200);
     }
 
-    return NextResponse.json({ success: true, ...result.data }, { status: 200 });
+    return okResponse(result.data);
   }
 );
 
@@ -23,19 +24,16 @@ export const PUT = unifiedApiHandler(
   async (request: NextRequest, { module, params }) => {
     const subjectId = params?.id as string;
     if (!subjectId) {
-      return NextResponse.json({ success: false, error: "Invalid subject ID" }, { status: 400 });
+      return errorResponse("Invalid subject ID", 400);
     }
 
     const { coverUrl } = await request.json();
     const result = await module.subject.update(subjectId, { cover: coverUrl });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+      return errorResponse(result.error, 400);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Cover updated successfully",
-    });
+    return messageResponse("Cover updated successfully");
   }
 );

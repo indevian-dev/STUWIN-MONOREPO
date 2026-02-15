@@ -32,7 +32,6 @@ export {
 export {
   createRouteFactory,
   createEndpoint,
-  type EndpointConfigOptions,
 } from './RouteFactory';
 
 // ═══════════════════════════════════════════════════════════════

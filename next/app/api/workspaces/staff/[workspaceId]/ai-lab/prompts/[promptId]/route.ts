@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
 import { ModuleFactory } from '@/lib/domain/factory';
 import { AuthContext } from '@/lib/domain/base/types';
 
 // Helper to construct auth context (Simulated for Staff)
-async function getStaffContext(req: NextRequest, workspaceId: string): Promise<AuthContext> {
+async function getStaffContext(_req: NextRequest, workspaceId: string): Promise<AuthContext> {
     return {
         userId: 'staff-user-id',
         accountId: 'staff-account-id',
         activeWorkspaceId: workspaceId,
-        allowedWorkspaceIds: [workspaceId],
         permissions: ['manage_ai']
     };
+}
 
+interface UpdatePromptInput {
+    title?: string;
+    body?: string;
+    isActive?: boolean;
 }
 
 export async function PUT(
@@ -23,22 +28,17 @@ export async function PUT(
         const ctx = await getStaffContext(req, workspaceId);
 
         const modules = new ModuleFactory(ctx);
-        const body = await req.json();
+        const body = await req.json() as UpdatePromptInput;
 
-        // Remove ID from body if present to avoid confusion
-        const { id, ...updateData } = body;
+        const result = await modules.intelligence.updatePrompt(promptId, {
+            title: body.title,
+            body: body.body,
+            isActive: body.isActive,
+        });
 
-        const result = await modules.intelligence.updatePrompt(promptId, updateData);
-
-
-        if (!result.success) {
-            return NextResponse.json({ success: false, error: (result as any).error }, { status: 500 });
-        }
-
-
-        return NextResponse.json(result);
+        return okResponse(result);
     } catch (error) {
-        return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+        return serverErrorResponse((error as Error).message);
     }
 }
 
@@ -53,15 +53,8 @@ export async function DELETE(
         const modules = new ModuleFactory(ctx);
 
         const result = await modules.intelligence.deletePrompt(promptId);
-
-
-        if (!result.success) {
-            // SystemPromptService.deletePrompt might return 'Not implemented' or similar
-            // returning 400 or 500 depending on implementation
-            return NextResponse.json({ success: false, error: (result as any).error }, { status: 400 });
-        }
-        return NextResponse.json(result);
+        return okResponse(result);
     } catch (error) {
-        return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+        return serverErrorResponse((error as Error).message);
     }
 }
