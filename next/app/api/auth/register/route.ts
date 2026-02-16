@@ -46,7 +46,6 @@ export const POST = unifiedApiHandler(
           response,
           data: {
             session: result.data.session.id,
-            expireAt: new Date(result.data.session.expires_at),
           },
         });
         return authCookiesResponse;

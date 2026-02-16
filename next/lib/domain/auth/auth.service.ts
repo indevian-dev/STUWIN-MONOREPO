@@ -201,19 +201,8 @@ export class AuthService extends BaseService {
                 workspaceId
             });
 
-            // 5. OTP Sending
-            const otpExpireSeconds = parseInt(process.env.OTP_EXPIRE_TIME || "1200", 10);
-            const otpExpireMinutes = Math.ceil(otpExpireSeconds / 60);
-
-            const otpResult = await this.otpService.storeAndSendRegistration({
-                accountId: account.id,
-                email: user.email,
-                phone: user.phone || undefined,
-                type: "email_verification",
-                ttlMinutes: otpExpireMinutes,
-            });
-
-            // 6. Session Creation (Redis)
+            // 5. Session Creation (Redis)
+            // OTP is NOT sent automatically — user must request it from the verification page
             const sessionResult = await SessionStore.create({
                 accountId: account.id,
                 userId: user.id,
@@ -244,11 +233,6 @@ export class AuthService extends BaseService {
                     session: {
                         id: sessionResult.sessionId,
                     },
-                    verificationSent: {
-                        email: otpResult.emailSent,
-                        sms: otpResult.smsSent,
-                    },
-                    otp: process.env.NODE_ENV !== "production" ? otpResult.otp : undefined
                 }
             };
 

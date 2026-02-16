@@ -64,7 +64,13 @@ export function ProviderOrganizationEditWidget({
       location: (city.trim() || address.trim())
         ? { city: city.trim() || undefined, address: address.trim() || undefined }
         : undefined,
-    });
+      // Pricing / metadata fields — passed through to profile JSONB
+      providerSubscriptionPrice: price ? parseFloat(price) : undefined,
+      providerSubscriptionPeriod: period,
+      providerTrialDaysCount: trialDays ? parseInt(trialDays, 10) : undefined,
+      currency,
+      features,
+    } as Partial<Provider.UpdateInput>);
   };
 
   const inputClass =

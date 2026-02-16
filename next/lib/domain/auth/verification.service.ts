@@ -16,6 +16,22 @@ export class VerificationService extends BaseService {
         super();
     }
 
+    /**
+     * Resolves accountId + userId from email or phone.
+     * Used as a fallback when session cookie is missing (e.g., right after registration).
+     */
+    async resolveAccountByContact(target: string, type: 'email' | 'phone'): Promise<{ accountId: string; userId: string } | null> {
+        const contact = type === 'email'
+            ? { email: target.trim().toLowerCase() }
+            : { phone: target.trim() };
+
+        const result = await this.repository.findUserWithAccountByContact(contact);
+        if (result?.accountId) {
+            return { accountId: result.accountId, userId: result.id };
+        }
+        return null;
+    }
+
     async generateOtp(params: { type: 'email' | 'phone', target: string, accountId: string }): Promise<AuthResult> {
         try {
             const { type, target, accountId } = params;
@@ -24,7 +40,9 @@ export class VerificationService extends BaseService {
             // 1. Uniqueness check based on type
             const normalizedTarget = type === 'email' ? target.trim().toLowerCase() : target.trim();
 
-            const user = await this.repository.findUserById(this.ctx?.userId || "");
+            // Look up user via account relationship (ctx.userId may be null after fresh registration)
+            const accountProfile = await this.repository.findAccountProfile(accountId);
+            const user = accountProfile?.user ?? null;
 
             if (!user) {
                 return { success: false, error: 'User not found', status: 400 };
@@ -157,7 +175,13 @@ export class VerificationService extends BaseService {
                 return { success: false, error: "Failed to update user record", status: 500 };
             }
 
-            // 3. Consume OTP
+            // 3. Sync verification status to Redis sessions (prevents 307 redirect loop)
+            const { SessionStore } = await import('@/lib/middleware/authenticators/SessionStore');
+            await SessionStore.updateVerificationStatus(accountId, {
+                ...(type === 'email' ? { emailVerified: true } : { phoneVerified: true }),
+            });
+
+            // 4. Consume OTP
             await this.otpService.consume(otpRecord.id);
 
             return {

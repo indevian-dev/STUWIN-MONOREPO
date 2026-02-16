@@ -35,7 +35,7 @@ export default function StudentQuizResultsPageClient() {
     });
 
     if (response.status === 200) {
-      const quizData = response.data.quiz;
+      const quizData = response.data?.data?.quiz;
 
       if (quizData.status !== 'completed') {
         toast.error('Quiz is not completed yet');

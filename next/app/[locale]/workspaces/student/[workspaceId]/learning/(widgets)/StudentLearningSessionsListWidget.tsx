@@ -11,10 +11,11 @@ import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTi
 interface LearningSession {
   id: string;
   title?: string;
-  topic: string;
+  topic?: string;
+  rootQuestion?: string;
   description?: string;
   textContent?: string;
-  messages?: number;
+  messageCount?: number;
   status: "active" | "archived" | "completed";
   createdAt: string;
   updatedAt: string;
@@ -47,7 +48,11 @@ export function StudentLearningSessionsListWidget() {
         throw new Error(response.data.error || "Failed to fetch sessions");
       }
 
-      setSessions(response.data?.data || []);
+      // API returns okResponse({ data: responses, pagination: {...} })
+      // After okResponse envelope: { success, data: { data: [...], pagination } }
+      // After apiCallForSpaHelper: response.data = { success, data: { data: [...], pagination } }
+      const envelope = response.data?.data;
+      setSessions(Array.isArray(envelope) ? envelope : envelope?.data || []);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch sessions";
@@ -176,7 +181,7 @@ export function StudentLearningSessionsListWidget() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-gray-900 truncate">
-                        {session.title || session.topic || "Untitled Session"}
+                        {session.title || session.rootQuestion || session.topic || "Untitled Session"}
                       </h3>
                       <span
                         className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(session.status)}`}
@@ -202,8 +207,8 @@ export function StudentLearningSessionsListWidget() {
                       {session.lastMessageAt && (
                         <span>Last: {formatDate(session.lastMessageAt)}</span>
                       )}
-                      {session.messages !== undefined && (
-                        <span>{session.messages} messages</span>
+                      {session.messageCount !== undefined && (
+                        <span>{session.messageCount} messages</span>
                       )}
                     </div>
                   </div>

@@ -4,13 +4,29 @@ import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import type { QuestionVisualData } from "@/lib/domain/question/visual.types";
-import { PiCube, PiSquare, PiSparkle, PiFloppyDisk, PiArrowClockwise, PiX, PiChatText } from "react-icons/pi";
+import { PiCube, PiSquare, PiSparkle, PiFloppyDisk, PiArrowClockwise, PiX, PiChatText, PiCheckCircle } from "react-icons/pi";
 
 // Lazy-load Three.js renderer to avoid bundle bloat on pages that don't use it
 const ThreeJsSceneRenderer = dynamic(
     () => import("@/app/[locale]/(global)/(tiles)/ThreeJsSceneRenderer").then((m) => m.ThreeJsSceneRenderer),
-    { ssr: false, loading: () => <div className="flex items-center justify-center h-[400px] bg-gray-900 rounded-xl"><div className="animate-pulse text-gray-400">Loading 3D viewer...</div></div> },
+    { ssr: false, loading: () => <div className="flex items-center justify-center h-[300px] bg-gray-900 rounded-xl"><div className="animate-pulse text-gray-400">Loading 3D viewer...</div></div> },
 );
+
+/** Style labels for the 3 variants */
+const STYLE_LABELS: Record<string, { label: string; description: string }> = {
+    "bar-chart-model": {
+        label: "Bar Chart",
+        description: "Proportional bars showing values from the question",
+    },
+    "balance-scale-model": {
+        label: "Balance Scale",
+        description: "Visual equality model showing both sides of the equation",
+    },
+    "coordinate-system-model": {
+        label: "Coordinate Graph",
+        description: "X-Y graph with plotted curves showing the solution as intersection",
+    },
+};
 
 interface VisualGenerationModalProps {
     workspaceId: string;
@@ -34,9 +50,11 @@ export function VisualGenerationModal({
     onSaved,
 }: VisualGenerationModalProps) {
     const [mode, setMode] = useState<"3d" | "2d">(existingVisual?.mode || "3d");
-    const [status, setStatus] = useState<"idle" | "generating" | "preview" | "saving" | "error">(
+    const [status, setStatus] = useState<"idle" | "generating" | "selecting" | "preview" | "saving" | "error">(
         existingVisual ? "preview" : "idle",
     );
+    const [variants, setVariants] = useState<QuestionVisualData[]>([]);
+    const [selectedIndex, setSelectedIndex] = useState(0);
     const [sceneData, setSceneData] = useState<QuestionVisualData | null>(existingVisual || null);
     const [error, setError] = useState<string | null>(null);
     const [guidance, setGuidance] = useState("");
@@ -46,7 +64,7 @@ export function VisualGenerationModal({
             setStatus("generating");
             setError(null);
 
-            const data = await apiCall<QuestionVisualData>({
+            const response = await apiCall<{ variants: QuestionVisualData[] }>({
                 url: `/api/workspaces/provider/${workspaceId}/questions/${questionId}/generate-visual`,
                 method: "POST",
                 body: {
@@ -57,14 +75,36 @@ export function VisualGenerationModal({
                     ...(guidance.trim() && { guidance: guidance.trim() }),
                 },
             });
-            setSceneData(data);
-            setStatus("preview");
+
+            // Handle okResponse envelope
+            const data = response as { variants?: QuestionVisualData[]; data?: { variants?: QuestionVisualData[] } };
+            const generatedVariants = data?.variants || data?.data?.variants || [];
+
+            if (generatedVariants.length > 0) {
+                setVariants(generatedVariants);
+                setSelectedIndex(0);
+                setSceneData(generatedVariants[0]);
+                setStatus("selecting");
+            } else {
+                throw new Error("No variants generated");
+            }
         } catch (err) {
             console.error("Visual generation failed:", err);
             setError(err instanceof Error ? err.message : "Generation failed");
             setStatus("error");
         }
     }, [mode, questionText, subjectName, topicName, workspaceId, questionId, guidance]);
+
+    const handleSelectVariant = useCallback((index: number) => {
+        setSelectedIndex(index);
+        setSceneData(variants[index]);
+    }, [variants]);
+
+    const handleConfirmSelection = useCallback(() => {
+        if (sceneData) {
+            setStatus("preview");
+        }
+    }, [sceneData]);
 
     const handleSave = useCallback(async () => {
         if (!sceneData) return;
@@ -90,7 +130,7 @@ export function VisualGenerationModal({
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-100">
                     <div>
@@ -130,7 +170,7 @@ export function VisualGenerationModal({
                                 AI Visual Generation
                             </h4>
                             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                                Generate an interactive 3D or 2D visual to help students understand this question.
+                                Generate 3 interactive visual variants to help students understand this question. Choose the best one.
                             </p>
 
                             {/* Mode Selector */}
@@ -178,7 +218,7 @@ export function VisualGenerationModal({
                             >
                                 <span className="flex items-center gap-2">
                                     <PiSparkle className="w-5 h-5" />
-                                    Generate {mode.toUpperCase()} Visual
+                                    Generate 3 Variants
                                 </span>
                             </button>
                         </div>
@@ -209,18 +249,87 @@ export function VisualGenerationModal({
                                 </svg>
                             </div>
                             <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                                Generating {mode.toUpperCase()} Visual...
+                                Generating 3 Visual Variants...
                             </h4>
                             <p className="text-gray-500">
-                                AI is creating an interactive scene for this question. This may take 10-15 seconds.
+                                Gemini Pro is creating 3 interactive scenes for this question. This may take 15-30 seconds.
                             </p>
                         </div>
                     )}
 
-                    {/* Preview */}
+                    {/* Variant Selection */}
+                    {status === "selecting" && variants.length > 0 && (
+                        <div>
+                            <div className="mb-4">
+                                <h4 className="font-semibold text-gray-900">Choose the best visual</h4>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    Click a variant to preview, then confirm your choice.
+                                </p>
+                            </div>
+
+                            {/* Variant Cards */}
+                            <div className="grid grid-cols-3 gap-3 mb-5">
+                                {variants.map((variant, i) => {
+                                    const style = STYLE_LABELS[variant.styleType || ""] || {
+                                        label: `Variant ${i + 1}`,
+                                        description: "",
+                                    };
+                                    const isSelected = i === selectedIndex;
+
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => handleSelectVariant(i)}
+                                            className={`relative text-left p-3 rounded-xl border-2 transition-all ${isSelected
+                                                ? "border-purple-500 bg-purple-50 shadow-md shadow-purple-100"
+                                                : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            {isSelected && (
+                                                <div className="absolute top-2 right-2">
+                                                    <PiCheckCircle className="w-5 h-5 text-purple-600" />
+                                                </div>
+                                            )}
+                                            <div className="text-sm font-semibold text-gray-900 mb-0.5 pr-6">
+                                                {style.label}
+                                            </div>
+                                            <div className="text-xs text-gray-500 mb-2">
+                                                {style.description}
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                                {variant.objects.length} objects
+                                                {variant.animations?.length ? ` • ${variant.animations.length} animations` : ""}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Preview of selected variant */}
+                            {sceneData && (
+                                <div>
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900 text-sm">{sceneData.title}</h4>
+                                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                            Preview
+                                        </span>
+                                    </div>
+                                    <ThreeJsSceneRenderer
+                                        data={sceneData}
+                                        height={350}
+                                        className="border border-gray-200 shadow-inner"
+                                    />
+                                    <p className="text-xs text-gray-400 mt-2 text-center">
+                                        🖱️ Drag to rotate • Scroll to zoom • Right-click to pan
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Final Preview (after confirming selection) */}
                     {(status === "preview" || status === "saving") && sceneData && (
                         <div>
-                            {/* Scene Title */}
                             <div className="mb-4 flex items-center justify-between">
                                 <div>
                                     <h4 className="font-semibold text-gray-900">{sceneData.title}</h4>
@@ -234,7 +343,6 @@ export function VisualGenerationModal({
                                 </span>
                             </div>
 
-                            {/* Three.js Canvas */}
                             <ThreeJsSceneRenderer
                                 data={sceneData}
                                 height={400}
@@ -250,27 +358,21 @@ export function VisualGenerationModal({
 
                 {/* Footer */}
                 <div className="border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-                    {/* Guidance input in preview mode for regeneration */}
-                    {(status === "preview" || status === "saving") && (
+                    {/* Guidance input in preview/selecting mode for regeneration */}
+                    {(status === "preview" || status === "saving" || status === "selecting") && (
                         <div className="px-5 pt-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 shrink-0">
+                            <div className="flex gap-2">
+                                <div className="flex items-start gap-1.5 text-xs font-medium text-gray-500 shrink-0 pt-2">
                                     <PiChatText className="w-3.5 h-3.5" />
                                     Guidance
                                 </div>
-                                <input
-                                    type="text"
+                                <textarea
                                     value={guidance}
                                     onChange={(e) => setGuidance(e.target.value)}
                                     disabled={isLoading}
-                                    className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400 transition-colors disabled:opacity-50"
+                                    rows={2}
+                                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400 transition-colors disabled:opacity-50 resize-none"
                                     placeholder="Describe changes for regeneration..."
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" && !isLoading) {
-                                            e.preventDefault();
-                                            handleGenerate();
-                                        }
-                                    }}
                                 />
                             </div>
                         </div>
@@ -285,6 +387,28 @@ export function VisualGenerationModal({
                             Cancel
                         </button>
                         <div className="flex items-center gap-3">
+                            {/* Selecting state: Regenerate + Confirm */}
+                            {status === "selecting" && (
+                                <>
+                                    <button
+                                        onClick={handleGenerate}
+                                        disabled={isLoading}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors disabled:opacity-50"
+                                    >
+                                        <PiArrowClockwise className="w-4 h-4" />
+                                        Regenerate All
+                                    </button>
+                                    <button
+                                        onClick={handleConfirmSelection}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-purple-200"
+                                    >
+                                        <PiCheckCircle className="w-4 h-4" />
+                                        Use This Visual
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Preview state: Regenerate + Save */}
                             {(status === "preview" || status === "saving") && (
                                 <>
                                     <button

@@ -16,13 +16,30 @@ export const GET = unifiedApiHandler(async (_request: NextRequest, { module, par
         }
 
         const ws = result.workspace;
+        const profile = (ws.profile || {}) as Record<string, unknown>;
+
         return okResponse({
             id: ws.id,
             title: ws.title,
-            type: ws.type,
-            profile: ws.profile || {},
+            tenantType: ws.type,
+            description: profile.providerProgramDescription ?? undefined,
+            email: profile.email ?? undefined,
+            phone: profile.phone ?? undefined,
+            website: profile.website ?? undefined,
+            logo: profile.logo ?? undefined,
+            location: profile.location ?? { city: undefined, address: undefined },
             isActive: ws.isActive,
-            cityId: ws.cityId,
+            isApproved: profile.isApproved ?? false,
+            metadata: {
+                currency: profile.currency,
+                features: profile.features,
+                yearlyPrice: profile.yearlyPrice,
+                monthlyPrice: profile.monthlyPrice,
+                providerTrialDaysCount: profile.providerTrialDaysCount,
+                providerSubscriptionPrice: profile.providerSubscriptionPrice,
+                providerSubscriptionPeriod: profile.providerSubscriptionPeriod,
+                providerProgramDescription: profile.providerProgramDescription,
+            },
             createdAt: ws.createdAt,
             updatedAt: ws.updatedAt,
         });

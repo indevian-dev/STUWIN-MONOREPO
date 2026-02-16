@@ -48,10 +48,28 @@ export default function ProviderOrganizationPageClient() {
   const handleSave = async (updateData: Partial<Provider.UpdateInput>) => {
     try {
       setSaving(true);
+
+      // Map flat UpdateInput fields into { title, profile } shape for the API
+      const { title, description, email, phone, website, logo, location, ...rest } = updateData;
+      const profilePayload: Record<string, unknown> = {};
+
+      if (description !== undefined) profilePayload.providerProgramDescription = description;
+      if (email !== undefined) profilePayload.email = email;
+      if (phone !== undefined) profilePayload.phone = phone;
+      if (website !== undefined) profilePayload.website = website;
+      if (logo !== undefined) profilePayload.logo = logo;
+      if (location !== undefined) profilePayload.location = location;
+
+      // Pass through any extra metadata fields (pricing, features, etc.)
+      Object.assign(profilePayload, rest);
+
       await apiCall({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/organization/update`,
-        body: updateData,
+        body: {
+          ...(title !== undefined ? { title } : {}),
+          profile: profilePayload,
+        },
       });
 
       toast.success(t('save_success'));

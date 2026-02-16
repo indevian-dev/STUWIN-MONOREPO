@@ -11,7 +11,6 @@ import { toast } from 'react-toastify';
 import { Link } from '@/i18n/routing';
 import { PiPlusCircle, PiEnvelope } from 'react-icons/pi';
 import { ProviderStudentsListWidget } from './(widgets)/ProviderStudentsListWidget';
-import type { User } from '@stuwin/shared/types/domain';
 
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
@@ -20,7 +19,6 @@ export default function ProviderStudentsPageClient() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspaceId as string;
   const t = useTranslations('ProviderStudents');

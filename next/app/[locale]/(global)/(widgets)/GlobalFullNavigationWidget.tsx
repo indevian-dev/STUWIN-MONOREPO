@@ -114,12 +114,16 @@ export function GlobalFullNavigationWidget({
       {isAuthenticated && (
         <li className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded p-1 space-y-2">
           <GlobalProfileWidget />
-          <div className="flex flex-col gap-3 px-3 py-4 border-t border-slate-50 mt-1">
-            <GlobalLangSwitcherTile />
-            <GlobalThemeSwitcherTile />
-          </div>
         </li>
       )}
+
+      {/* Lang & Theme switchers — always visible regardless of auth state */}
+      <li className="text-left w-full bg-linear-to-b from-white/95 to-white/80 rounded p-1">
+        <div className="flex flex-col gap-3 px-3 py-4">
+          <GlobalLangSwitcherTile />
+          <GlobalThemeSwitcherTile />
+        </div>
+      </li>
 
       {/* Menu groups */}
       {Object.entries(menuGroups).map(([key, group]: [string, MenuGroup]) => (

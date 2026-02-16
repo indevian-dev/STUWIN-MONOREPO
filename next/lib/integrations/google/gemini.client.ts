@@ -69,6 +69,7 @@ export const safetySettings = [
 
 // Model configurations
 export const GEMINI_MODELS = {
+  PRO_3: 'gemini-3-pro-preview',
   FLASH_3: 'gemini-3-flash-preview',
   FLASH_2: 'gemini-3-flash-preview',
   FLASH_1_5: 'gemini-3-flash-preview',

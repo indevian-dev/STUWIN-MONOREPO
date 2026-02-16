@@ -129,6 +129,21 @@ export const workspacesRootEndpoints: EndpointsMap = {
     authRequired: true,
     type: "page",
   }),
+  "/workspaces/billing/verify": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "page",
+  }),
+  "/workspaces/billing/checkout": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "page",
+  }),
+  "/workspaces/billing/error": createRootEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "page",
+  }),
 
   // New Billing Endpoints (Transactions, Subscriptions, Payments)
   "/api/workspaces/billing/subscriptions": createRootEndpoint({

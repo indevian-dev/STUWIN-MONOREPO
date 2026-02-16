@@ -137,6 +137,8 @@ export const providerEndpoints: EndpointsMap = {
   "/api/workspaces/provider/:workspaceId/students/update/:id": createProviderEndpoint({ method: "PUT", authRequired: true, permission: "PROVIDER_STUDENT_UPDATE", type: "api" }),
   "/api/workspaces/provider/:workspaceId/students/delete/:id": createProviderEndpoint({ method: "DELETE", authRequired: true, permission: "PROVIDER_STUDENT_DELETE", type: "api" }),
   "/api/workspaces/provider/:workspaceId/students/invite": createProviderEndpoint({ method: "POST", authRequired: true, permission: "PROVIDER_STUDENT_INVITE", type: "api" }),
+  "/api/workspaces/provider/:workspaceId/invitations": createProviderEndpoint({ method: "GET", authRequired: true, permission: "PROVIDER_STUDENT_READ", type: "api" }),
+  "/api/workspaces/provider/:workspaceId/invitations/send": createProviderEndpoint({ method: "POST", authRequired: true, permission: "PROVIDER_STAFF_CREATE", type: "api" }),
 
   // Assignments
   "/workspaces/provider/:workspaceId/assignments": createProviderEndpoint({ method: "GET", authRequired: true, permission: "PROVIDER_ASSIGNMENT_READ", type: "page" }),

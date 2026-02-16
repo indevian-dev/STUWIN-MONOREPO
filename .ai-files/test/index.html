@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUWIN — Workspace Architecture</title>
+    <meta name="description" content="Comprehensive architecture documentation of the STUWIN workspace system: roles, permissions, sessions, and access control.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            850: '#172033',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: #020617; color: #e2e8f0; }
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .glow-border {
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.05);
+        }
+        .glow-green { border-color: rgba(74, 222, 128, 0.3); box-shadow: 0 0 20px rgba(74, 222, 128, 0.05); }
+        .glow-purple { border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 0 20px rgba(168, 85, 247, 0.05); }
+        .glow-amber { border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 0 20px rgba(245, 158, 11, 0.05); }
+        .glow-red { border-color: rgba(248, 113, 113, 0.3); box-shadow: 0 0 20px rgba(248, 113, 113, 0.05); }
+        .nav-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .nav-link:hover .nav-dot { transform: scale(1.5); }
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.3), transparent);
+        }
+        .mermaid { display: flex; justify-content: center; }
+        .mermaid svg { max-width: 100%; height: auto; }
+        pre code {
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeInUp 0.5s ease-out forwards; }
+        .table-row:hover { background: rgba(96, 165, 250, 0.05); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card border-b border-dark-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm">S</div>
+                <span class="font-semibold text-dark-100">STUWIN Architecture</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm text-dark-400">
+                <a href="#er-model" class="hover:text-dark-200 transition">ER Model</a>
+                <a href="#access" class="hover:text-dark-200 transition">Access</a>
+                <a href="#roles" class="hover:text-dark-200 transition">Roles</a>
+                <a href="#sessions" class="hover:text-dark-200 transition">Sessions</a>
+                <a href="#pipeline" class="hover:text-dark-200 transition">Pipeline</a>
+                <a href="#flows" class="hover:text-dark-200 transition">Flows</a>
+                <a href="#security" class="hover:text-dark-200 transition">Security</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-20">
+
+        <!-- Hero -->
+        <header class="text-center py-16 sm:py-24">
+            <div class="badge bg-blue-500/10 text-blue-400 mb-6 mx-auto">Architecture Documentation</div>
+            <h1 class="text-4xl sm:text-6xl font-black gradient-text mb-6 leading-tight">Workspace System</h1>
+            <p class="text-dark-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                Workspaces, Roles, Permissions, Sessions & Access Control — полная архитектурная карта платформы STUWIN.
+            </p>
+        </header>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 1: ER Model -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="er-model" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold">1</div>
+                <h2 class="text-2xl font-bold text-dark-100">Entity-Relationship Model</h2>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-border mb-8">
+                <div class="mermaid">
+erDiagram
+    users ||--|| accounts : "1:1"
+    accounts ||--o{ workspace_accesses : "has many"
+    accounts ||--o{ workspace_invitations : "invited"
+    workspaces ||--o{ workspace_accesses : "target / via"
+    workspace_roles ||--o{ workspace_accesses : "access_role"
+    workspace_roles ||--o{ workspace_invitations : "access_role"
+    workspaces ||--o{ workspace_invitations : "for_workspace"
+
+    users {
+        varchar id PK
+        varchar email
+        varchar phone
+        varchar firstName
+        varchar lastName
+        varchar fin
+        boolean emailVerified
+        boolean phoneVerified
+    }
+
+    accounts {
+        varchar id PK
+        varchar userId FK
+        varchar status
+    }
+
+    workspaces {
+        varchar id PK
+        varchar type
+        text title
+        jsonb profile
+        boolean isActive
+        boolean isBlocked
+    }
+
+    workspace_roles {
+        varchar id PK
+        varchar name UK
+        jsonb permissions
+        varchar forWorkspaceType
+    }
+
+    workspace_accesses {
+        varchar id PK
+        varchar actorAccountId FK
+        varchar targetWorkspaceId FK
+        varchar viaWorkspaceId FK
+        varchar accessRole FK
+        timestamp subscribedUntil
+    }
+
+    workspace_invitations {
+        varchar id PK
+        varchar invitedAccountId FK
+        varchar forWorkspaceId FK
+        varchar invitedByAccountId FK
+        varchar accessRole FK
+        boolean isApproved
+        boolean isDeclined
+        timestamp expireAt
+    }
+                </div>
+            </div>
+
+            <!-- Tables grid -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-blue-400 mb-3 text-sm uppercase tracking-wide">Core Tables</h3>
+                    <ul class="space-y-2 text-sm text-dark-300">
+                        <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">●</span> <span><strong class="text-dark-100">users</strong> — identity (email, phone, FIN)</span></li>
+                        <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">●</span> <span><strong class="text-dark-100">accounts</strong> — auth entity (1:1 with user)</span></li>
+                        <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">●</span> <span><strong class="text-dark-100">workspaces</strong> — nodes in the system tree</span></li>
+                    </ul>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-purple-400 mb-3 text-sm uppercase tracking-wide">Access Tables</h3>
+                    <ul class="space-y-2 text-sm text-dark-300">
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">●</span> <span><strong class="text-dark-100">workspace_roles</strong> — role definitions + JSONB permissions</span></li>
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">●</span> <span><strong class="text-dark-100">workspace_accesses</strong> — who has access to what (target + via)</span></li>
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">●</span> <span><strong class="text-dark-100">workspace_invitations</strong> — pending access requests</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 2: Workspace Types -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 font-bold">2</div>
+                <h2 class="text-2xl font-bold text-dark-100">Workspace Types</h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="glass-card rounded-xl p-5 glow-green">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">🏫</span>
+                        <span class="badge bg-green-500/10 text-green-400">provider</span>
+                    </div>
+                    <p class="text-sm text-dark-300">School / Course organization. Admin Dashboard interface.</p>
+                    <p class="text-xs text-dark-500 mt-2">Example: "Лицей №42"</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">👤</span>
+                        <span class="badge bg-blue-500/10 text-blue-400">student</span>
+                    </div>
+                    <p class="text-sm text-dark-300">Personal student workspace. End-User Portal interface.</p>
+                    <p class="text-xs text-dark-500 mt-2">Example: "Ахмед — Мой кабинет"</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-purple">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">⚙️</span>
+                        <span class="badge bg-purple-500/10 text-purple-400">staff</span>
+                    </div>
+                    <p class="text-sm text-dark-300">Platform staff / DevOps. Global Admin interface.</p>
+                    <p class="text-xs text-dark-500 mt-2">Example: "STUWIN Staff"</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-amber">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">👁️</span>
+                        <span class="badge bg-amber-500/10 text-amber-400">parent</span>
+                    </div>
+                    <p class="text-sm text-dark-300">Parent monitoring dashboard. View linked student nodes.</p>
+                    <p class="text-xs text-dark-500 mt-2">Example: "Мама Ахмеда"</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-red">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">🔐</span>
+                        <span class="badge bg-red-500/10 text-red-400">admin</span>
+                    </div>
+                    <p class="text-sm text-dark-300">System admin workspace. Reserved for platform admins.</p>
+                    <p class="text-xs text-dark-500 mt-2">Reserved type</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 3: Access Model -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="access" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold">3</div>
+                <h2 class="text-2xl font-bold text-dark-100">Access Model — Direct vs Linked</h2>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-border mb-8">
+                <div class="mermaid">
+graph LR
+    subgraph Direct["Direct Access"]
+        A1["Account"] -->|"target = via"| W1["Provider WS"]
+    end
+
+    subgraph Linked["Linked Access"]
+        A2["Account"] -->|"via = StudentPersonal"| W2["Student WS"]
+        A2 -->|"target = Provider"| W3["Provider WS"]
+    end
+
+    style Direct fill:#1a3a2a,stroke:#4ade80,color:#e2e8f0
+    style Linked fill:#1a2a3a,stroke:#60a5fa,color:#e2e8f0
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="glass-card rounded-xl p-5 glow-green">
+                    <h3 class="font-semibold text-green-400 mb-2">Direct Access</h3>
+                    <p class="text-sm text-dark-300 mb-3">
+                        <code class="text-xs bg-dark-900 px-2 py-0.5 rounded font-mono">target_workspace_id === via_workspace_id</code>
+                    </p>
+                    <p class="text-sm text-dark-400">Manager, Admin, or Owner of a workspace. The account is a direct member of the workspace itself.</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-blue-400 mb-2">Linked Access</h3>
+                    <p class="text-sm text-dark-300 mb-3">
+                        <code class="text-xs bg-dark-900 px-2 py-0.5 rounded font-mono">target_workspace_id !== via_workspace_id</code>
+                    </p>
+                    <p class="text-sm text-dark-400">Student enrolled in a Provider. Access is granted "via" their personal student workspace to the "target" provider workspace.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 glass-card rounded-xl p-4 border-l-4 border-amber-500/50 bg-amber-500/5">
+                <p class="text-sm text-amber-300/90">
+                    <strong>Unique Constraint:</strong> An account can only be enrolled in a specific Provider workspace once.<br>
+                    <code class="text-xs font-mono text-amber-400/70">UNIQUE INDEX (actor_account_id, target_workspace_id)</code>
+                </p>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 4: Roles & Permissions -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="roles" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold">4</div>
+                <h2 class="text-2xl font-bold text-dark-100">Roles & Permissions</h2>
+            </div>
+
+            <!-- Role cards -->
+            <div class="grid sm:grid-cols-3 gap-4 mb-8">
+                <div class="glass-card rounded-xl p-5 glow-green">
+                    <h3 class="font-semibold text-green-400 mb-1">manager</h3>
+                    <p class="text-xs text-dark-500 mb-3">forWorkspaceType: provider</p>
+                    <p class="text-sm text-dark-300">Full admin access to a provider workspace. CRUD on subjects, topics, questions, quizzes, members.</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-blue-400 mb-1">student</h3>
+                    <p class="text-xs text-dark-500 mb-3">forWorkspaceType: student</p>
+                    <p class="text-sm text-dark-300">Take quizzes, view learning content, manage homework, interact with AI tutor.</p>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-amber">
+                    <h3 class="font-semibold text-amber-400 mb-1">parent_monitor</h3>
+                    <p class="text-xs text-dark-500 mb-3">forWorkspaceType: parent</p>
+                    <p class="text-sm text-dark-300">Read-only monitoring of linked student workspaces. View progress and reports.</p>
+                </div>
+            </div>
+
+            <!-- Permission auto-grant -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-purple mb-8">
+                <h3 class="font-semibold text-purple-400 mb-4 text-sm uppercase tracking-wide">⚡ Auto-Grant Rules</h3>
+                <p class="text-sm text-dark-300 mb-4">The CoreAuthorizer automatically grants permissions based on workspace type prefix matching:</p>
+
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 bg-dark-900/50 rounded-lg p-3">
+                        <span class="badge bg-green-500/10 text-green-400">PROVIDER_*</span>
+                        <span class="text-dark-500">+</span>
+                        <span class="text-sm text-dark-300">workspace type = <strong class="text-dark-100">provider</strong></span>
+                        <span class="ml-auto text-green-400 text-sm font-semibold">→ ✅ GRANTED</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-dark-900/50 rounded-lg p-3">
+                        <span class="badge bg-purple-500/10 text-purple-400">STAFF_*</span>
+                        <span class="text-dark-500">+</span>
+                        <span class="text-sm text-dark-300">workspace type = <strong class="text-dark-100">staff</strong></span>
+                        <span class="ml-auto text-green-400 text-sm font-semibold">→ ✅ GRANTED</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-dark-900/50 rounded-lg p-3">
+                        <span class="badge bg-blue-500/10 text-blue-400">STUDENT_*</span>
+                        <span class="text-dark-500">+</span>
+                        <span class="text-sm text-dark-300">workspace type = <strong class="text-dark-100">student</strong></span>
+                        <span class="ml-auto text-green-400 text-sm font-semibold">→ ✅ GRANTED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permission tables -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="glass-card rounded-xl p-5 glow-green">
+                    <h3 class="font-semibold text-green-400 mb-3 text-sm uppercase tracking-wide">Provider Permissions (70+)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-dark-500 text-xs uppercase">
+                                    <th class="text-left py-1">Category</th>
+                                    <th class="text-left py-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-dark-300">
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Content</td><td>SUBJECT · TOPIC · QUESTION (CRUD)</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Quizzes</td><td>QUIZ (CRUD)</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Students</td><td>READ · INVITE · UPDATE · ENROLLMENT</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Org</td><td>ORG · STAFF · MEMBER (CRUD)</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Analytics</td><td>STATS · ANALYTICS · REPORT · PROGRESS</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Media</td><td>UPLOAD · DELETE</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-blue-400 mb-3 text-sm uppercase tracking-wide">Student Permissions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-dark-500 text-xs uppercase">
+                                    <th class="text-left py-1">Category</th>
+                                    <th class="text-left py-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-dark-300">
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Access</td><td>ACCESS · ACCOUNT_READ</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Content</td><td>QUESTION_READ · PROVIDER_READ</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Applications</td><td>APPLICATION_READ · APPLICATION_CREATE</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Learning</td><td>QUIZ_TAKE/READ · LEARNING (CRU)</td></tr>
+                                <tr class="table-row"><td class="py-1.5 text-dark-400">Homework</td><td>HOMEWORK (CRUD)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 5: SessionStore -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="sessions" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 font-bold">5</div>
+                <h2 class="text-2xl font-bold text-dark-100">SessionStore — 3-Layer Redis Cache</h2>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-amber mb-8">
+                <div class="mermaid">
+graph TB
+    subgraph L1["Layer 1: Session + Identity — TTL 14 days"]
+        K1["sess:sessionId"] --> V1["accountId, userId, email\nfirstName, lastName\nemailVerified, phoneVerified"]
+    end
+
+    subgraph L2["Layer 2: Workspace Access — TTL 10 min"]
+        K2["ws:accountId:wsId:wsType"] --> V2["workspaceId, workspaceType\nroleName, subscriptionTier"]
+    end
+
+    subgraph L3["Layer 3: Role Definitions — TTL 1 hr"]
+        K3["role:roleName"] --> V3["name, permissions array\nforWorkspaceType"]
+    end
+
+    L1 --> L2 --> L3
+
+    style L1 fill:#1a3a2a,stroke:#4ade80,color:#e2e8f0
+    style L2 fill:#1a2a3a,stroke:#60a5fa,color:#e2e8f0
+    style L3 fill:#2d1b4e,stroke:#a855f7,color:#e2e8f0
+                </div>
+            </div>
+
+            <!-- TTL table -->
+            <div class="glass-card rounded-xl overflow-hidden glow-border">
+                <table class="w-full text-sm">
+                    <thead class="bg-dark-800/60">
+                        <tr class="text-dark-400 text-xs uppercase">
+                            <th class="text-left p-4">Layer</th>
+                            <th class="text-left p-4">Redis Key</th>
+                            <th class="text-left p-4">TTL</th>
+                            <th class="text-left p-4">DB Fallback</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-dark-300">
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4"><span class="badge bg-green-500/10 text-green-400">L1</span></td>
+                            <td class="p-4 font-mono text-xs">sess:{sessionId}</td>
+                            <td class="p-4">14 days</td>
+                            <td class="p-4 text-dark-500">None (must exist)</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4"><span class="badge bg-blue-500/10 text-blue-400">L2</span></td>
+                            <td class="p-4 font-mono text-xs">ws:{accountId}:{wsId}:{wsType}</td>
+                            <td class="p-4">10 min</td>
+                            <td class="p-4 text-dark-400">workspace_accesses JOIN workspace_roles</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4"><span class="badge bg-purple-500/10 text-purple-400">L3</span></td>
+                            <td class="p-4 font-mono text-xs">role:{roleName}</td>
+                            <td class="p-4">1 hour</td>
+                            <td class="p-4 text-dark-400">workspace_roles WHERE name = ?</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4"><span class="badge bg-red-500/10 text-red-400">2FA</span></td>
+                            <td class="p-4 font-mono text-xs">2fa:{sessionId}</td>
+                            <td class="p-4">10 min</td>
+                            <td class="p-4 text-dark-500">None</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4"><span class="badge bg-amber-500/10 text-amber-400">REV</span></td>
+                            <td class="p-4 font-mono text-xs">acct_sess:{accountId}</td>
+                            <td class="p-4">14 days</td>
+                            <td class="p-4 text-dark-500">None (SET of session IDs)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Resolve flow -->
+            <h3 class="text-lg font-semibold text-dark-200 mt-10 mb-4">Session Resolve — Hot Path</h3>
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-border">
+                <div class="mermaid">
+flowchart TD
+    A["Request arrives"] --> B["Get session cookie"]
+    B --> C{"L1: Redis GET\nsess:sessionId"}
+    C -->|miss| D["UNAUTHORIZED"]
+    C -->|hit| E{"workspaceId\nin URL?"}
+    E -->|no| F["Session-only data\npermissions: empty"]
+    E -->|yes| G{"L2: Redis GET\nws:accountId:wsId"}
+    G -->|hit| H{"L3: Redis GET\nrole:roleName"}
+    H -->|hit| I["ResolvedSession\n0 DB queries"]
+    H -->|miss| J["DB: fetch role\ncache in L3"]
+    J --> I
+    G -->|miss| K["DB: fetch access + role\ncache L2 + L3"]
+    K -->|found| I
+    K -->|not found| D
+
+    style I fill:#1a3a2a,stroke:#4ade80,color:#e2e8f0
+    style D fill:#3a1a1a,stroke:#f87171,color:#e2e8f0
+    style F fill:#3a2a1a,stroke:#f59e0b,color:#e2e8f0
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 6: CoreAuthorizer Pipeline -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="pipeline" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 font-bold">6</div>
+                <h2 class="text-2xl font-bold text-dark-100">CoreAuthorizer — 8-Step Pipeline</h2>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-red mb-8">
+                <div class="space-y-3">
+                    <!-- Step items -->
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">1</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Validate Session</p>
+                            <p class="text-dark-500 text-xs">Redis L1 lookup for sess:{sessionId}</p>
+                        </div>
+                        <span class="ml-auto badge bg-red-500/10 text-red-400 shrink-0">UNAUTHORIZED</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">2</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Validate Account Status</p>
+                            <p class="text-dark-500 text-xs">Check emailVerified / phoneVerified flags</p>
+                        </div>
+                        <span class="ml-auto badge bg-red-500/10 text-red-400 shrink-0">NOT_VERIFIED</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">3</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Validate Workspace Type</p>
+                            <p class="text-dark-500 text-xs">endpoint.workspace must match session.workspaceType</p>
+                        </div>
+                        <span class="ml-auto badge bg-red-500/10 text-red-400 shrink-0">WS_MISMATCH</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">4</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Validate Permissions</p>
+                            <p class="text-dark-500 text-xs">Check role permissions + auto-grant by prefix</p>
+                        </div>
+                        <span class="ml-auto badge bg-red-500/10 text-red-400 shrink-0">PERM_DENIED</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">5</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Validate 2FA</p>
+                            <p class="text-dark-500 text-xs">Check Redis 2fa:{sessionId} key</p>
+                        </div>
+                        <span class="ml-auto badge bg-red-500/10 text-red-400 shrink-0">2FA_REQUIRED</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">6</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Email Verification</p>
+                            <p class="text-dark-500 text-xs">Enforced when needEmailVerification = true</p>
+                        </div>
+                        <span class="ml-auto badge bg-amber-500/10 text-amber-400 shrink-0">VERIFY_EMAIL</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">7</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Phone Verification</p>
+                            <p class="text-dark-500 text-xs">Enforced when needPhoneVerification = true</p>
+                        </div>
+                        <span class="ml-auto badge bg-amber-500/10 text-amber-400 shrink-0">VERIFY_PHONE</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-dark-900/50 rounded-lg p-4">
+                        <div class="w-8 h-8 rounded-lg bg-dark-700 flex items-center justify-center text-dark-200 font-bold text-sm shrink-0">8</div>
+                        <div>
+                            <p class="text-dark-100 font-medium text-sm">Subscription Check</p>
+                            <p class="text-dark-500 text-xs">subscribedUntil > now()?</p>
+                        </div>
+                        <span class="ml-auto badge bg-amber-500/10 text-amber-400 shrink-0">SUB_REQUIRED</span>
+                    </div>
+                    <!-- Success -->
+                    <div class="flex items-center gap-4 bg-green-500/5 border border-green-500/20 rounded-lg p-4 mt-2">
+                        <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm shrink-0">✓</div>
+                        <div>
+                            <p class="text-green-400 font-medium text-sm">AuthContext Created</p>
+                            <p class="text-dark-500 text-xs">userId, accountId, permissions[], activeWorkspaceId, role, subscriptionActive</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoint config example -->
+            <h3 class="text-lg font-semibold text-dark-200 mt-10 mb-4">EndpointConfig — Per-Route Security</h3>
+            <div class="glass-card rounded-xl p-5 glow-border">
+                <pre class="overflow-x-auto"><code class="text-dark-300 font-mono">createProviderEndpoint({
+    method: "PUT",
+    authRequired: true,
+    permission: "PROVIDER_ORG_UPDATE",    <span class="text-green-400">// → Step 4</span>
+    workspace: "provider",                <span class="text-blue-400">// → Step 3</span>
+    twoFactorAuth: true,                  <span class="text-red-400">// → Step 5</span>
+    twoFactorAuthType: "email",
+    checkSubscriptionStatus: true,        <span class="text-amber-400">// → Step 8</span>
+    needEmailVerification: true,          <span class="text-purple-400">// → Step 6</span>
+    type: "api",
+})</code></pre>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 7: Invitation Flow -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="flows" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 font-bold">7</div>
+                <h2 class="text-2xl font-bold text-dark-100">Invitation Flow</h2>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 glow-border">
+                <div class="mermaid">
+sequenceDiagram
+    participant M as Manager
+    participant API as Invitation API
+    participant WS as WorkspaceService
+    participant DB as Database
+    participant I as Invited User
+
+    M->>API: POST /invitations/send {email, role}
+    API->>WS: inviteMember(wsId, byAccountId, email, role)
+    WS->>DB: findRoleByName(role)
+    Note right of DB: Validate role exists
+    WS->>DB: findAccountByEmail(email)
+    Note right of DB: Find invited user
+    WS->>DB: findAccess(accountId, wsId)
+    Note right of DB: Check not already member
+    WS->>DB: createInvitation(7-day expiry)
+    DB-->>WS: invitation record
+    WS-->>API: success: true
+
+    Note over I: Later...
+    I->>API: respondToInvitation(id, approve)
+    API->>WS: respondToInvitation()
+    WS->>DB: addAccess(actor, target, via, role)
+    WS-->>I: Access Granted
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 8: Workspace Creation Flows -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 font-bold">8</div>
+                <h2 class="text-2xl font-bold text-dark-100">Workspace Creation Flows</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="glass-card rounded-xl p-5 glow-border">
+                    <h3 class="font-semibold text-blue-400 mb-3 text-sm uppercase tracking-wide">🎓 Student Flow</h3>
+                    <ol class="space-y-2 text-sm text-dark-300">
+                        <li class="flex items-start gap-2"><span class="text-blue-400 font-bold">1.</span> Create student workspace</li>
+                        <li class="flex items-start gap-2"><span class="text-blue-400 font-bold">2.</span> Add DIRECT access<br><span class="text-dark-500 text-xs">target=student, via=student</span></li>
+                        <li class="flex items-start gap-2"><span class="text-blue-400 font-bold">3.</span> Add LINKED access<br><span class="text-dark-500 text-xs">target=provider, via=student</span></li>
+                        <li class="flex items-start gap-2"><span class="text-blue-400 font-bold">4.</span> Set subscribedUntil<br><span class="text-dark-500 text-xs">trial days from provider</span></li>
+                    </ol>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-green">
+                    <h3 class="font-semibold text-green-400 mb-3 text-sm uppercase tracking-wide">🏫 Provider Flow</h3>
+                    <ol class="space-y-2 text-sm text-dark-300">
+                        <li class="flex items-start gap-2"><span class="text-green-400 font-bold">1.</span> Submit application</li>
+                        <li class="flex items-start gap-2"><span class="text-green-400 font-bold">2.</span> Create provider workspace<br><span class="text-dark-500 text-xs">isActive=false</span></li>
+                        <li class="flex items-start gap-2"><span class="text-green-400 font-bold">3.</span> Add DIRECT access<br><span class="text-dark-500 text-xs">target=provider, via=provider</span></li>
+                        <li class="flex items-start gap-2"><span class="text-green-400 font-bold">4.</span> Staff approves → isActive=true</li>
+                    </ol>
+                </div>
+                <div class="glass-card rounded-xl p-5 glow-amber">
+                    <h3 class="font-semibold text-amber-400 mb-3 text-sm uppercase tracking-wide">👁️ Parent Flow</h3>
+                    <ol class="space-y-2 text-sm text-dark-300">
+                        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">1.</span> Create parent workspace</li>
+                        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">2.</span> Add DIRECT access<br><span class="text-dark-500 text-xs">target=parent, via=parent</span></li>
+                        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">3.</span> Add LINKED access to each student workspace</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 9: Cache Invalidation -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 font-bold">9</div>
+                <h2 class="text-2xl font-bold text-dark-100">Cache Invalidation Strategy</h2>
+            </div>
+
+            <div class="glass-card rounded-xl overflow-hidden glow-amber">
+                <table class="w-full text-sm">
+                    <thead class="bg-dark-800/60">
+                        <tr class="text-dark-400 text-xs uppercase">
+                            <th class="text-left p-4">Event</th>
+                            <th class="text-left p-4">Method</th>
+                            <th class="text-left p-4">Keys Cleared</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-dark-300">
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Logout</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">destroy(sessionId)</td>
+                            <td class="p-4 font-mono text-xs">sess:{sessionId}</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Suspension</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">destroyAllForAccount()</td>
+                            <td class="p-4 font-mono text-xs">All sess:* for account</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Role Change</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">invalidateRole(name)</td>
+                            <td class="p-4 font-mono text-xs">role:{roleName} (all users)</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Access Change</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">invalidateWorkspace()</td>
+                            <td class="p-4 font-mono text-xs">ws:{accountId}:{wsId}</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Full Re-auth</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">invalidateAllWorkspaces()</td>
+                            <td class="p-4 font-mono text-xs">All ws:{accountId}:*</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">Email Verified</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">updateVerificationStatus()</td>
+                            <td class="p-4 font-mono text-xs">Updates all sess:* in-place</td>
+                        </tr>
+                        <tr class="table-row border-t border-dark-700/50">
+                            <td class="p-4 font-medium text-dark-200">2FA Verified</td>
+                            <td class="p-4 font-mono text-xs text-blue-400">set2FAVerified()</td>
+                            <td class="p-4 font-mono text-xs">Sets 2fa:{sessionId} (10m TTL)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="section-divider my-16"></div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- SECTION 10: Security Shield -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <section id="security" class="mb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 font-bold">10</div>
+                <h2 class="text-2xl font-bold text-dark-100">4-Layer Security Shield</h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="glass-card rounded-xl p-6 border-l-4 border-red-500/70">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="badge bg-red-500/10 text-red-400">Layer 1</span>
+                        <h3 class="font-semibold text-dark-100">Edge Protection (Cloudflare)</h3>
+                    </div>
+                    <p class="text-sm text-dark-400">DDoS protection, bot mitigation, geo-blocking. Blocks malicious traffic before it reaches the application.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-l-4 border-amber-500/70">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="badge bg-amber-500/10 text-amber-400">Layer 2</span>
+                        <h3 class="font-semibold text-dark-100">JWT / Session Context</h3>
+                    </div>
+                    <p class="text-sm text-dark-400">SessionStore.resolve() → ResolvedSession. Extracts identity + workspace + role from Redis cache. Request-scoped injection via AuthContext.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-l-4 border-blue-500/70">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="badge bg-blue-500/10 text-blue-400">Layer 3</span>
+                        <h3 class="font-semibold text-dark-100">Scoped Database Clients</h3>
+                    </div>
+                    <p class="text-sm text-dark-400">Auto-filtering by workspace_access_key. Users see only their data. Managers see their workspace tree. Staff see everything.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-l-4 border-green-500/70">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="badge bg-green-500/10 text-green-400">Layer 4</span>
+                        <h3 class="font-semibold text-dark-100">Row-Level Security (RLS)</h3>
+                    </div>
+                    <p class="text-sm text-dark-400">Physical database constraints preventing cross-workspace data leaks. The ultimate safety net — even if application logic has bugs, data cannot leak.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center pt-16 pb-8">
+            <div class="section-divider mb-8"></div>
+            <p class="text-dark-500 text-sm">STUWIN Workspace Architecture — Generated Documentation</p>
+            <p class="text-dark-600 text-xs mt-2">Last updated: February 2026</p>
+        </footer>
+
+    </main>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: '#0f172a',
+                primaryColor: '#1e3a5f',
+                primaryTextColor: '#e2e8f0',
+                primaryBorderColor: '#334155',
+                lineColor: '#475569',
+                secondaryColor: '#1a2744',
+                tertiaryColor: '#1a3a2a',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSize: '13px',
+                noteBkgColor: '#1e293b',
+                noteTextColor: '#cbd5e1',
+                noteBorderColor: '#334155',
+                actorBkg: '#1e293b',
+                actorBorder: '#475569',
+                actorTextColor: '#e2e8f0',
+                signalColor: '#94a3b8',
+                signalTextColor: '#e2e8f0',
+            },
+            flowchart: {
+                curve: 'basis',
+                padding: 20,
+            },
+            sequence: {
+                actorMargin: 50,
+                messageMargin: 40,
+            }
+        });
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+</body>
+</html>

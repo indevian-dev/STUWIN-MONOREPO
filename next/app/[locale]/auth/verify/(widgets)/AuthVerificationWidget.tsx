@@ -4,7 +4,8 @@
 import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
 import {
     useState,
-    useEffect
+    useEffect,
+    useRef
 } from 'react';
 import {
     useRouter,
@@ -67,33 +68,23 @@ export function AuthVerificationWidget({
     const [isSending, setIsSending] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [hasCodeBeenSent, setHasCodeBeenSent] = useState(false);
+    const hasVerifiedRef = useRef(false); // prevent redirect loop after verification
 
     const isEmail = type === 'email';
     const currentTargetValue = isEmail ? userEmail : userPhone;
     const isTargetVerified = isEmail ? emailVerified : phoneVerified;
 
-    // Sync state with user context once loaded
+    // Sync target value from auth context or URL params (runs once on mount per type, since key={type} remounts)
     useEffect(() => {
-        if (currentTargetValue && !targetState) {
+        if (targetState) return; // already set, don't overwrite
+        // Priority: auth context value → URL query param
+        if (currentTargetValue) {
             setTargetState(currentTargetValue);
+        } else {
+            const fromUrl = searchParams.get(type);
+            if (fromUrl) setTargetState(fromUrl);
         }
-    }, [currentTargetValue]);
-
-    // Redirect if current user profile already has this type verified
-    useEffect(() => {
-        if (isReady && isTargetVerified && currentTargetValue === targetState) {
-            ConsoleLogger.log(`[AuthVerificationWidget] User already has verified ${type}. Redirecting to profile.`);
-            router.push('/workspaces/profile');
-        }
-    }, [isReady, isTargetVerified, currentTargetValue, targetState, type, router]);
-
-    // Get from URL parameter as fallback
-    useEffect(() => {
-        const valueFromQuery = searchParams.get(type);
-        if (valueFromQuery && !targetState) {
-            setTargetState(valueFromQuery);
-        }
-    }, [searchParams, type]);
+    }, [currentTargetValue, isReady]);
 
     // Debug logging
     useEffect(() => {
@@ -210,12 +201,19 @@ export function AuthVerificationWidget({
             }
 
             toast.success(result.message || texts.successMessage);
+            hasVerifiedRef.current = true; // prevent useEffect redirect loop
 
             await refreshProfile();
 
             if (onSuccess) {
                 onSuccess();
+            } else if (isEmail) {
+                // After email verified → go to phone verification
+                const phoneFromUrl = searchParams.get('phone') || '';
+                const phoneParam = phoneFromUrl ? `&phone=${encodeURIComponent(phoneFromUrl)}` : '';
+                router.push(`/auth/verify?type=phone${phoneParam}`);
             } else {
+                // After phone verified → go to final destination
                 router.push(redirectFromQuery);
             }
         } catch (err) {

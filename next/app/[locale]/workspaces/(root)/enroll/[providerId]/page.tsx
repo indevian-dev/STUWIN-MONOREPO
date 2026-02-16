@@ -36,35 +36,38 @@ export default function EnrollmentPage() {
 
     const checkEnrollmentStatus = async () => {
         try {
-            const response = await apiCall<any>({
+            // apiCall unwraps { success, data } → response is the data directly
+            const result = await apiCall<unknown[]>({
                 url: `/api/workspaces/billing/subscriptions`,
                 method: "GET",
             });
-            if ((response as any).success && Array.isArray(response)) {
-                const access = response.find((item: any) => item.workspace.id === providerId);
-                if (access) {
-                    setExistingAccess(access);
-                    setHasUsedTrial(true); // If record exists, trial is considered used/started
-                }
+            const items = Array.isArray(result) ? result : [];
+            const access = items.find((item) => {
+                const entry = item as Record<string, Record<string, unknown>>;
+                return entry.workspace?.id === providerId;
+            });
+            if (access) {
+                setExistingAccess(access);
+                setHasUsedTrial(true);
             }
-        } catch (error) {
+        } catch {
             console.error("Failed to check status");
         }
     };
 
     const fetchProvider = async () => {
         try {
-            const response = await apiCall<any>({
+            // apiCall unwraps { success, data } → response IS the provider object
+            const result = await apiCall<Record<string, unknown>>({
                 url: `/api/providers/${providerId}`,
                 method: "GET",
             });
-            const data = (response as any).data || response;
-            if (data.provider) {
-                setProvider(data.provider);
+            if (result?.id) {
+                setProvider(result);
             } else {
                 toast.error(t('provider_not_found'));
             }
-        } catch (error) {
+        } catch {
             toast.error(t('failed_to_load_provider'));
         } finally {
             setLoading(false);
@@ -88,7 +91,8 @@ export default function EnrollmentPage() {
         try {
             if (useTrial) {
                 // Free Trial / Direct Enrollment
-                const response = await apiCall<any>({
+                // apiCall unwraps outer { success, data } → we get { success, data: { id, ... } }
+                const result = await apiCall<{ success?: boolean; data?: { id: string }; id?: string }>({
                     url: "/api/workspaces/onboarding",
                     method: "POST",
                     body: {
@@ -99,31 +103,22 @@ export default function EnrollmentPage() {
                             providerId: provider.id,
                         }
                     }
-                } as any);
+                } as Parameters<typeof apiCall>[0]);
 
-                const result = (response as any).data;
-                if (result.success) {
+                // result = { success: true, data: { id, type, title, ... } } OR { id, type, title, ... }
+                const workspaceId = result?.data?.id || result?.id;
+                if (workspaceId || result?.success) {
                     toast.success(t('enrollment_success'));
                     router.push("/workspaces");
                 } else {
-                    toast.error(result.error || t('enrollment_failed'));
+                    toast.error(t('enrollment_failed'));
                 }
             } else {
-                // Paid Enrollment
-                const response = await apiCall<any>({
-                    url: "/api/workspaces/billing/initiate",
-                    method: "POST",
-                    body: {
-                        providerId: provider.id,
-                        workspaceId: existingAccess ? existingAccess.workspace.id : undefined,
-                    }
-                });
-
-                // Now Initiate Payment
+                // Paid Enrollment — first create workspace if needed
                 let targetWorkspaceId = existingAccess?.workspace?.id;
 
                 if (!targetWorkspaceId) {
-                    const onboardingRes = await apiCall<any>({
+                    const result = await apiCall<{ success?: boolean; data?: { id: string }; id?: string }>({
                         url: "/api/workspaces/onboarding",
                         method: "POST",
                         body: {
@@ -134,17 +129,17 @@ export default function EnrollmentPage() {
                                 providerId: provider.id,
                             }
                         }
-                    } as any);
-                    const onboardingData = (onboardingRes as any).data;
-                    if (onboardingData.success) {
-                        targetWorkspaceId = onboardingData.data.id;
-                    } else {
-                        throw new Error(onboardingData.error);
+                    } as Parameters<typeof apiCall>[0]);
+
+                    // result = { success: true, data: { id, ... } } OR { id, ... }
+                    targetWorkspaceId = result?.data?.id || result?.id;
+                    if (!targetWorkspaceId) {
+                        throw new Error('Failed to create workspace');
                     }
                 }
 
                 // Now Initiate Payment
-                const payRes = await apiCall<any>({
+                const payRes = await apiCall<{ redirectUrl?: string; data?: { redirectUrl?: string } }>({
                     url: "/api/workspaces/billing/initiate",
                     method: "POST",
                     body: {
@@ -153,20 +148,20 @@ export default function EnrollmentPage() {
                     }
                 });
 
-                if ((payRes as any).redirectUrl) {
-                    window.location.href = (payRes as any).redirectUrl;
-                } else if ((payRes as any).success && (payRes as any).data?.redirectUrl) {
-                    window.location.href = (payRes as any).data.redirectUrl;
-                } else if ((payRes as any).data?.redirectUrl) {
-                    window.location.href = (payRes as any).data.redirectUrl;
+                // payRes is already unwrapped by apiCall
+                const redirectUrl = payRes?.redirectUrl || payRes?.data?.redirectUrl;
+
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
                 } else {
                     toast.success("Enrollment started. Please check your workspace.");
                     router.push("/workspaces");
                 }
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { message?: string };
             console.error(error);
-            toast.error(error.message || t('enrollment_error'));
+            toast.error(err.message || t('enrollment_error'));
         } finally {
             setIsSubmitting(false);
         }

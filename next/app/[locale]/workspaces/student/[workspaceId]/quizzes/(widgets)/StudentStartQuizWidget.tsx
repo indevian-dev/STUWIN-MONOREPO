@@ -44,7 +44,7 @@ export function StudentStartQuizWidget() {
     });
 
     if (response.status === 200) {
-      setSubjects(response.data.subjects || []);
+      setSubjects(response.data?.data?.subjects || []);
     }
   };
 
@@ -76,7 +76,7 @@ export function StudentStartQuizWidget() {
       if (response.status === 200) {
         toast.success('Quiz started successfully!');
         // Navigate to quiz taking page with quiz ID
-        router.push(`/workspaces/student/${workspaceId}/quizzes/take/${response.data.quiz.id}`);
+        router.push(`/workspaces/student/${workspaceId}/quizzes/take/${response.data?.data?.id}`);
       } else {
         toast.error(response.data?.error || 'Failed to start quiz');
       }

@@ -70,17 +70,17 @@ export function ProviderMembersWidget() {
         }
         setInviting(true);
         try {
-            const response = await apiCall<any>({
+            await apiCall<void>({
                 method: 'POST',
-                url: `/api/workspaces/${workspaceId}/invitations`,
+                url: `/api/workspaces/provider/${workspaceId}/invitations/send`,
                 body: {
                     email: inviteEmail,
                     role: inviteRole
                 }
             });
-                toast.success("Invitation sent successfully");
-                setShowInviteModal(false);
-                setInviteEmail('');
+            toast.success("Invitation sent successfully");
+            setShowInviteModal(false);
+            setInviteEmail('');
         } catch (error) {
             ConsoleLogger.error("Invite error:", error);
             toast.error("An error occurred");

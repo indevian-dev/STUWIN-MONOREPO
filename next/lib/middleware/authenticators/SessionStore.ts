@@ -372,6 +372,52 @@ export class SessionStore {
         }
     }
 
+    /** Update email/phone verification status in ALL L1 sessions for an account */
+    static async updateVerificationStatus(
+        accountId: string,
+        update: { emailVerified?: boolean; phoneVerified?: boolean }
+    ): Promise<void> {
+        try {
+            const reverseKey = PREFIX.ACCOUNT_SESSIONS + accountId;
+            const sessionIds = await redis.smembers(reverseKey);
+
+            if (sessionIds.length === 0) {
+                ConsoleLogger.warn("SessionStore.updateVerificationStatus: no sessions found", { accountId });
+                return;
+            }
+
+            const pipeline = redis.pipeline();
+
+            for (const sid of sessionIds) {
+                const sessionKey = PREFIX.SESSION + sid;
+                const sessionJson = await redis.get(sessionKey);
+                if (!sessionJson) continue;
+
+                const session: SessionPayload = JSON.parse(sessionJson);
+
+                // Merge verification update
+                if (update.emailVerified !== undefined) session.emailVerified = update.emailVerified;
+                if (update.phoneVerified !== undefined) session.phoneVerified = update.phoneVerified;
+
+                // Preserve existing TTL
+                const ttl = await redis.ttl(sessionKey);
+                const expiry = ttl > 0 ? ttl : TTL.SESSION;
+
+                pipeline.set(sessionKey, JSON.stringify(session), "EX", expiry);
+            }
+
+            await pipeline.exec();
+
+            ConsoleLogger.info("SessionStore.updateVerificationStatus", {
+                accountId,
+                sessions: sessionIds.length,
+                ...update,
+            });
+        } catch (error) {
+            ConsoleLogger.error("SessionStore.updateVerificationStatus error:", error);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────
     // 2FA — Two-Factor Authentication Session Management
     // ─────────────────────────────────────────────────────────────

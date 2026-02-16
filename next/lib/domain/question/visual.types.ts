@@ -92,6 +92,8 @@ export interface QuestionVisualData {
     showGrid?: boolean;
     /** Whether to show axes helper */
     showAxes?: boolean;
+    /** Visual style approach */
+    styleType?: string;
     /** Gemini model used */
     generatedBy?: string;
     /** Timestamp of generation */
@@ -105,4 +107,8 @@ export interface VisualGenerationInput {
     subjectName?: string;
     topicName?: string;
     language?: string;
+    /** Optional user guidance/instructions for the AI visual generator */
+    guidance?: string;
+    /** Number of variants to generate (default 3) */
+    variantCount?: number;
 }

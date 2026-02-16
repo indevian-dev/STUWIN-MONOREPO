@@ -19,7 +19,8 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
     complexity,
     grade_level,
     explanation_guide,
-    ai_guide
+    ai_guide,
+    is_published
   } = body;
 
   const hasUpdates = [
@@ -30,7 +31,8 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
     complexity,
     grade_level,
     explanation_guide,
-    ai_guide
+    ai_guide,
+    is_published
   ].some(v => v !== undefined && v !== null);
 
   if (!hasUpdates) {
@@ -47,6 +49,7 @@ export const PUT = unifiedApiHandler(async (request, { module, params, auth }) =
   if (grade_level !== undefined) updateData.gradeLevel = parseInt(String(grade_level));
   if (explanation_guide !== undefined) updateData.explanationGuide = explanation_guide;
   if (ai_guide !== undefined) updateData.aiGuide = ai_guide;
+  if (is_published !== undefined) updateData.isPublished = is_published;
 
   const result = await module.question.update(questionId, updateData);
 

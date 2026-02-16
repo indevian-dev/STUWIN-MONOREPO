@@ -50,7 +50,10 @@ export function GlobalLangSwitcherTile() {
                 <Link
                   href={pathname}
                   locale={loc}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    localStorage.setItem('locale', loc);
+                    setOpen(false);
+                  }}
                   className={`flex items-center justify-between px-4 py-3 text-sm font-bold transition-colors ${currentLocale === loc
                     ? 'bg-brand/5 text-brand'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'

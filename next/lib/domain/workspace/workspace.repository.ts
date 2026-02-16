@@ -1,6 +1,6 @@
 
 import { eq, ne, and, desc, asc, sql, count } from "drizzle-orm";
-import { workspaces, workspaceAccesses, users, accounts, workspaceInvitations } from "@/lib/database/schema";
+import { workspaces, workspaceAccesses, users, accounts, workspaceInvitations, workspaceRoles } from "@/lib/database/schema";
 import { BaseRepository } from "../base/base.repository";
 import { type DbClient } from "@/lib/database";
 import { type ProviderListOptions } from "./workspace.types";
@@ -439,6 +439,20 @@ export class WorkspaceRepository extends BaseRepository {
             .delete(workspaces)
             .where(eq(workspaces.id, id))
             .returning();
+        return result[0] || null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ROLES
+    // ═══════════════════════════════════════════════════════════════
+
+    async findRoleByName(name: string, tx?: DbClient) {
+        const client = tx ?? this.db;
+        const result = await client
+            .select()
+            .from(workspaceRoles)
+            .where(eq(workspaceRoles.name, name))
+            .limit(1);
         return result[0] || null;
     }
 

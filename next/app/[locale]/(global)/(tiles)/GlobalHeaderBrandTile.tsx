@@ -13,7 +13,7 @@ export function GlobalHeaderBrandTile({
       href={href}
       className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-2 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition"
     >
-      <GlobalLogoTile width={36} height={36} />
+      <GlobalLogoTile width={36} height={36} href={undefined} />
       <div className="leading-tight flex flex-col">
         <span className="text-sm font-semibold text-slate-800 whitespace-nowrap">{label}</span>
         {subtitle ? (

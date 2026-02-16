@@ -30,9 +30,11 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
         subjectName: body.subjectName,
         topicName: body.topicName,
         language: body.language,
+        guidance: body.guidance,
     };
 
-    const sceneData = await VisualGenerationService.generateVisual(input);
+    // Generate 3 realistic variants in parallel
+    const variants = await VisualGenerationService.generateVisualVariants(input);
 
-    return okResponse(sceneData);
+    return okResponse({ variants });
 });

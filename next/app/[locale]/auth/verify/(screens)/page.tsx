@@ -10,7 +10,7 @@ async function AuthVerifyPage({ searchParams }: AuthVerifyPageProps) {
     const params = await searchParams;
     const type = (params.type === 'phone' ? 'phone' : 'email') as 'email' | 'phone';
 
-    return <AuthVerificationWidget type={type} />;
+    return <AuthVerificationWidget key={type} type={type} />;
 }
 
 export default withPageAuth(

@@ -1,18 +1,39 @@
 import { unifiedApiHandler } from '@/lib/middleware/handlers';
 import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import type { UnifiedContext } from '@/lib/middleware/handlers/ApiInterceptor';
 
 /**
  * Unified Verification API Endpoint
- * Consolidates email and phone verification logic
+ * 
+ * Supports fallback auth: if session cookie is missing/broken (common right after registration),
+ * falls back to looking up the account by email/phone from the `target` parameter.
  */
+
+/** Resolves accountId + userId from session, falling back to email/phone DB lookup */
+async function resolveAccount(
+    ctx: Pick<UnifiedContext, 'authData' | 'module'>,
+    target: string,
+    type: 'email' | 'phone'
+): Promise<{ accountId: string; userId: string } | null> {
+    const { authData, module } = ctx;
+
+    // 1. Try session-based auth
+    const sessionAccountId = authData?.account?.id?.toString();
+    const sessionUserId = authData?.user?.id?.toString();
+
+    if (sessionAccountId && sessionAccountId !== '0' && sessionUserId && sessionUserId !== 'guest') {
+        return { accountId: sessionAccountId, userId: sessionUserId };
+    }
+
+    // 2. Fallback: look up account by email/phone
+    return module.verification.resolveAccountByContact(target, type);
+}
 
 /**
  * GET Handler - Generate OTP
- * Query Params:
- * - type: 'email' | 'phone'
- * - target: email address or phone number
+ * Query: type=email|phone, target=value
  */
-export const GET = unifiedApiHandler(async (req, { module, authData }) => {
+export const GET = unifiedApiHandler(async (req, ctx) => {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') as 'email' | 'phone';
     const target = searchParams.get('target');
@@ -25,14 +46,15 @@ export const GET = unifiedApiHandler(async (req, { module, authData }) => {
         return errorResponse(`${type === 'email' ? 'Email' : 'Phone number'} is required`, 400);
     }
 
-    if (!authData) {
-        return errorResponse('Unauthorized', 401, "UNAUTHORIZED");
+    const account = await resolveAccount(ctx, target, type);
+    if (!account) {
+        return errorResponse('Account not found. Please register first.', 404);
     }
 
-    const result = await module.verification.generateOtp({
+    const result = await ctx.module.verification.generateOtp({
         type,
         target,
-        accountId: authData.account.id.toString()
+        accountId: account.accountId
     });
 
     if (!result.success) {
@@ -44,42 +66,36 @@ export const GET = unifiedApiHandler(async (req, { module, authData }) => {
 
 /**
  * POST Handler - Validate OTP
- * Body:
- * - type: 'email' | 'phone'
- * - target: email address or phone number
- * - otp: 6-digit code
+ * Body: { type, target, otp }
  */
-export const POST = unifiedApiHandler(async (req, { module, authData }) => {
-    try {
-        const body = await req.json().catch(() => ({}));
-        const { type, target, otp } = body;
+export const POST = unifiedApiHandler(async (req, ctx) => {
+    const body = await req.json().catch(() => ({}));
+    const { type, target, otp } = body;
 
-        if (!type || !['email', 'phone'].includes(type)) {
-            return errorResponse('Valid verification type (email or phone) is required', 400);
-        }
-
-        if (!target || !otp) {
-            return errorResponse('Target and OTP are required', 400);
-        }
-
-        if (!authData) {
-            return errorResponse('Unauthorized', 401, "UNAUTHORIZED");
-        }
-
-        const result = await module.verification.validateOtp({
-            type,
-            target,
-            otp,
-            accountId: authData.account.id.toString(),
-            userId: authData.user.id
-        });
-
-        if (!result.success) {
-            return errorResponse(result.error, result.status);
-        }
-
-        return okResponse(result.data);
-    } catch (error) {
-        return errorResponse('Invalid request body', 400);
+    if (!type || !['email', 'phone'].includes(type)) {
+        return errorResponse('Valid verification type (email or phone) is required', 400);
     }
+
+    if (!target || !otp) {
+        return errorResponse('Target and OTP are required', 400);
+    }
+
+    const account = await resolveAccount(ctx, target, type);
+    if (!account) {
+        return errorResponse('Account not found. Please register first.', 404);
+    }
+
+    const result = await ctx.module.verification.validateOtp({
+        type,
+        target,
+        otp,
+        accountId: account.accountId,
+        userId: account.userId
+    });
+
+    if (!result.success) {
+        return errorResponse(result.error, result.status);
+    }
+
+    return okResponse(result.data);
 });

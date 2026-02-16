@@ -46,12 +46,12 @@ export default function StudentTakeQuizPageClient() {
     });
 
     if (response.status === 200) {
-      const quizData = response.data.quiz;
+      const quizData = response.data?.data?.quiz;
       setQuiz(quizData);
 
-      // Parse questions and prepare them for display
-      const parsedQuestions = Array.isArray(quizData.questions)
-        ? quizData.questions
+      // Use snapshotQuestions (actual question objects), not questions (just ID strings)
+      const parsedQuestions = Array.isArray(quizData?.snapshotQuestions)
+        ? quizData.snapshotQuestions
         : [];
 
       // Debug: Log the first question to see its structure

@@ -415,24 +415,30 @@ export class WorkspaceService extends BaseService {
 
     async inviteMember(workspaceId: string, invitedByAccountId: string, email: string, role: string) {
         try {
-            // 1. Find account by email
+            // 1. Validate role exists in workspace_roles
+            const validRole = await this.repository.findRoleByName(role);
+            if (!validRole) {
+                return { success: false, error: `Invalid role: '${role}'. Role does not exist.` };
+            }
+
+            // 2. Find account by email
             const invitedConfig = await this.repository.findAccountByEmail(email);
             if (!invitedConfig) {
                 return { success: false, error: "User with this email not found" };
             }
 
-            // 2. Check if already member
+            // 3. Check if already member
             const existingMember = await this.repository.findAccess(invitedConfig.id, workspaceId, workspaceId);
             if (existingMember) {
                 return { success: false, error: "User is already a member of this workspace" };
             }
 
-            // 3. Create Invitation
+            // 4. Create Invitation
             const invitation = await this.repository.createInvitation({
                 forWorkspaceId: workspaceId,
                 invitedAccountId: invitedConfig.id,
                 invitedByAccountId: invitedByAccountId,
-                accessRole: role,
+                accessRole: validRole.name,
                 expireAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
             });
 

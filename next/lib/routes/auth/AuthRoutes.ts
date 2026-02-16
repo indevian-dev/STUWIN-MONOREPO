@@ -67,7 +67,7 @@ export const authEndpoints: EndpointsMap = {
     type: "api",
   }),
   "/api/auth/verify": createStaffEndpoint({
-    method: "POST",
+    method: ["GET", "POST"],
     authRequired: true,
     type: "api",
   }),

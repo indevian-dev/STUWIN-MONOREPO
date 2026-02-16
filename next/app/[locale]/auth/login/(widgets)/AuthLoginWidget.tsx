@@ -130,98 +130,115 @@ export function AuthLoginWidget() {
   };
 
   return (
-    <section className="min-h-screen bg-linear-to-b from-brand/5 via-white to-surface">
-      <div className="max-w-lg mx-auto px-4 py-10 md:py-14 lg:py-16">
-        <div className="bg-white/90 backdrop-blur rounded-primary border border-border shadow-xl p-6 sm:p-8">
-          <div className="flex items-center justify-between mb-8">
-            <Link href="/" className="inline-flex items-center gap-2 text-dark hover:text-brand">
-              <GlobalLogoTile width={120} height={40} />
-            </Link>
-            <Link href="/auth/register" className="text-sm font-semibold text-brand hover:text-brand/80">
-              {t('need_account')}
-            </Link>
-          </div>
-
-          <div className="space-y-1 mb-8">
-            <h1 className="text-3xl font-bold text-dark tracking-tight">{t('sign_in')}</h1>
-            <p className="text-sm text-body">{t('sign_in_description')}</p>
-          </div>
-
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="email">{t('email')}</label>
-              <input
-                className="w-full rounded-primary border border-border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
-                id="email"
-                type="email"
-                name="email"
-                placeholder={t('email_placeholder')}
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-              {formErrors.email && <p className="text-danger text-xs font-semibold ml-1">{formErrors.email}</p>}
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-dark/80 ml-1" htmlFor="password">{t('password')}</label>
-              <input
-                className="w-full rounded-primary border border-border bg-surface py-3 px-4 text-dark placeholder:text-body/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
-                id="password"
-                type="password"
-                name="password"
-                placeholder={t('password_placeholder')}
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              {formErrors.password && <p className="text-danger text-xs font-semibold ml-1">{formErrors.password}</p>}
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <Link href="/auth/reset" className="text-sm font-semibold text-brand hover:text-brand/80">
-                {t('forgot_password')}
+    <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-brand/5 via-white to-surface px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg border border-border/60 overflow-hidden">
+          {/* Header */}
+          <div className="px-8 pt-8 pb-6">
+            <div className="flex items-center justify-between mb-10">
+              <Link href="/" className="inline-flex items-center text-dark hover:opacity-80 transition-opacity">
+                <GlobalLogoTile width={110} height={36} />
               </Link>
-              <span className="text-xs text-body/70">{t('secured_with_device')}</span>
+              <Link href="/auth/register" className="text-xs font-semibold text-brand hover:text-brand/70 transition-colors">
+                {t('need_account')}
+              </Link>
             </div>
 
-            <button
-              className="w-full rounded-primary bg-brand hover:bg-brand/90 text-white font-semibold py-3.5 px-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? t('signing_in') : t('sign_in_button')}
-            </button>
-          </form>
+            <h1 className="text-2xl font-bold text-dark">{t('sign_in')}</h1>
+            <p className="text-sm text-body/70 mt-1">{t('sign_in_description')}</p>
+          </div>
 
-          <div className="mt-8">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs font-medium uppercase tracking-wider text-body/60">{t('social_login_soon')}</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+          {/* Form */}
+          <div className="px-8 pb-8">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label className="block text-xs font-semibold text-dark/60 uppercase tracking-wider mb-2" htmlFor="email">
+                  {t('email')}
+                </label>
+                <input
+                  className="w-full rounded border border-border bg-surface/50 py-3 px-4 text-sm text-dark placeholder:text-body/40 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand focus:bg-white transition-all"
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder={t('email_placeholder')}
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+                {formErrors.email && <p className="text-danger text-xs mt-1.5 ml-1">{formErrors.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-dark/60 uppercase tracking-wider mb-2" htmlFor="password">
+                  {t('password')}
+                </label>
+                <input
+                  className="w-full rounded border border-border bg-surface/50 py-3 px-4 text-sm text-dark placeholder:text-body/40 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand focus:bg-white transition-all"
+                  id="password"
+                  type="password"
+                  name="password"
+                  placeholder={t('password_placeholder')}
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                {formErrors.password && <p className="text-danger text-xs mt-1.5 ml-1">{formErrors.password}</p>}
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <Link href="/auth/reset" className="text-xs font-semibold text-brand hover:text-brand/70 transition-colors">
+                  {t('forgot_password')}
+                </Link>
+                <span className="text-[11px] text-body/50">{t('secured_with_device')}</span>
+              </div>
+
               <button
-                onClick={() => handleOAuthLogin('google')}
-                disabled
-                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
+                className="w-full rounded bg-brand hover:bg-brand/90 text-white font-semibold py-3 text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isLoading}
               >
-                <Image src={"/google.svg"} alt="Google" width="22" height="22" /> {t('google')}
+                {isLoading ? t('signing_in') : t('sign_in_button')}
               </button>
-              <button
-                onClick={() => handleOAuthLogin('facebook')}
-                disabled
-                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
-              >
-                <Image src={"/facebook.svg"} alt="Facebook" width="18" height="22" /> {t('facebook')}
-              </button>
-              <button
-                onClick={() => handleOAuthLogin('apple')}
-                disabled
-                className="flex items-center justify-center gap-2 rounded-primary border border-border bg-surface py-2.5 px-3 text-sm font-semibold text-dark hover:bg-white transition-colors shadow-sm disabled:opacity-50"
-              >
-                <Image src={"/apple.svg"} alt="Apple" width="22" height="22" /> {t('apple')}
-              </button>
+
+              <p className="text-center text-xs text-body/60 pt-1">
+                {t('need_account')}{' '}
+                <Link href="/auth/register" className="text-brand font-semibold hover:text-brand/70 transition-colors">
+                  {t('need_account')}
+                </Link>
+              </p>
+            </form>
+
+            {/* Social divider */}
+            <div className="mt-8">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border/60" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-body/40">{t('social_login_soon')}</span>
+                <div className="h-px flex-1 bg-border/60" />
+              </div>
+              <div className="grid grid-cols-3 gap-2.5 mt-5">
+                <button
+                  onClick={() => handleOAuthLogin('google')}
+                  disabled
+                  className="flex items-center justify-center gap-1.5 rounded border border-border/60 bg-white py-2.5 text-xs font-semibold text-dark/70 hover:bg-surface transition-colors disabled:opacity-40"
+                >
+                  <Image src={"/google.svg"} alt="Google" width="18" height="18" /> {t('google')}
+                </button>
+                <button
+                  onClick={() => handleOAuthLogin('facebook')}
+                  disabled
+                  className="flex items-center justify-center gap-1.5 rounded border border-border/60 bg-white py-2.5 text-xs font-semibold text-dark/70 hover:bg-surface transition-colors disabled:opacity-40"
+                >
+                  <Image src={"/facebook.svg"} alt="Facebook" width="16" height="18" /> {t('facebook')}
+                </button>
+                <button
+                  onClick={() => handleOAuthLogin('apple')}
+                  disabled
+                  className="flex items-center justify-center gap-1.5 rounded border border-border/60 bg-white py-2.5 text-xs font-semibold text-dark/70 hover:bg-surface transition-colors disabled:opacity-40"
+                >
+                  <Image src={"/apple.svg"} alt="Apple" width="18" height="18" /> {t('apple')}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { toast } from 'react-toastify';
@@ -40,36 +40,37 @@ export function StudentQuizHistoryListWidget() {
     pageSize: 20
   });
 
-  useEffect(() => {
-    fetchQuizzes();
-  }, [page]);
-
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = useCallback(async () => {
     setLoading(true);
 
-    const params = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       page: page.toString(),
       pageSize: pagination.pageSize.toString()
     });
 
     const response = await apiCallForSpaHelper({
       method: 'GET',
-      url: `/api/workspaces/student/${workspaceId}/quizzes/history?${params.toString()}`,
+      url: `/api/workspaces/student/${workspaceId}/quizzes/history?${searchParams.toString()}`,
     });
 
     if (response.status === 200) {
-      setQuizzes(response.data.quizzes);
+      const payload = response.data?.data;
+      setQuizzes(payload?.quizzes ?? []);
       setPagination({
-        total: response.data.total,
-        totalPages: response.data.totalPages,
-        pageSize: response.data.pageSize
+        total: payload?.total ?? 0,
+        totalPages: payload?.totalPages ?? 0,
+        pageSize: payload?.pageSize ?? 20
       });
     } else {
       ConsoleLogger.error('Error fetching quiz history:', response.data?.error || response.statusText);
       toast.error('Error fetching quiz history');
     }
     setLoading(false);
-  };
+  }, [page, pagination.pageSize, workspaceId]);
+
+  useEffect(() => {
+    fetchQuizzes();
+  }, [fetchQuizzes]);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
