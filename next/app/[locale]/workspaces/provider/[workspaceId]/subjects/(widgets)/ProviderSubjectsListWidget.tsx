@@ -8,18 +8,23 @@ import { PiPlus, PiX, PiBook } from "react-icons/pi";
 import { toast } from "react-toastify";
 import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
 
-
 interface Subject {
-  id: string; // Changed to string for consistency
+  id: string;
   title: string;
   displayTitle?: string;
   description: string | null;
-  cover: string | null;
   slug: string;
   isActive: boolean;
   aiLabel: string | null;
   aiGuide: string | null;
   createdAt: string;
+}
+
+const S3_PREFIX = (process.env.NEXT_PUBLIC_S3_PREFIX || "").replace(/\/$/, "");
+
+/** Deterministic cover URL: {S3_PREFIX}/{workspaceId}/subjects/{subjectId}/covers/cover.webp */
+function getSubjectCoverUrl(workspaceId: string, subjectId: string) {
+  return `${S3_PREFIX}/${workspaceId}/subjects/${subjectId}/covers/cover.webp`;
 }
 
 export function ProviderSubjectsListWidget() {
@@ -43,9 +48,6 @@ export function ProviderSubjectsListWidget() {
     gradeLevel: 1
   });
 
-
-
-
   const fetchSubjects = async () => {
     try {
       setLoading(true);
@@ -55,7 +57,7 @@ export function ProviderSubjectsListWidget() {
         url: `/api/workspaces/provider/${workspaceId}/subjects`,
         method: "GET",
       });
-        setSubjects(data);
+      setSubjects(data);
     } catch (err) {
       setError(t("errorFetchingSubjects"));
       console.error("Failed to fetch subjects:", err);
@@ -63,6 +65,7 @@ export function ProviderSubjectsListWidget() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchSubjects();
   }, []);
@@ -76,10 +79,10 @@ export function ProviderSubjectsListWidget() {
         method: "POST",
         body: newSubject,
       });
-        toast.success(t("subjectCreatedSuccessfully"));
-        setIsModalOpen(false);
-        setNewSubject({ title: "", slug: "", description: "", language: "az", gradeLevel: 1 });
-        fetchSubjects();
+      toast.success(t("subjectCreatedSuccessfully"));
+      setIsModalOpen(false);
+      setNewSubject({ title: "", slug: "", description: "", language: "az", gradeLevel: 1 });
+      fetchSubjects();
     } catch (err) {
       toast.error(t("errorCreatingSubject"));
       console.error("Failed to create subject:", err);
@@ -131,7 +134,6 @@ export function ProviderSubjectsListWidget() {
       </div>
     );
   }
-
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -209,7 +211,7 @@ export function ProviderSubjectsListWidget() {
             >
               <div className="mb-4 rounded-md overflow-hidden bg-gray-100 h-40 shrink-0">
                 <img
-                  src={subject.cover || "/pg.webp"}
+                  src={getSubjectCoverUrl(workspaceId, subject.id)}
                   alt={subject.title}
                   onError={(e) => {
                     e.currentTarget.src = "/pg.webp";
@@ -235,7 +237,6 @@ export function ProviderSubjectsListWidget() {
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>{subject.slug}</span>
                 <div className="flex items-center gap-2">
-
                   <span>{new Date(subject.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -359,11 +360,8 @@ export function ProviderSubjectsListWidget() {
               </div>
             </form>
           </div>
-        </div >
-      )
-      }
-
-
-    </div >
+        </div>
+      )}
+    </div>
   );
 }
