@@ -110,12 +110,12 @@ export class SubjectService extends BaseService {
         }
     }
 
-    async create(data: { title: string; description: string; language: string; gradeLevel: number; cover?: string; aiLabel?: string; isGlobal?: boolean; organizationId?: string; workspaceId?: string; aiGuide?: string; }) {
+    async create(data: { title: string; description: string; language: string; gradeLevel: number; aiLabel?: string; isGlobal?: boolean; organizationId?: string; workspaceId?: string; aiGuide?: string; }) {
         try {
             const slug = slugify(data.title, { lower: true, strict: true });
             const newSubject = await this.repository.create({
                 name: data.title, description: data.description, language: data.language, gradeLevel: data.gradeLevel,
-                slug, cover: data.cover, aiLabel: data.aiLabel, workspaceId: data.workspaceId, aiGuide: data.aiGuide,
+                slug, aiLabel: data.aiLabel, workspaceId: data.workspaceId, aiGuide: data.aiGuide,
                 createdAt: new Date(), isActive: true
             });
             return { success: true, data: newSubject };

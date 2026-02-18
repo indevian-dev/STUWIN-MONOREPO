@@ -269,7 +269,7 @@ export const providerSubjects = pgTable("provider_subjects", {
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     name: text("name"),
     description: text("description"),
-    cover: text("cover"),
+
     slug: text("slug"),
     isActive: boolean("is_active"),
     aiLabel: text("ai_label"),

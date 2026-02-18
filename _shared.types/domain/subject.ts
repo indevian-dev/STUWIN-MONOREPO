@@ -11,7 +11,6 @@ export namespace Subject {
         title: string;
         displayTitle: string;
         description?: string;
-        cover?: string;
         slug?: string;
         isActive: boolean;
         aiLabel?: string;
@@ -30,7 +29,6 @@ export namespace Subject {
         title: string;
         displayTitle: string;
         description?: string;
-        cover?: string;
         slug?: string;
         isActive: boolean;
         totalQuestions: number;
@@ -49,7 +47,6 @@ export namespace Subject {
         id: string;
         title: string;
         description?: string;
-        cover?: string;
         slug?: string;
         language?: string;
         gradeLevel?: number;
@@ -59,7 +56,7 @@ export namespace Subject {
     export interface Create {
         title: string;
         description?: string;
-        cover?: string;
+
         slug: string;
         isActive?: boolean;
         aiLabel?: string;
