@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import type { QuestionVisualData } from "@/lib/domain/question/visual.types";
 import { PiCube, PiSquare, PiSparkle, PiFloppyDisk, PiArrowClockwise, PiX, PiChatText, PiCheckCircle } from "react-icons/pi";
+import { GlobalMathMarkdownTile } from "@/app/[locale]/(global)/(tiles)/GlobalMathMarkdownTile";
 
 // Lazy-load Three.js renderer to avoid bundle bloat on pages that don't use it
 const ThreeJsSceneRenderer = dynamic(
@@ -138,9 +139,9 @@ export function VisualGenerationModal({
                             <PiSparkle className="w-5 h-5 text-purple-500" />
                             Generate Visual
                         </h3>
-                        <p className="text-sm text-gray-500 mt-0.5 line-clamp-1 max-w-lg">
-                            {questionText}
-                        </p>
+                        <div className="text-sm text-gray-500 mt-0.5 line-clamp-1 max-w-lg">
+                            <GlobalMathMarkdownTile content={questionText} className="[&_p]:mb-0 [&_p]:inline" />
+                        </div>
                     </div>
                     <button
                         onClick={onClose}

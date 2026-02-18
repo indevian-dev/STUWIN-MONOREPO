@@ -11,6 +11,7 @@ import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { Question as QuestionType } from "@stuwin/shared/types/domain/question";
 import { toast } from "react-toastify";
 import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
+import { GlobalMathMarkdownTile } from "@/app/[locale]/(global)/(tiles)/GlobalMathMarkdownTile";
 
 interface ProviderQuestionListItemWidgetProps {
     question: QuestionType.PrivateAccess;
@@ -122,9 +123,9 @@ export function ProviderQuestionListItemWidget({
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                        {question.question}
-                    </p>
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                        <GlobalMathMarkdownTile content={question.question} className="[&_p]:mb-0 [&_p]:inline" />
+                    </div>
                     <div className="flex items-center gap-3 mt-1">
                         <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${complexityColors[question.complexity] || "bg-gray-50 text-gray-700 border-gray-200"
@@ -228,9 +229,9 @@ export function ProviderQuestionListItemWidget({
                         /* View Mode */
                         <div className="space-y-3">
                             <div>
-                                <p className="text-sm text-gray-800 whitespace-pre-wrap">
-                                    {question.question}
-                                </p>
+                                <div className="text-sm text-gray-800">
+                                    <GlobalMathMarkdownTile content={question.question} />
+                                </div>
                             </div>
 
                             <div className="space-y-1.5">
@@ -245,7 +246,7 @@ export function ProviderQuestionListItemWidget({
                                         <span className="font-mono text-xs text-gray-400">
                                             {String.fromCharCode(65 + idx)}.
                                         </span>
-                                        <span>{answer}</span>
+                                        <GlobalMathMarkdownTile content={answer} className="[&_p]:mb-0 [&_p]:inline" />
                                         {answer === question.correctAnswer && (
                                             <PiSealCheck className="ml-auto text-green-600" />
                                         )}
