@@ -17,6 +17,8 @@ interface Subject {
   isActive: boolean;
   aiLabel: string | null;
   aiGuide: string | null;
+  gradeLevel: number | null;
+  language: string | null;
   createdAt: string;
 }
 
@@ -230,11 +232,23 @@ export function ProviderSubjectsListWidget() {
                 )}
               </div>
               {subject.description && (
-                <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                <p className="text-sm text-gray-600 line-clamp-2 mb-3">
                   {subject.description}
                 </p>
               )}
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center gap-2 mb-3">
+                {subject.gradeLevel && (
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-medium rounded">
+                    Grade {subject.gradeLevel}
+                  </span>
+                )}
+                {subject.language && (
+                  <span className="px-2 py-0.5 bg-violet-50 text-violet-700 text-xs font-medium rounded uppercase">
+                    {subject.language}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
                 <span>{subject.slug}</span>
                 <div className="flex items-center gap-2">
                   <span>{new Date(subject.createdAt).toLocaleDateString()}</span>

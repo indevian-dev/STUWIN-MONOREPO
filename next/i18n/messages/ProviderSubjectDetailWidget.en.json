@@ -5,5 +5,10 @@
   "retry": "Retry",
   "mediaLibrary": "Media Library",
   "topics": "Topics",
-  "questions": "Questions"
+  "questions": "Questions",
+  "deleteSubject": "Delete Subject",
+  "confirmDeleteTitle": "Delete Subject?",
+  "confirmDeleteMessage": "This will permanently delete this subject, all its topics, questions, and uploaded files. This action cannot be undone.",
+  "cancel": "Cancel",
+  "deleting": "Deleting..."
 }

@@ -5,5 +5,10 @@
   "retry": "Yenidən cəhd edin",
   "mediaLibrary": "Media Kitabxanası",
   "topics": "Mövzular",
-  "questions": "Suallar"
+  "questions": "Suallar",
+  "deleteSubject": "Fənni Sil",
+  "confirmDeleteTitle": "Fənni silmək istəyirsiniz?",
+  "confirmDeleteMessage": "Bu fənn, bütün mövzuları, sualları və yüklənmiş faylları ilə birlikdə həmişəlik silinəcək. Bu əməliyyat geri qaytarıla bilməz.",
+  "cancel": "İmtina",
+  "deleting": "Silinir..."
 }

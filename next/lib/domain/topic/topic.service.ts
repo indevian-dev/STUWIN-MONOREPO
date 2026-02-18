@@ -30,7 +30,7 @@ export class TopicService extends BaseService {
                 const topic = await this.repository.create({
                     providerSubjectId: subjectId, name: data.name, description: data.description || "",
                     gradeLevel: data.gradeLevel || 1, language: data.language,
-                    pdfDetails: { s3Key: data.pdfFileName || data.pdfId },
+                    pdfDetails: {},
                     workspaceId: this.ctx.activeWorkspaceId || "default",
                     isActiveAiGeneration: false, aiGuide: data.aiGuide,
                 }, tx);
@@ -76,9 +76,9 @@ export class TopicService extends BaseService {
                     providerSubjectId: subjectId, name: t.name, description: t.description || t.body || "",
                     gradeLevel: t.gradeLevel || 1, language: t.language,
                     pdfDetails: t.pdfDetails || {
-                        s3Key: t.pdfFileName || t.pdfS3Key,
-                        pageStart: t.pdfPageStart, pageEnd: t.pdfPageEnd,
-                        pages: (t.pdfPageStart !== undefined && t.pdfPageEnd !== undefined) ? { start: t.pdfPageStart, end: t.pdfPageEnd } : undefined
+                        pages: (t.pdfPageStart !== undefined && t.pdfPageEnd !== undefined)
+                            ? { start: t.pdfPageStart, end: t.pdfPageEnd }
+                            : undefined
                     },
                     workspaceId: this.ctx.activeWorkspaceId || "default",
                     isActiveAiGeneration: t.isActiveAiGeneration || false,
@@ -163,20 +163,13 @@ export class TopicService extends BaseService {
             if (data.pdfPageStart && data.pdfPageEnd && data.pdfPageStart > data.pdfPageEnd) {
                 return { success: false, error: "pdfPageStart must be less than or equal to pdfPageEnd", code: 400 };
             }
-            let totalPages: number | null = null;
-            try {
-                const { getTotalPages } = await import("@/lib/utils/upload/PdfUtil");
-                const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
-                const pdfUrl = `${s3Prefix}${data.s3Key}`;
-                const response = await fetch(pdfUrl);
-                if (response.ok) {
-                    const arrayBuffer = await response.arrayBuffer();
-                    const pdfBuffer = Buffer.from(arrayBuffer);
-                    totalPages = await getTotalPages(pdfBuffer);
-                }
-            } catch { /* Ignore page count error */ }
+
             const updateData: Partial<TopicCreateInput> = {
-                pdfDetails: { s3Key: data.s3Key, pageStart: data.pdfPageStart ?? undefined, pageEnd: data.pdfPageEnd ?? undefined, totalPages: totalPages ?? undefined, chapterNumber: data.chapterNumber ?? undefined },
+                pdfDetails: {
+                    pages: (data.pdfPageStart && data.pdfPageEnd)
+                        ? { start: data.pdfPageStart, end: data.pdfPageEnd }
+                        : undefined
+                },
             };
             const result = await this.update(topicId, updateData);
             if (!result.success) return result;

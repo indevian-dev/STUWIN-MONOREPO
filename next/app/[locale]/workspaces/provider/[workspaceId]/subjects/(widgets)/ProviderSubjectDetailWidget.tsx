@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { apiCall } from "@/lib/utils/http/SpaApiClient";
 import { SubjectInfoSection } from "./ProviderSubjectInfoSection";
@@ -45,6 +45,7 @@ export function ProviderSubjectDetailWidget({
   subjectId,
 }: ProviderSubjectDetailWidgetProps) {
   const params = useParams();
+  const router = useRouter();
   const workspaceId = params.workspaceId as string;
   const t = useTranslations("ProviderSubjectDetailWidget");
 
@@ -57,6 +58,10 @@ export function ProviderSubjectDetailWidget({
   const [activeTab, setActiveTab] = useState<"media" | "topics" | "questions">("media");
   const [selectedTopic, setSelectedTopic] = useState<{ id: string; name: string } | null>(null);
 
+  // Delete state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const fetchSubject = async () => {
     try {
       setLoading(true);
@@ -66,7 +71,7 @@ export function ProviderSubjectDetailWidget({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}`,
         method: "GET",
       });
-        setSubject(data);
+      setSubject(data);
     } catch (err) {
       setError(t("errorFetchingData"));
       console.error("Failed to fetch subject data:", err);
@@ -88,7 +93,7 @@ export function ProviderSubjectDetailWidget({
         body: updatedData,
       });
 
-              await fetchSubject();
+      await fetchSubject();
     } catch (err) {
       console.error("Failed to update subject:", err);
       throw err;
@@ -103,6 +108,21 @@ export function ProviderSubjectDetailWidget({
 
   const handleClearTopicFilter = () => {
     setSelectedTopic(null);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await apiCall({
+        url: `/api/workspaces/provider/${workspaceId}/subjects/delete/${subjectId}`,
+        method: "DELETE",
+      });
+      router.push(`/workspaces/provider/${workspaceId}/subjects`);
+    } catch (err) {
+      console.error("Failed to delete subject:", err);
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   if (loading) return <GlobalLoaderTile />;
@@ -126,12 +146,40 @@ export function ProviderSubjectDetailWidget({
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      {/* Section 1: Subject Information */}
+      {/* Subject Info */}
       <SubjectInfoSection
         workspaceId={workspaceId}
         subject={subject}
         onUpdate={handleSubjectUpdate}
+        onDelete={() => setShowDeleteConfirm(true)}
+        deleting={deleting}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900">{t("confirmDeleteTitle")}</h3>
+            <p className="mt-2 text-sm text-gray-600">{t("confirmDeleteMessage")}</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleting ? t("deleting") : t("deleteSubject")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs Navigation */}
       <div className="">

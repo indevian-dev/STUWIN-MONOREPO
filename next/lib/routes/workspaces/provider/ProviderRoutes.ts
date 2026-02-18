@@ -18,6 +18,7 @@ export const PERMISSIONS = {
   // ─── Provider / Content Permissions ───
   PROVIDER_SUBJECT_READ: "View subjects",
   PROVIDER_SUBJECT_UPDATE: "Update subjects",
+  PROVIDER_SUBJECT_DELETE: "Delete subjects",
   PROVIDER_SUBJECT_MEDIA_UPLOAD: "Upload subject media files",
   PROVIDER_SUBJECT_MEDIA_DELETE: "Delete subject media files",
 
@@ -292,6 +293,12 @@ export const providerEndpoints: EndpointsMap = {
     method: "GET",
     authRequired: true,
     permission: "PROVIDER_SUBJECT_READ",
+    type: "api",
+  }),
+  "/api/workspaces/provider/:workspaceId/subjects/delete/:id": createProviderEndpoint({
+    method: "DELETE",
+    authRequired: true,
+    permission: "PROVIDER_SUBJECT_DELETE",
     type: "api",
   }),
   "/api/workspaces/provider/:workspaceId/subjects/:id/update": createProviderEndpoint({

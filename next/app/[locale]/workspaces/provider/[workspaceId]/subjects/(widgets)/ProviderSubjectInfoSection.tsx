@@ -12,12 +12,16 @@ interface SubjectInfoSectionProps {
   workspaceId: string;
   subject: Subject;
   onUpdate: (data: Partial<Subject>) => Promise<void>;
+  onDelete?: () => void;
+  deleting?: boolean;
 }
 
 export function SubjectInfoSection({
   workspaceId,
   subject,
   onUpdate,
+  onDelete,
+  deleting,
 }: SubjectInfoSectionProps) {
   const t = useTranslations("SubjectInfoSection");
   const [isEditing, setIsEditing] = useState(false);
@@ -194,6 +198,15 @@ export function SubjectInfoSection({
             >
               {t("edit")}
             </button>
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {deleting ? t("saving") : t("delete")}
+              </button>
+            )}
           </div>
         )}
       </div>

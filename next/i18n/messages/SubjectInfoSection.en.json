@@ -1,6 +1,7 @@
 {
   "subjectInformation": "Subject Information",
   "edit": "Edit",
+  "delete": "Delete",
   "errorSaving": "Failed to save changes",
   "name": "Name",
   "namePlaceholder": "Enter subject name",

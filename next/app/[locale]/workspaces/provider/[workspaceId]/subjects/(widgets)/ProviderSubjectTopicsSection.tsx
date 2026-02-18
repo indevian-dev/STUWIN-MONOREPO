@@ -367,8 +367,8 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
     chapterNumber: topic.chapterNumber || "",
     topicEstimatedQuestionsCapacity:
       topic.topicEstimatedQuestionsCapacity?.toString() || "",
-    pdfPageStart: topic.pdfPageStart?.toString() || "",
-    pdfPageEnd: topic.pdfPageEnd?.toString() || "",
+    pdfPageStart: (topic.pdfDetails?.pages?.start ?? topic.pdfPageStart)?.toString() || "",
+    pdfPageEnd: (topic.pdfDetails?.pages?.end ?? topic.pdfPageEnd)?.toString() || "",
     estimatedEducationStartDate: topic.estimatedEducationStartDate
       ? new Date(topic.estimatedEducationStartDate).toISOString().slice(0, 16)
       : "",
@@ -401,6 +401,12 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
           ? parseInt(formData.pdfPageStart)
           : null,
         pdfPageEnd: formData.pdfPageEnd ? parseInt(formData.pdfPageEnd) : null,
+        pdfDetails: (formData.pdfPageStart && formData.pdfPageEnd) ? {
+          pages: {
+            start: parseInt(formData.pdfPageStart),
+            end: parseInt(formData.pdfPageEnd),
+          },
+        } : formData.pdfDetails,
         estimatedEducationStartDate:
           formData.estimatedEducationStartDate || null,
         aiGuide: formData.aiGuide || null,
@@ -581,6 +587,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                 placeholder={t("estimatedQuestionsPlaceholder")}
               />
             </div>
+
+            {formData.pdfDetails?.pages && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                <span className="text-sm font-medium text-blue-700">{t("pdfPages")}:</span>
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
+                  {formData.pdfDetails.pages.start} – {formData.pdfDetails.pages.end}
+                </span>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>

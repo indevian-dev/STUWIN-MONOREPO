@@ -4,7 +4,7 @@ import { BaseService } from "../base/base.service";
 import { AuthContext } from "@/lib/domain/base/types";
 import { Database } from "@/lib/database";
 import slugify from 'slugify';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { SubjectFileView } from "../learning/learning.views";
 import type { SubjectCreateInput } from "../learning/learning.inputs";
@@ -146,14 +146,69 @@ export class SubjectService extends BaseService {
         }
     }
 
-    async delete(id: string) {
+    async delete(id: string, workspaceId?: string) {
         try {
+            // Step 1: Clean up S3 folder if workspaceId is provided
+            if (workspaceId) {
+                await this.deleteS3Folder(`${workspaceId}/subjects/${id}/`);
+            }
+
+            // Step 2: Delete from database
             const deleted = await this.repository.delete(id);
             if (!deleted) return { success: false, error: "Subject not found" };
             return { success: true, data: deleted };
         } catch (error) {
             this.handleError(error, "delete");
             return { success: false, error: "Failed to delete subject" };
+        }
+    }
+
+    /**
+     * Delete all S3 objects under a given prefix (folder)
+     */
+    private async deleteS3Folder(prefix: string): Promise<void> {
+        const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+        const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
+        const bucket = process.env.AWS_S3_BUCKET_NAME;
+        if (!accessKeyId || !secretAccessKey || !bucket) return;
+
+        const s3Client = new S3Client({
+            region: process.env.AWS_S3_REGION || process.env.AWS_REGION || 'global',
+            endpoint: process.env.AWS_S3_ENDPOINT,
+            credentials: { accessKeyId, secretAccessKey },
+        });
+
+        try {
+            // List all objects under the prefix
+            let continuationToken: string | undefined;
+            do {
+                const listResult = await s3Client.send(
+                    new ListObjectsV2Command({
+                        Bucket: bucket,
+                        Prefix: prefix,
+                        ContinuationToken: continuationToken,
+                    })
+                );
+
+                const objects = listResult.Contents;
+                if (objects && objects.length > 0) {
+                    // Batch delete (max 1000 per request, which is the S3 limit)
+                    await s3Client.send(
+                        new DeleteObjectsCommand({
+                            Bucket: bucket,
+                            Delete: {
+                                Objects: objects.map((obj) => ({ Key: obj.Key! })),
+                                Quiet: true,
+                            },
+                        })
+                    );
+                }
+
+                continuationToken = listResult.IsTruncated ? listResult.NextContinuationToken : undefined;
+            } while (continuationToken);
+        } catch (error) {
+            // Log but don't block deletion — S3 cleanup is best-effort
+            console.error(`[SubjectService] Failed to clean up S3 folder: ${prefix}`, error);
         }
     }
 
