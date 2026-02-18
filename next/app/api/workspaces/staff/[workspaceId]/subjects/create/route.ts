@@ -19,7 +19,6 @@ export const POST = unifiedApiHandler(async (request: NextRequest, { module }) =
       description: description || '',
       language: language || 'az',
       gradeLevel: gradeLevel || 1,
-      cover: body.cover,
       aiLabel,
       isGlobal: true,
       organizationId: 'org_platform'

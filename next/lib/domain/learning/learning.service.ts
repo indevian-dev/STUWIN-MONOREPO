@@ -198,7 +198,6 @@ export class LearningService extends BaseService {
                 language: data.language,
                 gradeLevel: data.gradeLevel,
                 slug,
-                cover: data.cover,
                 aiLabel: data.aiLabel,
                 workspaceId: data.workspaceId,
                 aiGuide: data.aiGuide,
