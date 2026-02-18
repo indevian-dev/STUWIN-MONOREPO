@@ -97,24 +97,14 @@ export function ProviderSubjectsListWidget() {
     router.push(`/${locale}/workspaces/provider/${workspaceId}/subjects/${subjectId}`);
   };
 
-  const parseSubjectInfo = (title: string) => {
-    const regex = / \.([A-Z]+)\.(\d+)$/;
-    const match = title.match(regex);
-    if (match) {
-      return { lang: match[1], grade: match[2] };
-    }
-    return null;
-  };
-
   const filteredSubjects = subjects.filter(subject => {
-    const info = parseSubjectInfo(subject.title);
-    const langMatch = filterLang === 'all' || (info && info.lang === filterLang);
-    const gradeMatch = filterGrade === 'all' || (info && info.grade === filterGrade);
+    const langMatch = filterLang === 'all' || (subject.language?.toUpperCase() === filterLang);
+    const gradeMatch = filterGrade === 'all' || (subject.gradeLevel?.toString() === filterGrade);
     return langMatch && gradeMatch;
   });
 
-  const uniqueLangs = Array.from(new Set(subjects.map(s => parseSubjectInfo(s.title)?.lang).filter(Boolean)));
-  const uniqueGrades = Array.from(new Set(subjects.map(s => parseSubjectInfo(s.title)?.grade).filter(Boolean))).sort((a, b) => parseInt(a!) - parseInt(b!));
+  const uniqueLangs = Array.from(new Set(subjects.map(s => s.language?.toUpperCase()).filter(Boolean)));
+  const uniqueGrades = Array.from(new Set(subjects.map(s => s.gradeLevel?.toString()).filter(Boolean))).sort((a, b) => parseInt(a!) - parseInt(b!));
 
   if (loading) {
     return <GlobalLoaderTile />;
