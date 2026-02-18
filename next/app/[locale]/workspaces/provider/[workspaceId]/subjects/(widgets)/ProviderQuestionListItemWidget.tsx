@@ -333,7 +333,7 @@ export function ProviderQuestionListItemWidget({
                     isOpen={aiGuideOpen}
                     entityType="question"
                     entityId={question.id}
-                    subjectId={question.subjectId}
+                    subjectId={question.providerSubjectId ?? undefined}
                     currentAiGuide={question.aiGuide || null}
                     onClose={() => setAiGuideOpen(false)}
                     onSuccess={() => {

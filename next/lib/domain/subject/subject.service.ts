@@ -57,7 +57,15 @@ export class SubjectService extends BaseService {
     async getWorkspaceSubjects(workspaceId: string) {
         try {
             const subjects = await this.repository.list({ workspaceId });
-            const processed = subjects.map(s => ({ ...s, title: s.name || '', displayTitle: s.name || '' }));
+            const s3Prefix = (process.env.NEXT_PUBLIC_S3_PREFIX || "").replace(/\/$/, "");
+            const processed = subjects.map(s => ({
+                ...s,
+                title: s.name || '',
+                displayTitle: s.name || '',
+                cover: s.cover
+                    ? (s.cover.startsWith('http') ? s.cover : `${s3Prefix}/${s.cover}`)
+                    : null,
+            }));
             return { success: true, data: processed };
         } catch (error) {
             this.handleError(error, "getWorkspaceSubjects");
@@ -68,7 +76,15 @@ export class SubjectService extends BaseService {
     async getPublicSubjects() {
         try {
             const subjects = await this.repository.list({ onlyActive: true });
-            const processed = subjects.map(s => ({ ...s, title: s.name || '', displayTitle: s.name || '' }));
+            const s3Prefix = (process.env.NEXT_PUBLIC_S3_PREFIX || "").replace(/\/$/, "");
+            const processed = subjects.map(s => ({
+                ...s,
+                title: s.name || '',
+                displayTitle: s.name || '',
+                cover: s.cover
+                    ? (s.cover.startsWith('http') ? s.cover : `${s3Prefix}/${s.cover}`)
+                    : null,
+            }));
             return { success: true, data: processed };
         } catch (error) {
             this.handleError(error, "getPublicSubjects");
@@ -222,18 +238,21 @@ export class SubjectService extends BaseService {
         }
     }
 
-    async getCoverUploadUrl(subjectId: string, fileName: string, fileType: string) {
+    async getCoverUploadUrl(subjectId: string, fileName: string, fileType: string, workspaceId?: string) {
         try {
             if (!fileType.startsWith("image/")) return { success: false, error: "Only image files are allowed", code: 400 };
             const s3Client = new S3Client({ region: process.env.AWS_S3_REGION || "", endpoint: process.env.AWS_S3_ENDPOINT || "", credentials: { accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || "", secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY || "" } });
             const timestamp = Date.now();
             const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
             const generatedFileName = `${timestamp}-${sanitizedFileName}`;
-            const coverKey = `subjects/covers/${subjectId}/${generatedFileName}`;
+            // Path: {workspaceId}/subjects/{subjectId}/covers/{filename}
+            const wsId = workspaceId || subjectId;
+            const coverKey = `${wsId}/subjects/${subjectId}/covers/${generatedFileName}`;
             const command = new PutObjectCommand({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: coverKey, ContentType: fileType });
             const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
             const s3Prefix = process.env.NEXT_PUBLIC_S3_PREFIX || "";
-            const publicUrl = `${s3Prefix.replace(/\/$/, "")}/${coverKey.startsWith("/") ? coverKey.substring(1) : coverKey}`;
+            const publicUrl = `${s3Prefix.replace(/\/$/, "")}/${coverKey}`;
+            // Store coverKey in DB (relative key resolved via NEXT_PUBLIC_S3_PREFIX at read time)
             return { success: true, data: { presignedUrl, coverKey, publicUrl, fileName: sanitizedFileName, generatedFileName } };
         } catch (error) {
             this.handleError(error, "getCoverUploadUrl");

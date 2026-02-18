@@ -14,10 +14,10 @@ export namespace Question {
         question: string;
         answers: string[];
         correctAnswer: string;
-        subjectId: string;
+        providerSubjectId: string | null;
+        providerSubjectTopicId?: string | null;
         gradeLevel: number;
         complexity: QuestionComplexity;
-        topic?: string;
         language: string;
         explanationGuide?: ExplanationGuide;
         authorAccountId: string;

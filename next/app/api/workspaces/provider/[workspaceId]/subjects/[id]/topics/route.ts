@@ -8,20 +8,11 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
     return errorResponse("Invalid Subject ID", 400);
   }
 
-  // Reuse getSubjectOverview which fetches topics and handles PDF logic (mostly)
-  // The legacy code had complex PDF ordering logic in the GET route.
-  // If that logic is critical and not in getSubjectOverview, we might need to enhance the service.
-  // But getSubjectOverview uses topicRepository.listBySubject.
-  // Let's assume for now the basic list is sufficient or we update service later if ordering is broken.
+  const result = await module.topic.list({ subjectId: id });
 
-  // Actually, getSubjectOverview returns { ...subject, topics, pdfs }.
-  // We just want topics here.
-
-  const result = await module.subject.getOverview(id);
-
-  if (!result.success || !result.data) {
-    return errorResponse(result.error || "Failed to fetch topics", result.error === "Subject not found" ? 404 : 500);
+  if (!result.success) {
+    return errorResponse(result.error || "Failed to fetch topics", 500);
   }
 
-  return okResponse((result.data as any).topics);
+  return okResponse(result.data);
 });

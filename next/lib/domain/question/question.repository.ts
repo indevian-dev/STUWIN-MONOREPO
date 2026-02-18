@@ -1,6 +1,6 @@
 
-import { eq, count, and } from "drizzle-orm";
-import { providerQuestions } from "@/lib/database/schema";
+import { eq, count, and, sql } from "drizzle-orm";
+import { providerQuestions, providerSubjects, providerSubjectTopics } from "@/lib/database/schema";
 import { BaseRepository } from "../base/base.repository";
 import { type DbClient } from "@/lib/database";
 
@@ -27,7 +27,37 @@ export class QuestionRepository extends BaseRepository {
         if (params.authorAccountId) filters.push(eq(providerQuestions.authorAccountId, params.authorAccountId));
         if (params.workspaceId) filters.push(eq(providerQuestions.workspaceId, params.workspaceId));
         if (params.onlyPublished) filters.push(eq(providerQuestions.isPublished, true));
-        return await client.select().from(providerQuestions).where(filters.length > 0 ? and(...filters) : undefined).limit(params.limit).offset(params.offset);
+
+        const rows = await client
+            .select({
+                id: providerQuestions.id,
+                createdAt: providerQuestions.createdAt,
+                updatedAt: providerQuestions.updatedAt,
+                question: providerQuestions.question,
+                answers: providerQuestions.answers,
+                correctAnswer: providerQuestions.correctAnswer,
+                authorAccountId: providerQuestions.authorAccountId,
+                providerSubjectId: providerQuestions.providerSubjectId,
+                providerSubjectTopicId: providerQuestions.providerSubjectTopicId,
+                complexity: providerQuestions.complexity,
+                gradeLevel: providerQuestions.gradeLevel,
+                explanationGuide: providerQuestions.explanationGuide,
+                language: providerQuestions.language,
+                workspaceId: providerQuestions.workspaceId,
+                isPublished: providerQuestions.isPublished,
+                aiGuide: providerQuestions.aiGuide,
+                visualData: providerQuestions.visualData,
+                subjectTitle: providerSubjects.name,
+                topicTitle: providerSubjectTopics.name,
+            })
+            .from(providerQuestions)
+            .leftJoin(providerSubjects, eq(providerQuestions.providerSubjectId, providerSubjects.id))
+            .leftJoin(providerSubjectTopics, eq(providerQuestions.providerSubjectTopicId, providerSubjectTopics.id))
+            .where(filters.length > 0 ? and(...filters) : undefined)
+            .limit(params.limit)
+            .offset(params.offset);
+
+        return rows;
     }
 
     async count(params: {

@@ -270,7 +270,7 @@ export function ProviderPdfTopicExtractorWidget({
                     .filter(pdf => pdf.isActive)
                     .map((pdf) => (
                       <option key={pdf.id} value={pdf.id}>
-                        PDF #{pdf.id} - {pdf.pdfOrder || 'No order'}
+                        {pdf.name || pdf.pdfUrl}
                       </option>
                     ))}
                 </select>
