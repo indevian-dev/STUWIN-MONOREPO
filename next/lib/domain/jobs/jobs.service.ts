@@ -592,6 +592,9 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         aiGuide: (topic as any).aiGuide || null,
                     };
 
+                    // Fetch existing questions for dedup
+                    const existingQuestions = await QuestionGenerationService.fetchExistingQuestionTexts(topic.id);
+
                     // Generate questions (medium complexity by default for queue)
                     const generatedQuestions = await QuestionGenerationService.generateQuestionsForTopic({
                         topicData,
@@ -600,6 +603,7 @@ Müsbət və motivasiya edici ton işlət. Tələbənin güclü və zəif tərə
                         language,
                         count: batchSize,
                         mode: "auto",
+                        existingQuestions,
                     });
 
                     // Save questions and update topic stats

@@ -149,6 +149,22 @@ export function ProviderPdfTopicExtractorWidget({
     setExtractedTopics((topics) => topics.filter((t) => t.id !== id));
   };
 
+  const handleClose = (): void => {
+    if (stage === "analyzing" || stage === "creating") {
+      return; // Prevent closing during processing
+    }
+
+    // Reset state
+    setSelectedPdfId(null);
+    setStage("select");
+    setError(null);
+    setExtractedTopics([]);
+    setCurrentTopicIndex(0);
+    setGradeLevel("");
+
+    onClose();
+  };
+
   const handleCreateTopics = async (): Promise<void> => {
     if (extractedTopics.length === 0) {
       setError("No topics to create");
@@ -170,7 +186,6 @@ export function ProviderPdfTopicExtractorWidget({
     setError(null);
 
     try {
-      // Use the new bulk create API
       const response = await apiCall<any>({
         method: "POST",
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/create`,
@@ -180,17 +195,18 @@ export function ProviderPdfTopicExtractorWidget({
             providerSubjectId: subjectId,
             gradeLevel: parseInt(gradeLevel),
             aiSummary: topic.aiSummary || "",
-            pdfFileName: selectedPdf.pdfUrl,
-            pdfPagesByTopic: { start: topic.pageStart, end: topic.pageEnd },
+            pdfS3Key: selectedPdf.pdfUrl,
+            pdfPageStart: topic.pageStart,
+            pdfPageEnd: topic.pageEnd,
             isActiveAiGeneration: false,
           })),
         },
       });
-        setStage("complete");
-        setTimeout(() => {
-          onTopicsCreated?.();
-          handleClose();
-        }, 2000);
+      setStage("complete");
+      setTimeout(() => {
+        onTopicsCreated?.();
+        handleClose();
+      }, 2000);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create topics";
@@ -199,29 +215,7 @@ export function ProviderPdfTopicExtractorWidget({
     }
   };
 
-  const handleClose = (): void => {
-    if (stage === "analyzing" || stage === "creating") {
-      return; // Prevent closing during processing
-    }
 
-    // Reset state
-    setSelectedPdfId(null);
-    setStage("select");
-    setError(null);
-    setExtractedTopics([]);
-    setCurrentTopicIndex(0);
-    setGradeLevel("");
-
-    onClose();
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
 
   if (!isOpen) return null;
 
@@ -276,7 +270,7 @@ export function ProviderPdfTopicExtractorWidget({
                 </select>
                 {pdfs.filter(pdf => pdf.isActive).length === 0 && (
                   <p className="text-sm text-amber-600 mt-2">
-                    No PDFs found in this subject's library. Please upload PDFs first.
+                    No PDFs found in this subject&apos;s library. Please upload PDFs first.
                   </p>
                 )}
               </div>
@@ -315,7 +309,7 @@ export function ProviderPdfTopicExtractorWidget({
                       </li>
                       <li>3. Review and edit the extracted topics</li>
                       <li>
-                        4. Click "Create Topics" to add them to your subject
+                        4. Click &ldquo;Create Topics&rdquo; to add them to your subject
                       </li>
                     </ul>
                   </div>

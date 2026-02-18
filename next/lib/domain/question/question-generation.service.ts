@@ -90,6 +90,25 @@ export class QuestionGenerationService {
     }
 
     /**
+     * Fetch existing question texts for a topic (for dedup)
+     * Returns only the question text — no answers or metadata
+     */
+    static async fetchExistingQuestionTexts(topicId: string | number): Promise<string[]> {
+        try {
+            const rows = await db
+                .select({ question: questions.question })
+                .from(questions)
+                .where(eq(questions.providerSubjectTopicId, String(topicId)))
+                .limit(200);
+
+            return rows.map((r) => r.question).filter((q): q is string => !!q);
+        } catch (error) {
+            ConsoleLogger.error("Failed to fetch existing questions for dedup", error);
+            return [];
+        }
+    }
+
+    /**
      * Generate questions with single complexity
      */
     static async generateQuestionsForTopic({
@@ -100,6 +119,7 @@ export class QuestionGenerationService {
         count,
         mode = "auto",
         comment,
+        existingQuestions,
     }: {
         topicData: TopicData;
         subjectContext: string | { label: string; crib: string | null };
@@ -108,6 +128,7 @@ export class QuestionGenerationService {
         count: number;
         mode?: "text" | "pdf" | "auto";
         comment?: string;
+        existingQuestions?: string[];
     }) {
         // Determine generation mode
         let generationMode = mode;
@@ -132,6 +153,7 @@ export class QuestionGenerationService {
             count,
             comment,
             assistantCrib,
+            existingQuestions,
         };
 
         if (generationMode === "pdf" && topicData.pdfS3Key) {
@@ -162,6 +184,7 @@ export class QuestionGenerationService {
         counts,
         mode = "auto",
         comment,
+        existingQuestions,
     }: {
         topicData: TopicData;
         subjectContext: string | { label: string; crib: string | null };
@@ -169,6 +192,7 @@ export class QuestionGenerationService {
         counts: { easy: number; medium: number; hard: number };
         mode?: "text" | "pdf" | "auto";
         comment?: string;
+        existingQuestions?: string[];
     }) {
         // const results = [];
 
@@ -185,6 +209,7 @@ export class QuestionGenerationService {
                     count: counts.easy,
                     mode,
                     comment,
+                    existingQuestions,
                 }).then((questions) =>
                     questions.map((q) => ({ ...q, complexity: "easy" }))
                 )
@@ -201,6 +226,7 @@ export class QuestionGenerationService {
                     count: counts.medium,
                     mode,
                     comment,
+                    existingQuestions,
                 }).then((questions) =>
                     questions.map((q) => ({ ...q, complexity: "medium" }))
                 )
@@ -217,6 +243,7 @@ export class QuestionGenerationService {
                     count: counts.hard,
                     mode,
                     comment,
+                    existingQuestions,
                 }).then((questions) =>
                     questions.map((q) => ({ ...q, complexity: "hard" }))
                 )

@@ -28,6 +28,7 @@ interface GenerateQuestionsOptions {
   pageEnd: number;
   comment?: string; // Optional user comment for AI
   assistantCrib?: string; // Provider's AI coaching instructions
+  existingQuestions?: string[]; // Already generated questions for dedup
 }
 
 /**
@@ -86,13 +87,20 @@ export async function generateQuestionsWithGemini(
   const userComment = options.comment ? `\n\nIMPORTANT NOTES FROM INSTRUCTOR:\n${options.comment}\n` : '';
   const cribSection = options.assistantCrib ? `\n\nAI ASSISTANT INSTRUCTIONS (from provider):\n${options.assistantCrib}\n` : '';
 
+  // Build dedup section from existing questions
+  let dedupSection = '';
+  if (options.existingQuestions && options.existingQuestions.length > 0) {
+    const questionsList = options.existingQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n');
+    dedupSection = `\n\nALREADY GENERATED QUESTIONS (DO NOT DUPLICATE OR REPHRASE THESE):\n${questionsList}\n`;
+  }
+
   const prompt = `You are analyzing a PDF educational textbook. Focus ONLY on pages ${options.pageStart} to ${options.pageEnd}.
 
 TOPIC: "${options.topic}"
 SUBJECT: "${options.subject}"
 GRADE LEVEL: ${options.gradeLevel}
 COMPLEXITY: ${options.complexity}
-LANGUAGE: ${languageName}${userComment}${cribSection}
+LANGUAGE: ${languageName}${userComment}${cribSection}${dedupSection}
 
 TASK:
 Generate EXACTLY ${options.count} multiple-choice questions based on the content from pages ${options.pageStart} to ${options.pageEnd}.
@@ -107,6 +115,7 @@ INSTRUCTIONS:
 - Only ONE answer must be correct and must match exactly one of the options
 - Make questions educational, meaningful, and appropriate for grade ${options.gradeLevel}
 - Ensure ${options.complexity} difficulty level is maintained
+- Do NOT generate questions that are the same or very similar to the ones listed in the ALREADY GENERATED QUESTIONS section above
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object with this exact structure:
@@ -211,13 +220,20 @@ export async function generateQuestionsWithGeminiText(
   const userComment = options.comment ? `\n\nIMPORTANT NOTES FROM INSTRUCTOR:\n${options.comment}\n` : '';
   const cribSection = options.assistantCrib ? `\n\nAI ASSISTANT INSTRUCTIONS (from provider):\n${options.assistantCrib}\n` : '';
 
+  // Build dedup section from existing questions
+  let dedupSection = '';
+  if (options.existingQuestions && options.existingQuestions.length > 0) {
+    const questionsList = options.existingQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n');
+    dedupSection = `\n\nALREADY GENERATED QUESTIONS (DO NOT DUPLICATE OR REPHRASE THESE):\n${questionsList}\n`;
+  }
+
   const prompt = `Generate EXACTLY ${options.count} multiple-choice questions based on the following educational content.
 
 TOPIC: "${options.topic}"
 SUBJECT: "${options.subject}"
 GRADE LEVEL: ${options.gradeLevel}
 COMPLEXITY: ${options.complexity}
-LANGUAGE: ${languageName}${userComment}${cribSection}
+LANGUAGE: ${languageName}${userComment}${cribSection}${dedupSection}
 
 CONTENT TO BASE QUESTIONS ON:
 ${textContent}
@@ -231,6 +247,7 @@ INSTRUCTIONS:
 - Only ONE answer must be correct and must match exactly one of the options
 - Make questions educational, meaningful, and appropriate for grade ${options.gradeLevel}
 - Ensure ${options.complexity} difficulty level is maintained
+- Do NOT generate questions that are the same or very similar to the ones listed in the ALREADY GENERATED QUESTIONS section above
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object with this exact structure:

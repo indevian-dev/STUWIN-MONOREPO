@@ -81,6 +81,12 @@ export const POST = unifiedApiHandler(
 
       // Generate questions
       let generatedQuestions;
+
+      // Fetch existing questions for dedup (only if topic_id exists)
+      const existingQuestions = topic_id
+        ? await QuestionGenerationService.fetchExistingQuestionTexts(topic_id)
+        : [];
+
       if (useMultiComplexity) {
         generatedQuestions = await QuestionGenerationService.generateQuestionsMultiComplexity({
           topicData,
@@ -93,6 +99,7 @@ export const POST = unifiedApiHandler(
           },
           mode: mode === "text" ? "text" : mode === "pdf" ? "pdf" : "auto",
           comment,
+          existingQuestions,
         });
       } else {
         generatedQuestions = await QuestionGenerationService.generateQuestionsForTopic({
@@ -103,6 +110,7 @@ export const POST = unifiedApiHandler(
           count,
           mode: mode === "text" ? "text" : mode === "pdf" ? "pdf" : "auto",
           comment,
+          existingQuestions,
         });
       }
 
