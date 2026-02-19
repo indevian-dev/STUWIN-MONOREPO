@@ -172,21 +172,51 @@ export default function StudentTakeQuizPageClient() {
           ← Previous
         </button>
 
-        <div className='flex gap-2'>
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentQuestionIndex(index)}
-              className={`w-8 h-8 rounded-full font-medium transition-colors ${index === currentQuestionIndex
-                ? 'bg-brand text-white'
-                : answers[questions[index]?.id]
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-            >
-              {index + 1}
-            </button>
-          ))}
+        <div className='flex gap-1 items-center overflow-hidden'>
+          {(() => {
+            const total = questions.length;
+            const current = currentQuestionIndex;
+            const pages: (number | 'ellipsis')[] = [];
+
+            if (total <= 7) {
+              // Show all pages if 7 or fewer
+              for (let i = 0; i < total; i++) pages.push(i);
+            } else {
+              // Always show first page
+              pages.push(0);
+
+              if (current > 2) pages.push('ellipsis');
+
+              // Pages around current
+              const start = Math.max(1, current - 1);
+              const end = Math.min(total - 2, current + 1);
+              for (let i = start; i <= end; i++) pages.push(i);
+
+              if (current < total - 3) pages.push('ellipsis');
+
+              // Always show last page
+              pages.push(total - 1);
+            }
+
+            return pages.map((page, i) =>
+              page === 'ellipsis' ? (
+                <span key={`e${i}`} className="px-1 text-gray-400 text-sm select-none">…</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentQuestionIndex(page)}
+                  className={`w-8 h-8 rounded-full font-medium text-sm transition-colors ${page === current
+                    ? 'bg-brand text-white'
+                    : answers[questions[page]?.id]
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {page + 1}
+                </button>
+              )
+            );
+          })()}
         </div>
 
         {currentQuestionIndex === questions.length - 1 ? (

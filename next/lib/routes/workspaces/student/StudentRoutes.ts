@@ -310,6 +310,15 @@ export const studentEndpoints: EndpointsMap = {
   }),
 
   // ============================================
+  // Student - Subjects APIs
+  // ============================================
+  "/api/workspaces/student/:workspaceId/subjects": createStudentEndpoint({
+    method: "GET",
+    authRequired: true,
+    type: "api",
+  }),
+
+  // ============================================
   // Student - Favorites Pages
   // ============================================
   "/workspaces/student/:workspaceId/favorites": createStudentEndpoint({

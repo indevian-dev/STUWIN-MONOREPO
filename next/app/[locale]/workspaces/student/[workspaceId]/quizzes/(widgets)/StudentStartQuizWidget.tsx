@@ -38,13 +38,21 @@ export function StudentStartQuizWidget() {
   }, []);
 
   const fetchSubjects = async () => {
-    const response = await apiCallForSpaHelper({
-      method: 'GET',
-      url: '/api/subjects',
-    });
+    try {
+      const response = await apiCallForSpaHelper({
+        method: 'GET',
+        url: `/api/workspaces/student/${workspaceId}/subjects`,
+      });
 
-    if (response.status === 200) {
-      setSubjects(response.data?.data?.subjects || []);
+      console.log('[StudentStartQuiz] subjects response:', response.status, response.data);
+
+      if (response.status === 200) {
+        const subjectsData = response.data?.data || [];
+        console.log('[StudentStartQuiz] parsed subjects:', subjectsData.length, subjectsData);
+        setSubjects(subjectsData);
+      }
+    } catch (error) {
+      console.error('[StudentStartQuiz] fetchSubjects error:', error);
     }
   };
 

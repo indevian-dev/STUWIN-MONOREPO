@@ -11,8 +11,8 @@ import { BaseService } from "../base/base.service";
 import { AuthContext } from "@/lib/domain/base/types";
 import { Database } from "@/lib/database";
 import { genAI, GEMINI_MODELS } from "@/lib/integrations/google/gemini.client";
-import { providerQuestions as questionsTable, providerSubjects, providerSubjectTopics, studentQuizReports } from "@/lib/database/schema";
-import { inArray, eq, and, sql } from "drizzle-orm";
+import { providerQuestions as questionsTable, providerSubjects, providerSubjectTopics, studentQuizReports, workspaceAccesses } from "@/lib/database/schema";
+import { inArray, eq, ne, and, sql } from "drizzle-orm";
 import { PromptFlowType } from "@/lib/domain/ai-prompt/intelligence.types";
 import { SystemPromptService } from "../ai-prompt/system-prompt.service";
 import { SemanticMasteryService } from "../semantic-mastery/semantic-mastery.service";
@@ -54,12 +54,29 @@ export class QuizService extends BaseService {
                 25,
             );
 
+            // Get linked provider workspace ID from the student's access record
+            const linkedAccess = await this.db
+                .select({ targetId: workspaceAccesses.targetWorkspaceId })
+                .from(workspaceAccesses)
+                .where(and(
+                    eq(workspaceAccesses.actorAccountId, accountId),
+                    eq(workspaceAccesses.viaWorkspaceId, workspaceId),
+                    ne(workspaceAccesses.targetWorkspaceId, workspaceId),
+                ))
+                .limit(1);
+
+            const providerWorkspaceId = linkedAccess[0]?.targetId;
+
+            if (!providerWorkspaceId) {
+                return { success: false, error: "No linked provider workspace found" };
+            }
+
             // Try ParadeDB (Neon) first, fall back to Supabase
             let selectedQuestions: Record<string, unknown>[] = [];
 
             if (this.searchService) {
                 selectedQuestions = await this.searchService.getQuestionsForQuiz({
-                    workspaceId,
+                    workspaceId: providerWorkspaceId,
                     limit: validQuestionCount,
                     subjectId,
                     gradeLevel: gradeLevel ? Number(gradeLevel) : null,
@@ -70,7 +87,10 @@ export class QuizService extends BaseService {
 
             // Fallback to Supabase if ParadeDB returned nothing
             if (selectedQuestions.length === 0) {
-                const conditions = [eq(questionsTable.isPublished, true)];
+                const conditions = [
+                    eq(questionsTable.isPublished, true),
+                    eq(questionsTable.workspaceId, providerWorkspaceId),
+                ];
                 if (subjectId) conditions.push(eq(questionsTable.providerSubjectId, subjectId));
                 if (gradeLevel) conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
                 if (complexity) conditions.push(eq(questionsTable.complexity, complexity));

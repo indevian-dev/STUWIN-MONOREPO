@@ -51,15 +51,14 @@ export function StudentQuizAnalysisModal({
   // selectionContext tracks WHICH block we are selecting from
   const [selectionContext, setSelectionContext] = useState<{ id: string, type: 'question' | 'digest', fullText: string } | null>(null);
 
+  // Reset session state when modal closes OR when question changes (new question = fresh start)
   useEffect(() => {
-    if (!isOpen) {
-      setHasStarted(false);
-      setSession(null);
-      setSelectedIndices([]);
-      setSelectedText('');
-      setSelectionContext(null);
-    }
-  }, [isOpen]);
+    setHasStarted(false);
+    setSession(null);
+    setSelectedIndices([]);
+    setSelectedText('');
+    setSelectionContext(null);
+  }, [isOpen, question]);
 
   const getDigests = (currentSession: any): any[] => {
     if (!currentSession?.digests) return [];
