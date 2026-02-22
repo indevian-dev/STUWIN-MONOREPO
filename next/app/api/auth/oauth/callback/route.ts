@@ -1,21 +1,21 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
 import {
   OAUTH_CONFIGS,
   getOAuthAccessToken,
   getOAuthUserData,
   getOAuthBaseUrl,
   linkOAuthProvider,
-} from '@/lib/middleware/authenticators/OAuthAuthenticator';
-import { SessionStore } from '@/lib/middleware/authenticators/SessionStore';
-import { CookieAuthenticator } from '@/lib/middleware/authenticators/CookieAuthenticator';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import { AuthRepository } from '@/lib/domain/auth/auth.repository';
+} from '@/lib/middleware/Authenticator.OAuth.middleware';
+import { SessionStore } from '@/lib/middleware/Store.Session.middleware';
+import { CookieAuthenticator } from '@/lib/middleware/Authenticator.Cookie.middleware';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import { AuthRepository } from '@/lib/domain/auth/Auth.repository';
 import { db } from '@/lib/database';
 import { hashPassword } from '@/lib/domain/auth/password.util';
-import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil';
+import { generateSlimId } from '@/lib/utils/Helper.SlimUlid.util';
 import crypto from 'crypto';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (req: NextRequest) => {
   try {

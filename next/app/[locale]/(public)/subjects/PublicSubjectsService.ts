@@ -1,8 +1,8 @@
 'use client';
 
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 /**
  * Subjects Public Service
  * Provides client-side functions for fetching subject data from the API
@@ -51,7 +51,7 @@ export async function getSubjects(parentId: string | null = null): Promise<Subje
       params.parent_id = parentId;
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: '/api/subjects',
       params,
@@ -81,7 +81,7 @@ export async function getSubjectById(subjectId: string): Promise<SubjectResponse
       throw new Error('Subject ID is required');
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/subjects/${subjectId}`,
       params: {},
@@ -107,7 +107,7 @@ export async function getSubjectById(subjectId: string): Promise<SubjectResponse
  */
 export async function getParentSubjects(): Promise<SubjectsResponse> {
   try {
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: '/api/subjects',
       params: { parent_id: 'null' },
@@ -137,7 +137,7 @@ export async function getSubSubjects(parentId: string): Promise<SubjectsResponse
       throw new Error('Parent ID is required');
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: '/api/subjects',
       params: { parent_id: parentId },
@@ -185,7 +185,7 @@ export function buildSubjectHierarchy(subjects: Subject[], parentId: string | nu
  */
 export async function getSubjectsHierarchy(): Promise<SubjectHierarchyResponse> {
   try {
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: '/api/subjects',
       params: {},
@@ -303,7 +303,7 @@ export async function getSubjectFilters(subjectIds: string | string[]): Promise<
       return { filters: [], error: null };
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: '/api/subjects/filters',
       params: { subject_id: ids.join(',') },

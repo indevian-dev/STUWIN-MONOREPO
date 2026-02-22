@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/handlers';
-import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/_Middleware.index';
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { module, auth }: UnifiedContext) => {
   try {

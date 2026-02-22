@@ -1,7 +1,7 @@
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil'; // If needed for legacy ID gen
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { generateSlimId } from '@/lib/utils/Helper.SlimUlid.util'; // If needed for legacy ID gen
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
   const { id, workspaceId } = await params;
@@ -64,9 +64,9 @@ export const POST = unifiedApiHandler(async (request, { module, params }) => {
   }
 
   return okResponse({
-      questionId,
-      approved,
-      reasons: approved ? null : reasons,
-      reasonText: approved ? null : reasonText
-    }, `Question ${approved ? 'approved' : 'rejected'} successfully`);
+    questionId,
+    approved,
+    reasons: approved ? null : reasons,
+    reasonText: approved ? null : reasonText
+  }, `Question ${approved ? 'approved' : 'rejected'} successfully`);
 });

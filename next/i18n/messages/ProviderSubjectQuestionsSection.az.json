@@ -9,5 +9,8 @@
     "questionDeleted": "Sual uğurla silindi.",
     "previous": "Əvvəlki",
     "next": "Növbəti",
-    "pageOf": "Səhifə {page} / {totalPages}"
+    "pageOf": "Səhifə {page} / {totalPages}",
+    "filterAll": "Hamısı",
+    "filterPublished": "Dərc edilmiş",
+    "filterUnpublished": "Dərc edilməmiş"
 }

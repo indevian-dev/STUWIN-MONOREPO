@@ -6,13 +6,13 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { toast } from 'react-toastify';
-import { ProviderOrganizationEditWidget } from '../(widgets)/ProviderOrganizationEditWidget';
-import type { Provider } from '@stuwin/shared/types/domain';
+import { ProviderOrganizationEditWidget } from '../(widgets)/ProviderOrganizationEdit.widget';
+import type { Provider } from '@stuwin/shared/types/domain/Domain.types';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 export default function ProviderOrganizationEditPageClient() {
   const [organization, setOrganization] = useState<Provider.PrivateAccess | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export default function ProviderOrganizationEditPageClient() {
   const fetchOrganization = async () => {
     try {
       setLoading(true);
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/organization`,
       });
@@ -51,7 +51,7 @@ export default function ProviderOrganizationEditPageClient() {
   const handleSave = async (updatedOrganization: Partial<Provider.UpdateInput>) => {
     try {
       setSaving(true);
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/organization/update`,
         body: updatedOrganization,
@@ -84,7 +84,7 @@ export default function ProviderOrganizationEditPageClient() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-dark">
+        <h1 className="text-3xl font-bold text-app-dark-blue dark:text-white">
           {t('edit_organization')}
         </h1>
         <p className="text-neutral-600 mt-2">

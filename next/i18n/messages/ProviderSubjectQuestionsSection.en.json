@@ -9,5 +9,8 @@
     "questionDeleted": "Question deleted successfully.",
     "previous": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {totalPages}"
+    "pageOf": "Page {page} of {totalPages}",
+    "filterAll": "All",
+    "filterPublished": "Published",
+    "filterUnpublished": "Unpublished"
 }

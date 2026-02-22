@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, ReactNode } from 'react';
+import { Main } from '@/app/primitives/Main.primitive';
+import { Container } from '@/app/primitives/Container.primitive';
 import {
     PiHouseLine,
     PiStackLight,
@@ -11,10 +13,10 @@ import {
 import { LuUser } from 'react-icons/lu';
 
 // Layout Components
-import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
-import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
-import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
-import type { DomainNavConfig } from '@stuwin/shared/types';
+import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeader.widget';
+import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigation.widget';
+import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigation.widget';
+import type { DomainNavConfig } from '@stuwin/shared/types/ui/Navigation.types';
 
 interface WorkspaceRootLayoutClientProps {
     children: ReactNode;
@@ -67,19 +69,20 @@ export function WorkspaceRootLayoutClient({ children }: WorkspaceRootLayoutClien
                 />
             </GlobalHeaderWidget>
 
-            <main className="layout-main-grid">
-                <nav className="relative col-span-5 md:col-span-1 rounded">
-                    <GlobalFullNavigationWidget
-                        config={navConfig}
-                        isMenuOpen={isMenuOpen}
-                        setIsMenuOpen={setIsMenuOpen}
-                    />
-                </nav>
-
-                <div className="col-span-5 lg:col-span-4 rounded flex flex-col min-h-screen">
-                    {children}
-                </div>
-            </main>
+            <Main variant="app">
+                <Container variant="7xl" className="flex items-start h-full max-w-7xl mx-auto gap-4 px-4">
+                    <aside className="hidden lg:flex shrink-0 sticky top-[70px] min-h-[calc(100vh-70px)] overflow-hidden w-64 flex-col">
+                        <GlobalFullNavigationWidget
+                            config={navConfig}
+                            isMenuOpen={isMenuOpen}
+                            setIsMenuOpen={setIsMenuOpen}
+                        />
+                    </aside>
+                    <div className="flex-1 min-w-0 w-full">
+                        {children}
+                    </div>
+                </Container>
+            </Main>
         </>
     );
 }

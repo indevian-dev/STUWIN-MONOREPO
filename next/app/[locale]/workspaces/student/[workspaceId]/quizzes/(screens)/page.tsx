@@ -1,7 +1,7 @@
 
-import { StudentPageTitleWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget';
-import { StudentQuizHistoryListWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/quizzes/(widgets)/StudentQuizHistoryListWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StudentPageTitleWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitle.widget';
+import { StudentQuizHistoryListWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/quizzes/(widgets)/StudentQuizHistoryList.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StudentQuizzesPage() {
 

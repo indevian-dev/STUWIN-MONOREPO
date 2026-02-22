@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
-import { SubjectUpdateSchema } from '@/lib/domain/learning/learning.inputs';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
+import { SubjectUpdateSchema } from '@/lib/domain/learning/Learning.inputs';
 
 export const PUT = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
   try {

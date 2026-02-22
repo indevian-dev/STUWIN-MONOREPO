@@ -2,8 +2,8 @@
 // GET /api/workspaces/discover - Discover Public Workspaces
 // ═══════════════════════════════════════════════════════════════
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * GET /api/workspaces/discover

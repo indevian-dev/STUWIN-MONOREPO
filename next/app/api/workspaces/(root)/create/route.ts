@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════════════════════════
 // Creates a new identity (student/teacher) or organization access for the authenticated user
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import type { CreateWorkspaceRequest } from '@/lib/domain/workspace/workspace.types';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import type { CreateWorkspaceRequest } from '@/lib/domain/workspace/Workspace.types';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/workspaces/create

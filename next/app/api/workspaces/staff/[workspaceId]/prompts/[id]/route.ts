@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { okResponse, errorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, errorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { params, module }) => {
   if (!params) {

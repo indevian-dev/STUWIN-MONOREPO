@@ -1,5 +1,5 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/workspaces/provider/[workspaceId]/search/sync

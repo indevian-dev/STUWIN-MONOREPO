@@ -1,5 +1,5 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const GET = unifiedApiHandler(async (_request, { module, params, authData, log, isValidSlimId }) => {
   const { id } = params as { id: string };

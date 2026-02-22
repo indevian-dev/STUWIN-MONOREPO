@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
 
 export const DELETE = unifiedApiHandler(async (request: NextRequest, { params, authData, module, log }) => {
     if (!params) {

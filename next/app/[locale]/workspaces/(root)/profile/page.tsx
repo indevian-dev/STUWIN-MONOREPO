@@ -1,5 +1,5 @@
-import { withPageAuth } from '@/lib/middleware/handlers';
-import { WorkspaceProfileEditWidget } from './(widgets)/WorkspaceProfileEditWidget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
+import { WorkspaceProfileEditWidget } from './(widgets)/WorkspaceProfileEdit.widget';
 
 interface ProfilePageProps {
     params: Promise<{

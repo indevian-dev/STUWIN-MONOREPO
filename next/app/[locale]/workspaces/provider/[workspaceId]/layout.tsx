@@ -1,21 +1,21 @@
-import { withLayoutAuth } from '@/lib/middleware/handlers';
+import { withLayoutAuth } from '@/lib/middleware/_Middleware.index';
 import { ProviderLayoutClient } from './ProviderLayoutClient';
 import type { ReactNode } from 'react';
-import type { AuthData } from '@stuwin/shared/types';
+import type { ClientAuthData } from '@stuwin/shared/types/auth/AuthData.types';
 
 interface ProviderLayoutProps {
   children: ReactNode;
   params: Promise<{ locale: string;[key: string]: string }>;
-  authData?: AuthData | null;
+  clientAuth?: ClientAuthData | null;
 }
 
 /**
  * Provider Layout - Server Component
  * Validates auth at layout level so UI never renders for unauthorized users
  */
-async function ProviderLayout({ children, authData }: ProviderLayoutProps) {
+async function ProviderLayout({ children, clientAuth }: ProviderLayoutProps) {
   return (
-    <ProviderLayoutClient authData={authData ?? null}>
+    <ProviderLayoutClient authData={clientAuth ?? null}>
       {children}
     </ProviderLayoutClient>
   );
@@ -24,4 +24,3 @@ async function ProviderLayout({ children, authData }: ProviderLayoutProps) {
 export default withLayoutAuth(ProviderLayout, {
   path: '/workspaces/provider/:workspaceId',
 });
-

@@ -73,5 +73,9 @@
   "student_workspaces": "Tələbə İş Sahələri",
   "parent_workspaces": "Valideyn İş Sahələri",
   "workspaces": "İş Sahələri",
-  "invitations": "Dəvətnamələr"
+  "invitations": "Dəvətnamələr",
+  "activities": "Fəaliyyətlər",
+  "insights": "Təhlillər",
+  "goals": "Məqsədlər",
+  "progress": "Nailiyyət"
 }

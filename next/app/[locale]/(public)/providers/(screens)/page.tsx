@@ -1,12 +1,12 @@
-import { PublicProvidersListWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProvidersListWidget';
-import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitleTile';
-import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
+import { PublicProvidersListWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProvidersList.widget';
+import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitle.tile';
+import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbs.tile';
 import { db } from '@/lib/database';
 import { workspaces } from '@/lib/database/schema';
 import { eq, and, desc, count } from 'drizzle-orm';
 import type { Metadata } from 'next';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface PageParams {
   params: Promise<{
     locale: string;

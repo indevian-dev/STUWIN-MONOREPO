@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { AuthLoginWidget } from '@/app/[locale]/auth/login/(widgets)/AuthLoginWidget';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { AuthLoginWidget } from '@/app/[locale]/auth/login/(widgets)/AuthLogin.widget';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { useRouter } from 'next/navigation';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 
 const AuthLoginPage = () => {
   const router = useRouter();
@@ -16,7 +16,7 @@ const AuthLoginPage = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         url: '/api/auth',
         method: 'GET'
       });

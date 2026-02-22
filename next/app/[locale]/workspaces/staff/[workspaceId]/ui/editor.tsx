@@ -1,7 +1,7 @@
 'use client'
 
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 
 import React, {
   useState,
@@ -613,7 +613,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
   if (!isClient) {
     return (
-      <div className="border border-gray-300 rounded-md bg-white p-4 min-h-[400px] flex items-center justify-center">
+      <div className="border border-gray-300 rounded-app bg-white p-4 min-h-[400px] flex items-center justify-center">
         <div className="text-gray-500">Loading editor...</div>
       </div>
     );
@@ -621,7 +621,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
 
   if (error) {
     return (
-      <div className="border border-red-300 rounded-md bg-red-50 p-4 min-h-[400px] flex flex-col items-center justify-center">
+      <div className="border border-red-300 rounded-app bg-red-50 p-4 min-h-[400px] flex flex-col items-center justify-center">
         <div className="text-red-600 mb-2">Error loading editor:</div>
         <div className="text-red-500 text-sm font-mono">{error}</div>
         <button
@@ -638,7 +638,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ onChange, initialContent, p
     <div {...props}>
       <div
         id={editorId}
-        className="rounded-md bg-white min-h-[400px] focus-within:border-blue-500 transition-colors editor-container"
+        className="rounded-app bg-white min-h-[400px] focus-within:border-blue-500 transition-colors editor-container"
         style={{ minHeight: height }}
       />
       {(isLoading) && <GlobalLoaderTile message="Loading editor tools..." />}

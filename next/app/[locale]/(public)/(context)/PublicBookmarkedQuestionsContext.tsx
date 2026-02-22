@@ -11,10 +11,10 @@ import {
   ReactNode
 } from 'react';
 import { toast } from 'react-toastify';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface PublicBookmarkedQuestionsContextType {
   bookmarkIds: Set<string>;
   isBookmarked: (questionId: string) => boolean;
@@ -95,7 +95,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
     isFetchingRef.current = true;
 
     try {
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'GET',
         url: `/api/workspaces/dashboard/favorites?page=1&limit=${MAX_FAVORITES}`,
         params: {},
@@ -155,7 +155,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
       const isCurrentlyBookmarked = bookmarkIds.has(questionIdKey);
 
       if (isCurrentlyBookmarked) {
-        const response = await apiCall<any>({
+        const response = await fetchApiUtil<any>({
           method: 'DELETE',
           url: `/api/workspaces/dashboard/favorites/delete/${questionId}`,
           params: {},
@@ -176,7 +176,7 @@ export const PublicBookmarkedQuestionsProvider = ({ children }: PublicBookmarked
           return false;
         }
 
-        const response = await apiCall<any>({
+        const response = await fetchApiUtil<any>({
           method: 'POST',
           url: `/api/workspaces/dashboard/favorites/create/${questionId}`,
           params: {},

@@ -1,7 +1,7 @@
-import { StaffSingleRoleWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/roles/(widgets)/StaffSingleRoleWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffSingleRoleWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/roles/(widgets)/StaffSingleRole.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 async function StaffSingleRolePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id } = await params;
   const roleId = id;

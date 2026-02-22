@@ -1,6 +1,6 @@
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const PUT = unifiedApiHandler(async (request, { module, params, auth }) => {
   const { id } = await params;

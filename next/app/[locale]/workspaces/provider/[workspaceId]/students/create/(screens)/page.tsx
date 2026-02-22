@@ -1,4 +1,4 @@
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 import ProviderCreateStudentPageClient from '../ProviderCreateStudentPageClient';
 
 function ProviderCreateStudentPage() {

@@ -1,5 +1,5 @@
 
-import { withLayoutAuth } from '@/lib/middleware/handlers';
+import { withLayoutAuth } from '@/lib/middleware/_Middleware.index';
 import type { ReactNode } from 'react';
 
 interface WorkspaceLayoutProps {

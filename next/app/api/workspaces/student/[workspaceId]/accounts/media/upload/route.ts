@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import s3 from "@/lib/integrations/aws/s3.client";
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import s3 from "@/lib/integrations/aws/S3.client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { auth, log }) => {
   const accountId = auth.accountId;

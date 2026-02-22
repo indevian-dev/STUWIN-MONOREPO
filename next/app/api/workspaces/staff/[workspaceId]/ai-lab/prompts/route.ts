@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
-import { ModuleFactory } from '@/lib/domain/factory';
-import { AuthContext } from '@/lib/domain/base/types';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
+import { ModuleFactory } from '@/lib/domain/Domain.factory';
+import { AuthContext } from '@/lib/domain/base/Base.types';
 
 // Helper to construct auth context (Simulated for Staff)
 async function getStaffContext(_req: NextRequest, workspaceId: string): Promise<AuthContext> {

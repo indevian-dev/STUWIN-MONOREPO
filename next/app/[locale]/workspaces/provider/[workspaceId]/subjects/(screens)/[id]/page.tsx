@@ -1,5 +1,7 @@
-import { ProviderSubjectDetailWidget } from "@/app/[locale]/workspaces/provider/[workspaceId]/subjects/(widgets)/ProviderSubjectDetailWidget";
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { ProviderSubjectDetailWidget } from "@/app/[locale]/workspaces/provider/[workspaceId]/subjects/(widgets)/ProviderSubjectDetail.widget";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
+import { WorkspacePageTitleTile } from "@/app/[locale]/workspaces/(root)/(tiles)/WorkspacePageTitle.tile";
+import { PiBrain } from "react-icons/pi";
 
 interface PageProps {
   params: Promise<{
@@ -15,6 +17,13 @@ async function ProviderSubjectDetailPage({ params }: PageProps) {
 
   return (
     <div>
+      <WorkspacePageTitleTile
+        title="Subject Details"
+        subtitle="Manage your curriculum subjects"
+        icon={<PiBrain />}
+        action={null}
+        className="mb-4"
+      />
       <ProviderSubjectDetailWidget subjectId={subjectId} />
     </div>
   );

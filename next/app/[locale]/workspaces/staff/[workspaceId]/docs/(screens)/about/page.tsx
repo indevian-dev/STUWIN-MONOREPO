@@ -1,7 +1,7 @@
-import { StaffDocEditWidget } from "@/app/[locale]/workspaces/staff/[workspaceId]/docs/(widgets)/StaffDocEditWidget";
-import { StaffPageTitleTile } from "@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitleTile";
+import { StaffDocEditWidget } from "@/app/[locale]/workspaces/staff/[workspaceId]/docs/(widgets)/StaffDocEdit.widget";
+import { StaffPageTitleTile } from "@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitle.tile";
 
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StaffAboutEditPage() {
   return (

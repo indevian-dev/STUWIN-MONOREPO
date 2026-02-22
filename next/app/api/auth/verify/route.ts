@@ -1,6 +1,6 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
-import type { UnifiedContext } from '@/lib/middleware/handlers/ApiInterceptor';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
+import type { UnifiedContext } from '@/lib/middleware/Interceptor.Api.middleware';
 
 /**
  * Unified Verification API Endpoint

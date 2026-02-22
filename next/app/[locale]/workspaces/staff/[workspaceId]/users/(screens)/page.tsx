@@ -1,5 +1,5 @@
-import { StaffUsersListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/users/(widgets)/StaffUsersListWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffUsersListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/users/(widgets)/StaffUsersList.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StaffUsersListPage() {
   return (

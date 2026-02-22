@@ -26,26 +26,8 @@
       "@/*": [
         "./*"
       ],
-      "@stuwin/shared/types": [
-        "../_shared.types/index"
-      ],
       "@stuwin/shared/types/*": [
         "../_shared.types/*"
-      ],
-      "@/lib/domain/types": [
-        "../_shared.types/common/index"
-      ],
-      "@/lib/domain/auth/types": [
-        "../_shared.types/auth/index"
-      ],
-      "@/lib/infra/types": [
-        "../_shared.types/api/index"
-      ],
-      "@/lib/ui/types": [
-        "../_shared.types/ui/index"
-      ],
-      "@/lib/utils/types": [
-        "../_shared.types/validation/index"
       ]
     }
   },

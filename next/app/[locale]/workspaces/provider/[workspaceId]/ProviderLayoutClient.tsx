@@ -11,16 +11,18 @@ import {
   PiTagSimple,
   PiFilePdf,
 } from "react-icons/pi";
-import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget";
-import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget";
-import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget";
-import type { AuthData } from "@stuwin/shared/types";
-import type { DomainNavConfig } from "@stuwin/shared/types";
+import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeader.widget";
+import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigation.widget";
+import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigation.widget";
+import { Main } from "@/app/primitives/Main.primitive";
+import { Container } from "@/app/primitives/Container.primitive";
+import type { ClientAuthData } from "@stuwin/shared/types/auth/AuthData.types";
+import type { DomainNavConfig } from "@stuwin/shared/types/ui/Navigation.types";
 
 // Context for auth data in provider pages
-export const ProviderAuthContext = createContext<AuthData | null>(null);
+export const ProviderAuthContext = createContext<ClientAuthData | null>(null);
 
-export function useProviderAuth(): AuthData {
+export function useProviderAuth(): ClientAuthData {
   const context = useContext(ProviderAuthContext);
   if (!context) {
     throw new Error("useProviderAuth must be used within ProviderLayoutClient");
@@ -30,7 +32,7 @@ export function useProviderAuth(): AuthData {
 
 interface ProviderLayoutClientProps {
   children: ReactNode;
-  authData: AuthData | null;
+  authData: ClientAuthData | null;
 }
 
 /**
@@ -102,16 +104,20 @@ export function ProviderLayoutClient({
         />
       </GlobalHeaderWidget>
 
-      <main className="layout-main-grid">
-        <nav className="relative col-span-5 md:col-span-1 rounded">
-          <GlobalFullNavigationWidget
-            config={navConfig}
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          />
-        </nav>
-        <div className="col-span-5 md:col-span-4 rounded">{children}</div>
-      </main>
+      <Main variant="app">
+        <Container variant="7xl" className="flex items-start h-full max-w-7xl mx-auto gap-4 px-4">
+          <aside className="hidden lg:flex shrink-0 sticky top-[70px] min-h-[calc(100vh-70px)] overflow-hidden w-64 flex-col">
+            <GlobalFullNavigationWidget
+              config={navConfig}
+              isMenuOpen={isMenuOpen}
+              setIsMenuOpen={setIsMenuOpen}
+            />
+          </aside>
+          <div className="flex-1 min-w-0 w-full">
+            {children}
+          </div>
+        </Container>
+      </Main>
     </ProviderAuthContext.Provider>
   );
 }

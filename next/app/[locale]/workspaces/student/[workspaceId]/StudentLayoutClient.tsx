@@ -16,17 +16,21 @@ import {
   PiBuildings,
   PiMagnifyingGlass,
   PiScroll,
+  PiTarget,
+  PiChartLineUp,
 } from "react-icons/pi";
-import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget";
-import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget";
-import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget";
-import type { AuthData } from "@stuwin/shared/types";
-import type { DomainNavConfig } from "@stuwin/shared/types";
+import { GlobalHeaderWidget } from "@/app/[locale]/(global)/(widgets)/GlobalHeader.widget";
+import { GlobalFastNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFastNavigation.widget";
+import { GlobalFullNavigationWidget } from "@/app/[locale]/(global)/(widgets)/GlobalFullNavigation.widget";
+import { Main } from "@/app/primitives/Main.primitive";
+import { Container } from "@/app/primitives/Container.primitive";
+import type { ClientAuthData } from "@stuwin/shared/types/auth/AuthData.types";
+import type { DomainNavConfig } from "@stuwin/shared/types/ui/Navigation.types";
 
 // Context for auth data in student pages
-export const StudentAuthContext = createContext<AuthData | null>(null);
+export const StudentAuthContext = createContext<ClientAuthData | null>(null);
 
-export function useStudentAuth(): AuthData {
+export function useStudentAuth(): ClientAuthData {
   const context = useContext(StudentAuthContext);
   if (!context) {
     throw new Error("useStudentAuth must be used within StudentLayoutClient");
@@ -36,7 +40,7 @@ export function useStudentAuth(): AuthData {
 
 interface StudentLayoutClientProps {
   children: ReactNode;
-  authData: AuthData | null;
+  authData: ClientAuthData | null;
 }
 
 /**
@@ -78,8 +82,8 @@ export function StudentLayoutClient({
         label: "main",
         items: [{ href: "/", icon: PiHouseLine, label: "return_to_website" }],
       },
-      quizzes: {
-        label: "quizzes",
+      activities: {
+        label: "activities",
         items: [
           {
             href: `/workspaces/student/${workspaceId}/quizzes/start`,
@@ -91,23 +95,40 @@ export function StudentLayoutClient({
             icon: PiListBullets,
             label: "quiz_history",
           },
-        ],
-      },
-      homework: {
-        label: "homework",
-        items: [
-          { href: `/workspaces/student/${workspaceId}/homeworks`, icon: PiNotebook, label: "homework" },
-        ],
-      },
-      learning: {
-        label: "learning",
-        items: [
+          {
+            href: `/workspaces/student/${workspaceId}/homeworks`,
+            icon: PiNotebook,
+            label: "homework",
+          },
           {
             href: `/workspaces/student/${workspaceId}/learning/sessions`,
             icon: PiBrain,
             label: "learning_sessions",
           },
         ],
+      },
+      insights: {
+        label: "insights",
+        items: [
+          {
+            href: `/workspaces/student/${workspaceId}/goals`,
+            icon: PiTarget,
+            label: "goals",
+          },
+          {
+            href: `/workspaces/student/${workspaceId}/progress`,
+            icon: PiChartLineUp,
+            label: "progress",
+          },
+        ],
+      },
+      providers: {
+        label: 'providers',
+        icon: PiBuildings,
+        items: [
+          { href: `/workspaces/student/${workspaceId}/providers`, icon: PiMagnifyingGlass, label: 'find_providers' },
+          { href: `/workspaces/student/${workspaceId}/providers/applications`, icon: PiScroll, label: 'my_applications' }
+        ]
       },
       account: {
         label: "account",
@@ -128,14 +149,6 @@ export function StudentLayoutClient({
             label: "notifications",
           },
         ],
-      },
-      providers: {
-        label: 'providers',
-        icon: PiBuildings,
-        items: [
-          { href: `/workspaces/student/${workspaceId}/providers`, icon: PiMagnifyingGlass, label: 'find_providers' },
-          { href: `/workspaces/student/${workspaceId}/providers/applications`, icon: PiScroll, label: 'my_applications' }
-        ]
       },
     },
     menuDisplayMode: {
@@ -158,16 +171,20 @@ export function StudentLayoutClient({
         />
       </GlobalHeaderWidget>
 
-      <main className="layout-main-grid">
-        <nav className="relative col-span-5 md:col-span-1 rounded">
-          <GlobalFullNavigationWidget
-            config={navConfig}
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          />
-        </nav>
-        <div className="col-span-5 md:col-span-4 rounded">{children}</div>
-      </main>
+      <Main variant="app">
+        <Container variant="7xl" className="flex items-start h-full max-w-7xl mx-auto gap-4 px-4">
+          <aside className="hidden lg:flex shrink-0 sticky top-[70px] min-h-[calc(100vh-70px)] overflow-hidden w-64 flex-col">
+            <GlobalFullNavigationWidget
+              config={navConfig}
+              isMenuOpen={isMenuOpen}
+              setIsMenuOpen={setIsMenuOpen}
+            />
+          </aside>
+          <div className="flex-1 min-w-0 w-full">
+            {children}
+          </div>
+        </Container>
+      </Main>
     </StudentAuthContext.Provider>
   );
 }

@@ -3,10 +3,13 @@
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
-import type { Subject } from "./ProviderSubjectDetailWidget";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
+import type { Subject } from "./ProviderSubjectDetail.widget";
 import { PiBrain } from "react-icons/pi";
-import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModalWidget";
+import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModal.widget";
+import { Card } from "@/app/primitives/Card.primitive";
+import { Button } from "@/app/primitives/Button.primitive";
+import { GlobalImagePlaceholderTile } from "@/app/[locale]/(global)/(tiles)/GlobalImagePlaceholder.tile";
 
 interface SubjectInfoSectionProps {
   workspaceId: string;
@@ -100,45 +103,24 @@ export function SubjectInfoSection({
       setError(null);
 
       // Step 1: Get presigned URL from the API
-      const presignResponse = await apiCall<any>({
+      // API returns { presignedUrl } — path is deterministic: {workspaceId}/subjects/{id}/covers/cover.webp
+      const { presignedUrl } = await fetchApiUtil<{ presignedUrl: string }>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subject.id}/cover`,
         method: 'POST',
-        body: {
-          fileName: file.name,
-          fileType: file.type,
-        },
+        body: { fileType: file.type },
       });
 
-      if (!true) {
-        throw new Error('Failed to get upload URL');
+      if (!presignedUrl) {
+        throw new Error('Failed to get upload URL — no presignedUrl in response');
       }
 
-      const { presignedUrl, coverKey, publicUrl, generatedFileName } = presignResponse.data;
-
-      // Step 2: Upload file to S3 using presigned URL (using axios)
+      // Step 2: Upload directly to S3 using the presigned URL
       await axios.put(presignedUrl, file, {
-        headers: {
-          'Content-Type': file.type,
-        },
+        headers: { 'Content-Type': file.type },
       });
 
-      // Step 3: Save the filename to the database (User requirement)
-      // The user requested to store ONLY the filename (e.g. timestamp-name.png).
-      // We can reconstruct the path on frontend: subjects/covers/{id}/{filename}
-      const saveResponse = await apiCall<any>({
-        url: `/api/workspaces/provider/${workspaceId}/subjects/${subject.id}/cover`,
-        method: 'PUT',
-        body: {
-          coverUrl: generatedFileName,
-        },
-      });
-
-      if (!true) {
-        throw new Error('Failed to save cover URL');
-      }
-
-      // Step 4: Trigger a re-fetch by updating the subject
-      await onUpdate({ cover: generatedFileName });
+      // Step 3: Force image refresh — path is deterministic, no DB write or re-fetch needed
+      setCoverImageError(false);
 
     } catch (err) {
       setError(t("coverUploadError"));
@@ -151,9 +133,7 @@ export function SubjectInfoSection({
     }
   };
 
-  const handleCoverImageError = () => {
-    setCoverImageError(true);
-  };
+
 
   // Helper to construct image source
   const getCoverSrc = (cover: string | null) => {
@@ -174,19 +154,27 @@ export function SubjectInfoSection({
     return `${cleanDomain}/subjects/covers/${subject.id}/${cover}`;
   };
 
+  const inputCls = "w-full px-3 py-2 rounded-app outline-none transition-colors border\
+    border-black/10 dark:border-white/10\
+    bg-white dark:bg-white/5\
+    text-app-dark-blue dark:text-white\
+    placeholder:text-app-dark-blue/30 dark:placeholder:text-white/30\
+    focus:border-app-bright-green dark:focus:border-app-bright-green";
+  const labelCls = "block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70";
+
   return (
-    <div className="bg-white rounded p-4">
+    <Card className="p-6 bg-white/80 dark:bg-white/5 border-black/10 dark:border-white/10">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-app-dark-blue dark:text-white">
           {t("subjectInformation")}
         </h2>
         {!isEditing && (
           <div className="flex gap-2">
             <button
               onClick={() => setAiGuideModalOpen(true)}
-              className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${subject.aiGuide
-                ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+              className={`px-4 py-2 border rounded-app text-sm font-medium transition-colors flex items-center gap-2 ${subject.aiGuide
+                ? "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-700 hover:bg-amber-100"
+                : "border-black/10 dark:border-white/10 text-app-dark-blue/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10"
                 }`}
             >
               <PiBrain className={subject.aiGuide ? "fill-current" : ""} />
@@ -194,7 +182,10 @@ export function SubjectInfoSection({
             </button>
             <button
               onClick={handleEdit}
-              className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-app text-sm font-medium transition-colors
+                border border-black/10 dark:border-white/10
+                text-app-dark-blue dark:text-white
+                hover:bg-black/5 dark:hover:bg-white/10"
             >
               {t("edit")}
             </button>
@@ -202,7 +193,12 @@ export function SubjectInfoSection({
               <button
                 onClick={onDelete}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-app text-sm font-medium transition-colors border
+                  border-red-200 dark:border-red-700
+                  text-red-600 dark:text-red-400
+                  bg-red-50 dark:bg-red-900/20
+                  hover:bg-red-100 dark:hover:bg-red-900/30
+                  disabled:opacity-50 flex items-center gap-1.5"
               >
                 {deleting ? t("saving") : t("delete")}
               </button>
@@ -212,7 +208,9 @@ export function SubjectInfoSection({
       </div>
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
+        <div className="mb-4 p-3 rounded-app text-sm
+          bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700
+          text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -221,107 +219,79 @@ export function SubjectInfoSection({
         isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("name")}
-              </label>
+              <label className={labelCls}>{t("name")}</label>
               <input
                 type="text"
                 value={editData.name}
-                onChange={(e) =>
-                  setEditData({ ...editData, name: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                className={inputCls}
                 placeholder={t("namePlaceholder")}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("slug")}
-              </label>
+              <label className={labelCls}>{t("slug")}</label>
               <input
                 type="text"
                 value={editData.slug}
-                onChange={(e) =>
-                  setEditData({ ...editData, slug: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setEditData({ ...editData, slug: e.target.value })}
+                className={inputCls}
                 placeholder={t("slugPlaceholder")}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("description")}
-              </label>
+              <label className={labelCls}>{t("description")}</label>
               <textarea
                 value={editData.description}
-                onChange={(e) =>
-                  setEditData({ ...editData, description: e.target.value })
-                }
+                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`${inputCls} resize-none`}
                 placeholder={t("descriptionPlaceholder")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("aiLabel")}
-                </label>
+                <label className={labelCls}>{t("aiLabel")}</label>
                 <input
                   type="text"
                   value={editData.aiLabel}
-                  onChange={(e) =>
-                    setEditData({ ...editData, aiLabel: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setEditData({ ...editData, aiLabel: e.target.value })}
+                  className={inputCls}
                   placeholder={t("aiLabelPlaceholder")}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("aiGuide")}
-              </label>
+              <label className={labelCls}>{t("aiGuide")}</label>
               <textarea
                 value={editData.aiGuide}
-                onChange={(e) =>
-                  setEditData({ ...editData, aiGuide: e.target.value })
-                }
+                onChange={(e) => setEditData({ ...editData, aiGuide: e.target.value })}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                className={`${inputCls} font-mono resize-none`}
                 placeholder={t("aiGuidePlaceholder")}
               />
-              <p className="mt-1 text-xs text-gray-500">{t("aiGuideHelp")}</p>
+              <p className="mt-1 text-xs text-app-dark-blue/40 dark:text-white/40">{t("aiGuideHelp")}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("gradeLevel")}
-                </label>
+                <label className={labelCls}>{t("gradeLevel")}</label>
                 <input
                   type="number"
                   value={editData.gradeLevel}
-                  onChange={(e) =>
-                    setEditData({ ...editData, gradeLevel: parseInt(e.target.value) || 0 })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setEditData({ ...editData, gradeLevel: parseInt(e.target.value) || 0 })}
+                  className={inputCls}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("language")}
-                </label>
+                <label className={labelCls}>{t("language")}</label>
                 <select
                   value={editData.language}
-                  onChange={(e) =>
-                    setEditData({ ...editData, language: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setEditData({ ...editData, language: e.target.value })}
+                  className={inputCls}
                 >
                   <option value="">{t("selectLanguage")}</option>
                   <option value="en">English</option>
@@ -332,18 +302,18 @@ export function SubjectInfoSection({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-4">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+            <div className="pt-4 flex items-center gap-3">
+              <Button onClick={handleSave} disabled={saving}>
                 {saving ? t("saving") : t("save")}
-              </button>
+              </Button>
               <button
                 onClick={handleCancel}
                 disabled={saving}
-                className="px-6 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-app font-medium transition-colors
+                  border border-black/10 dark:border-white/10
+                  text-app-dark-blue dark:text-white
+                  hover:bg-black/5 dark:hover:bg-white/10
+                  disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("cancel")}
               </button>
@@ -352,13 +322,32 @@ export function SubjectInfoSection({
         ) : (
           <div className="space-y-4">
             <div className="flex items-start gap-4">
-              <div className="shrink-0 space-y-2">
-                <img
-                  src={!coverImageError ? getCoverSrc(subject.cover) : "/pg.webp"}
-                  alt={subject.name}
-                  onError={() => setCoverImageError(true)}
-                  className="h-64 w-auto rounded"
-                />
+              <div className="shrink-0 space-y-2 relative">
+                <div className="relative h-64 w-48 rounded overflow-hidden">
+                  {coverImageError || !subject.cover ? (
+                    <GlobalImagePlaceholderTile
+                      error
+                      shimmer={false}
+                      aspect=""
+                      className="h-64 w-48"
+                    />
+                  ) : (
+                    <>
+                      <GlobalImagePlaceholderTile
+                        aspect=""
+                        className="absolute inset-0 h-full w-full"
+                      />
+                      <img
+                        src={getCoverSrc(subject.cover)}
+                        alt={subject.name}
+                        onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1'; }}
+                        onError={() => setCoverImageError(true)}
+                        className="absolute inset-0 w-full h-full object-cover rounded z-10"
+                        style={{ opacity: 0, transition: 'opacity 0.3s' }}
+                      />
+                    </>
+                  )}
+                </div>
                 <input
                   ref={coverInputRef}
                   type="file"
@@ -370,7 +359,10 @@ export function SubjectInfoSection({
                 <button
                   onClick={() => coverInputRef.current?.click()}
                   disabled={uploadingCover}
-                  className="w-full px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md font-medium transition-colors disabled:opacity-50"
+                  className="w-full px-3 py-1.5 text-xs rounded-app font-medium transition-colors disabled:opacity-50
+                    border border-black/10 dark:border-white/10
+                    text-app-dark-blue dark:text-white
+                    hover:bg-black/5 dark:hover:bg-white/10"
                 >
                   {uploadingCover
                     ? t("uploading")
@@ -381,30 +373,29 @@ export function SubjectInfoSection({
               </div>
               <div className="flex-1 space-y-3">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">{t("name")}</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {(subject as any).displayTitle || subject.name}
+                  <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("name")}</p>
+                  <p className="text-lg font-bold text-app-dark-blue dark:text-white">
+                    {(subject as Subject & { displayTitle?: string }).displayTitle || subject.name}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">{t("slug")}</p>
-                  <p className="text-gray-800">{subject.slug}</p>
+                  <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("slug")}</p>
+                  <p className="text-app-dark-blue dark:text-white">{subject.slug}</p>
                 </div>
 
                 {subject.description && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">
-                      {t("description")}
-                    </p>
-                    <p className="text-gray-800">{subject.description}</p>
+                    <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("description")}</p>
+                    <p className="text-app-dark-blue/80 dark:text-white/80">{subject.description}</p>
                   </div>
                 )}
 
                 {subject.aiLabel && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">{t("aiLabel")}</p>
-                    <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded">
+                    <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("aiLabel")}</p>
+                    <span className="inline-block px-3 py-1 bg-violet-100 dark:bg-violet-900/30
+                      text-violet-700 dark:text-violet-300 text-sm font-semibold rounded-app">
                       {subject.aiLabel}
                     </span>
                   </div>
@@ -412,8 +403,11 @@ export function SubjectInfoSection({
 
                 {subject.aiGuide && (
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">{t("aiGuide")}</p>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100 font-mono whitespace-pre-wrap">
+                    <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("aiGuide")}</p>
+                    <p className="text-sm text-app-dark-blue/70 dark:text-white/70
+                      bg-black/5 dark:bg-white/5 p-3 rounded-app
+                      border border-black/10 dark:border-white/10
+                      font-mono whitespace-pre-wrap">
                       {subject.aiGuide}
                     </p>
                   </div>
@@ -422,14 +416,14 @@ export function SubjectInfoSection({
                 <div className="grid grid-cols-2 gap-4">
                   {subject.gradeLevel !== null && (
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">{t("gradeLevel")}</p>
-                      <p className="text-gray-800 font-medium">{subject.gradeLevel}</p>
+                      <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("gradeLevel")}</p>
+                      <p className="font-semibold text-app-dark-blue dark:text-white">{subject.gradeLevel}</p>
                     </div>
                   )}
                   {subject.language && (
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">{t("language")}</p>
-                      <span className="uppercase text-gray-800 font-medium">{subject.language}</span>
+                      <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mb-1">{t("language")}</p>
+                      <span className="uppercase font-semibold text-app-dark-blue dark:text-white">{subject.language}</span>
                     </div>
                   )}
                 </div>
@@ -465,6 +459,6 @@ export function SubjectInfoSection({
         onClose={() => setAiGuideModalOpen(false)}
         onSuccess={() => onUpdate({})} // Trigger refresh (parent handles fetchSubject)
       />
-    </div >
+    </Card>
   );
 }

@@ -1,6 +1,6 @@
 import { Axiom } from '@axiomhq/js';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 const axiomClient = new Axiom({
   token: process.env.AXIOM_TOKEN!
 });

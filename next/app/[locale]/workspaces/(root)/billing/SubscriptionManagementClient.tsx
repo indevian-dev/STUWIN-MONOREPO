@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiCheckCircleFill, PiCrownBold, PiArrowsClockwiseBold, PiCheckBold, PiReceiptBold, PiStudentBold, PiBuildingsBold } from 'react-icons/pi';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
 
 export function SubscriptionManagementClient() {
@@ -24,7 +24,7 @@ export function SubscriptionManagementClient() {
         const fetchData = async () => {
             try {
                 // Fetch Subscriptions (Enrolled Providers)
-                const subsRes = await apiCall<any>({
+                const subsRes = await fetchApiUtil<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/subscriptions`
                 });
@@ -34,7 +34,7 @@ export function SubscriptionManagementClient() {
                 }
 
                 // Fetch Transactions
-                const transRes = await apiCall<any>({
+                const transRes = await fetchApiUtil<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/transactions`
                 });
@@ -65,7 +65,7 @@ export function SubscriptionManagementClient() {
 
     if (loading || profileLoading) return (
         <div className="flex items-center justify-center p-24">
-            <PiArrowsClockwiseBold className="text-4xl text-brand-primary animate-spin" />
+            <PiArrowsClockwiseBold className="text-4xl text-app-bright-green-primary animate-spin" />
         </div>
     );
 
@@ -81,7 +81,7 @@ export function SubscriptionManagementClient() {
                 <button
                     onClick={() => setActiveTab('subscriptions')}
                     className={`pb-4 px-2 font-bold text-sm transition-all border-b-2 ${activeTab === 'subscriptions'
-                        ? 'border-brand-primary text-brand-primary'
+                        ? 'border-app-primary text-app-bright-green-primary'
                         : 'border-transparent text-slate-500 hover:text-slate-900'
                         }`}
                 >
@@ -90,7 +90,7 @@ export function SubscriptionManagementClient() {
                 <button
                     onClick={() => setActiveTab('transactions')}
                     className={`pb-4 px-2 font-bold text-sm transition-all border-b-2 ${activeTab === 'transactions'
-                        ? 'border-brand-primary text-brand-primary'
+                        ? 'border-app-primary text-app-bright-green-primary'
                         : 'border-transparent text-slate-500 hover:text-slate-900'
                         }`}
                 >
@@ -102,10 +102,10 @@ export function SubscriptionManagementClient() {
             {activeTab === 'subscriptions' && (
                 <div className="space-y-6">
                     {subscriptions.length === 0 ? (
-                        <div className="p-12 text-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                        <div className="p-12 text-center bg-slate-50 rounded-app border-2 border-dashed border-slate-200">
                             <PiCrownBold className="mx-auto text-4xl text-slate-300 mb-4" />
                             <h3 className="text-lg font-bold text-slate-500">{t('no_subscriptions')}</h3>
-                            <button className="mt-4 px-6 py-2 bg-brand-primary text-white font-bold rounded-xl" onClick={() => window.location.href = '/workspaces'}>
+                            <button className="mt-4 px-6 py-2 bg-app-bright-green-primary text-white font-bold rounded-app" onClick={() => window.location.href = '/workspaces'}>
                                 {t('browse_providers')}
                             </button>
                         </div>
@@ -118,11 +118,11 @@ export function SubscriptionManagementClient() {
                                 const isExpired = daysLeft <= 0;
 
                                 return (
-                                    <div key={item.workspace.id} className="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                                    <div key={item.workspace.id} className="p-6 bg-white rounded-app border border-slate-200 shadow-sm flex flex-col justify-between">
                                         <div>
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl">
+                                                    <div className="w-12 h-12 rounded-app bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl">
                                                         <PiBuildingsBold />
                                                     </div>
                                                     <div>
@@ -130,7 +130,7 @@ export function SubscriptionManagementClient() {
                                                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.workspace.type}</span>
                                                     </div>
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${isExpired ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'
+                                                <span className={`px-3 py-1 rounded-app-full text-[10px] font-black uppercase ${isExpired ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'
                                                     }`}>
                                                     {isExpired ? 'Expired' : 'Active'}
                                                 </span>
@@ -140,9 +140,9 @@ export function SubscriptionManagementClient() {
                                                 <p className="text-sm text-slate-500 font-medium">
                                                     {t('subscription_expires_in', { days: Math.max(0, daysLeft) })}
                                                 </p>
-                                                <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                                                <div className="w-full h-2 bg-slate-100 rounded-app-full mt-2 overflow-hidden">
                                                     <div
-                                                        className={`h-full rounded-full ${isExpired ? 'bg-red-500' : 'bg-brand-primary'}`}
+                                                        className={`h-full rounded-app-full ${isExpired ? 'bg-red-500' : 'bg-app-bright-green-primary'}`}
                                                         style={{ width: `${Math.min(100, Math.max(0, (daysLeft / 30) * 100))}%` }}
                                                     ></div>
                                                 </div>
@@ -154,7 +154,7 @@ export function SubscriptionManagementClient() {
                                                 {item.access?.subscribedUntil ? new Date(item.access.subscribedUntil).toLocaleDateString() : 'N/A'}
                                             </span>
                                             {isExpired && (
-                                                <button className="text-xs font-bold text-brand-primary uppercase hover:underline">
+                                                <button className="text-xs font-bold text-app-bright-green-primary uppercase hover:underline">
                                                     {t('renew_now')}
                                                 </button>
                                             )}
@@ -168,7 +168,7 @@ export function SubscriptionManagementClient() {
             )}
 
             {activeTab === 'transactions' && (
-                <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden">
+                <div className="bg-white rounded-app border border-slate-200 overflow-hidden">
                     {transactions.length === 0 ? (
                         <div className="p-12 text-center">
                             <PiReceiptBold className="mx-auto text-4xl text-slate-300 mb-4" />
@@ -194,7 +194,7 @@ export function SubscriptionManagementClient() {
                                             {tx.paidAmount} AZN
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${tx.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
+                                            <span className={`px-2 py-1 rounded-app text-[10px] font-black uppercase ${tx.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
                                                 tx.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
                                                 }`}>
                                                 {tx.status}

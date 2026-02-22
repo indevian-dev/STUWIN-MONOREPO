@@ -1,9 +1,9 @@
 'use client';
 
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { isValidSlimId } from '@/lib/utils/ids/SlimUlidUtil';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { isValidSlimId } from '@/lib/utils/Helper.SlimUlid.util';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 /**
  * Console Providers Service
  * Provides client-side functions for managing educational providers in the console interface
@@ -86,7 +86,7 @@ export async function getProviders(options: GetProvidersOptions): Promise<Provid
       params.searchType = searchType;
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers`,
       params,
@@ -123,7 +123,7 @@ export async function getProviderById(workspaceId: string, providerId: string): 
       throw new Error('Valid Provider ID is required');
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers/${providerId}`,
       params: {},
@@ -402,7 +402,7 @@ export async function getProviderApplications(options: GetProviderApplicationsOp
       params.search = search.trim();
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications`,
       params,
@@ -439,7 +439,7 @@ export async function approveProviderApplication(workspaceId: string, applicatio
       throw new Error('Valid application ID is required');
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'PUT',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications/update/${applicationId}`,
       params: {},
@@ -480,7 +480,7 @@ export async function rejectProviderApplication(
       throw new Error('Rejection reason is required');
     }
 
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'PUT',
       url: `/api/workspaces/staff/${workspaceId}/providers/applications/update/${applicationId}`,
       params: {},

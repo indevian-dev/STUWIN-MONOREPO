@@ -27,17 +27,19 @@ import {
 } from 'react-icons/pi';
 
 import { FiBell } from 'react-icons/fi';
-import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
-import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
-import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
-import { loadClientSideCoLocatedTranslations } from '@/i18n/i18nClientSide';
-import type { AuthData } from '@stuwin/shared/types';
-import type { DomainNavConfig } from '@stuwin/shared/types';
+import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeader.widget';
+import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigation.widget';
+import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigation.widget';
+import { Main } from '@/app/primitives/Main.primitive';
+import { Container } from '@/app/primitives/Container.primitive';
+
+import type { ClientAuthData } from '@stuwin/shared/types/auth/AuthData.types';
+import type { DomainNavConfig } from '@stuwin/shared/types/ui/Navigation.types';
 
 // Context for auth data in console pages
-export const StaffAuthContext = createContext<AuthData | null>(null);
+export const StaffAuthContext = createContext<ClientAuthData | null>(null);
 
-export function useConsoleAuth(): AuthData {
+export function useConsoleAuth(): ClientAuthData {
   const context = useContext(StaffAuthContext);
   if (!context) {
     throw new Error('useConsoleAuth must be used within StaffLayoutClient');
@@ -47,7 +49,7 @@ export function useConsoleAuth(): AuthData {
 
 interface StaffLayoutClientProps {
   children: ReactNode;
-  authData: AuthData | null;
+  authData: ClientAuthData | null;
 }
 
 /**
@@ -62,9 +64,7 @@ export function StaffLayoutClient({
   const params = useParams();
   const workspaceId = (params?.workspaceId as string) || "";
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const { t } = loadClientSideCoLocatedTranslations('StaffHeaderWidget');
 
-  const notificationsLabel = t('notifications') || 'Notifications';
 
   const navConfig: DomainNavConfig = {
     domain: 'staff',
@@ -131,14 +131,14 @@ export function StaffLayoutClient({
     <div className="relative inline-flex items-center gap-2 rounded bg-neutral-100 px-3 py-2 hover:-translate-y-0.5 transition">
       <FiBell className="text-lg" />
       <span className="hidden sm:block text-sm font-semibold">
-        {notificationsLabel}
+        Notifications
       </span>
     </div>
   );
 
   return (
     <StaffAuthContext.Provider value={authData}>
-      <div className="min-h-screen bg-section-gradient-brand">
+      <div className="min-h-screen bg-section-gradient-app">
         <GlobalHeaderWidget
           config={navConfig}
           isMenuOpen={isMenuOpen}
@@ -151,18 +151,20 @@ export function StaffLayoutClient({
           />
         </GlobalHeaderWidget>
 
-        <main className="layout-main-grid justify-start items-start">
-          <nav className="col-span-5 md:col-span-1 rounded relative">
-            <GlobalFullNavigationWidget
-              config={navConfig}
-              isMenuOpen={isMenuOpen}
-              setIsMenuOpen={setIsMenuOpen}
-            />
-          </nav>
-          <div className="col-span-5 md:col-span-4 rounded">
-            {children}
-          </div>
-        </main>
+        <Main variant="app">
+          <Container variant="7xl" className="flex items-start h-full max-w-7xl mx-auto gap-4 px-4">
+            <aside className="hidden lg:flex shrink-0 sticky top-[70px] min-h-[calc(100vh-70px)] overflow-hidden w-64 flex-col">
+              <GlobalFullNavigationWidget
+                config={navConfig}
+                isMenuOpen={isMenuOpen}
+                setIsMenuOpen={setIsMenuOpen}
+              />
+            </aside>
+            <div className="flex-1 min-w-0 w-full">
+              {children}
+            </div>
+          </Container>
+        </Main>
       </div>
     </StaffAuthContext.Provider>
   );

@@ -1,5 +1,5 @@
-import { StaffRolesListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/roles/(widgets)/StaffRolesListWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffRolesListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/roles/(widgets)/StaffRolesList.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StaffRolesListPage() {
   return (

@@ -1,5 +1,5 @@
-import { StaffSubjectsListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsListWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffSubjectsListWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/subjects/(widgets)/StaffSubjectsList.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StaffSubjectsListPage() {
   return (

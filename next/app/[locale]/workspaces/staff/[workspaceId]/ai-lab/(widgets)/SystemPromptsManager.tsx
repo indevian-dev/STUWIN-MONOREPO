@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { fetchPrompts, createPrompt, updatePrompt, deletePrompt, SystemPrompt } from '@/lib/utils/http/StaffAiLabApiHelper';
-import { FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiXCircle, FiRefreshCw } from 'react-icons/fi';
-import { PiSpinner } from 'react-icons/pi';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiRefreshCw } from 'react-icons/fi';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+import { fetchPrompts, createPrompt, updatePrompt, deletePrompt, type SystemPrompt } from '@/lib/utils/Http.StaffAiLabApiHelper.util';
 
 export function SystemPromptsManager() {
     const params = useParams();

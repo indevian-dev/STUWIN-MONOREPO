@@ -1,11 +1,11 @@
-import { allEndpoints } from '@/lib/routes';
-import { RouteValidator } from '@/lib/middleware/validators/RouteValidator';
-import { ResponseResponder } from '@/lib/middleware/responses/ResponseResponder';
-import { LocalizationService } from '@/i18n/LocalizationService';
+import { allEndpoints } from '@/lib/routes/_Routes.index';
+import { RouteValidator } from '@/lib/middleware/Validator.Route.middleware';
+import { EdgeGuard } from '@/lib/middleware/Guard.EdgeResponse.middleware';
+import { LocalizationService } from '@/i18n/Localization.service';
 import { NextRequest, NextResponse } from 'next/server';
-import { CookieAuthenticator } from '@/lib/middleware/authenticators/CookieAuthenticator';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import type { RouteValidation } from '@/lib/routes/types';
+import { CookieAuthenticator } from '@/lib/middleware/Authenticator.Cookie.middleware';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import type { RouteValidation } from '@/lib/routes/Route.types';
 
 export default async function middleware(
   request: NextRequest
@@ -20,11 +20,11 @@ export default async function middleware(
     const isApiRequest = request.nextUrl.pathname.startsWith('/api');
 
     if (isApiRequest) {
-      return ResponseResponder.createNotFoundApiResponse();
+      return EdgeGuard.createNotFoundApiResponse();
     } else {
       const requestedLocale = LocalizationService.getLocaleFromRequest(request);
       ConsoleLogger.log(`⛔ Page request validation failed for: ${request.nextUrl.pathname}`);
-      return ResponseResponder.createNotFoundPageResponse({
+      return EdgeGuard.createNotFoundPageResponse({
         locale: requestedLocale,
         request
       });
@@ -53,7 +53,7 @@ function handleApiRequest(
     const { authCookiesData } = CookieAuthenticator.getAuthCookiesFromRequest(request);
     if (!authCookiesData.session) {
       ConsoleLogger.error(('⛔ No session - unauthorized'));
-      return ResponseResponder.createUnauthorizedApiResponse();
+      return EdgeGuard.createUnauthorizedApiResponse();
     }
 
     // Pass through - let withApiHandler do the actual session verification
@@ -61,7 +61,7 @@ function handleApiRequest(
 
   } catch (error) {
     ConsoleLogger.error(('API middleware error:'), error);
-    return ResponseResponder.createInternalServerErrorApiResponse();
+    return EdgeGuard.createInternalServerErrorApiResponse();
   }
 }
 
@@ -77,7 +77,7 @@ function handlePageRequest(
 
     if (!endpointValidationResult.isValid || !endpointValidationResult.endpoint) {
       ConsoleLogger.log(('⛔ Page request validation failed:'), endpointValidationResult);
-      return ResponseResponder.createNotFoundPageResponse({
+      return EdgeGuard.createNotFoundPageResponse({
         locale: requestedLocale,
         request
       });
@@ -85,7 +85,7 @@ function handlePageRequest(
 
     // Step 2: Check if authentication is required
     if (!endpointValidationResult.endpoint?.authRequired) {
-      return ResponseResponder.createSuccessPageResponse({
+      return EdgeGuard.createSuccessPageResponse({
         locale: requestedLocale,
         request
       });
@@ -95,21 +95,21 @@ function handlePageRequest(
     const { authCookiesData } = CookieAuthenticator.getAuthCookiesFromRequest(request);
     if (!authCookiesData.session) {
       ConsoleLogger.log(('⛔ No session - unauthorized'));
-      return ResponseResponder.createUnauthorizedPageResponse({
+      return EdgeGuard.createUnauthorizedPageResponse({
         locale: requestedLocale,
         request
       });
     }
 
     // Pass through - let layout validators do the actual session verification
-    return ResponseResponder.createSuccessPageResponse({
+    return EdgeGuard.createSuccessPageResponse({
       locale: requestedLocale,
       request
     });
 
   } catch (error) {
     ConsoleLogger.error(('Page middleware error:'), error);
-    return ResponseResponder.createUnauthorizedPageResponse({
+    return EdgeGuard.createUnauthorizedPageResponse({
       locale: requestedLocale,
       request
     });

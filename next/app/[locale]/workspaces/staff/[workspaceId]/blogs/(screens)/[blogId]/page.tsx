@@ -1,5 +1,5 @@
-import BlogEdit from '@/app/[locale]/workspaces/staff/[workspaceId]/blogs/(widgets)/StaffBlogEditWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import BlogEdit from '@/app/[locale]/workspaces/staff/[workspaceId]/blogs/(widgets)/StaffBlogEdit.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 interface BlogEditPageProps {
   params: Promise<{ blogId: string; locale: string }>;

@@ -1,5 +1,5 @@
-import { StudentBookmarkedQuestionsListWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/bookmarks/(widgets)/StudentBookmarkedQuestionsListWidget';
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { StudentBookmarkedQuestionsListWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/bookmarks/(widgets)/StudentBookmarkedQuestionsList.widget';
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StudentFavoritesListPage() {
   return (

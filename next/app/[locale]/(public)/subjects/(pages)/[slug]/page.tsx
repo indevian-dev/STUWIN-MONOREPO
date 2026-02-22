@@ -1,12 +1,12 @@
 // pages/types/[slug].js
 
-import { PublicSingleSubjectWidget } from '@/app/[locale]/(public)/subjects/(widgets)/PublicSingleSubjectWidget';
+import { PublicSingleSubjectWidget } from '@/app/[locale]/(public)/subjects/(widgets)/PublicSingleSubject.widget';
 import supabase
-  from '@/lib/integrations/supabase/service-role.client';
+  from '@/lib/integrations/supabase/Pgsql.client';
 import { Metadata } from 'next';
-import { isValidSlimId } from '@/lib/utils/ids/SlimUlidUtil';
+import { isValidSlimId } from '@/lib/utils/Helper.SlimUlid.util';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface SubjectData {
   id?: string;
   title?: string;

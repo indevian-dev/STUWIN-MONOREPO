@@ -17,7 +17,7 @@ import {
     customType,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { generateSlimId } from "@/lib/utils/ids/SlimUlidUtil";
+import { generateSlimId } from "@/lib/utils/Helper.SlimUlid.util";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES & SCHEMAS (JSONB)
@@ -281,7 +281,7 @@ export const providerSubjects = pgTable("provider_subjects", {
 });
 
 
-import { TopicQuestionsStats, TopicPdfDetails } from "../domain/learning/learning.entity";
+import { TopicQuestionsStats, TopicPdfDetails } from "../domain/learning/Learning.entity";
 
 export const providerSubjectTopics = pgTable("provider_subject_topics", {
     id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
@@ -298,6 +298,11 @@ export const providerSubjectTopics = pgTable("provider_subject_topics", {
     aiGuide: text("ai_guide"),
     pdfDetails: jsonb("pdf_details").$type<TopicPdfDetails>(),
     questionsStats: jsonb("questions_stats").$type<TopicQuestionsStats>(),
+    topicVector: vector768("topic_vector"), // 768-D embedding of name + description
+}, (table) => {
+    return {
+        topicVectorIdx: index("topic_vector_idx").using("hnsw", sql`${table.topicVector} vector_cosine_ops`),
+    };
 });
 
 export const providerQuestions = pgTable("provider_questions", {
@@ -458,6 +463,10 @@ export const studentKnowledgeHubs = pgTable("student_knowledge_hubs", {
 
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => {
+    return {
+        knowledgeVectorIdx: index("skh_knowledge_vector_idx").using("hnsw", sql`${table.knowledgeVector} vector_cosine_ops`),
+    };
 });
 
 export const providerKnowledgeHubs = pgTable("provider_knowledge_hubs", {
@@ -466,8 +475,14 @@ export const providerKnowledgeHubs = pgTable("provider_knowledge_hubs", {
     // Balanced Centroid Vector (The "Classroom DNA")
     sumVector: vector768("sum_vector"),
     studentCount: integer("student_count").default(0),
+    totalEntries: integer("total_entries").default(0),
+    metadata: jsonb("metadata").default({}),
 
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+    return {
+        sumVectorIdx: index("pkh_sum_vector_idx").using("hnsw", sql`${table.sumVector} vector_cosine_ops`),
+    };
 });
 
 export const providerKnowledgeDeltas = pgTable("provider_knowledge_deltas", {
@@ -478,6 +493,107 @@ export const providerKnowledgeDeltas = pgTable("provider_knowledge_deltas", {
     deltaVector: vector768("delta_vector").notNull(),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => {
+    return {
+        deltaVectorIdx: index("pkd_delta_vector_idx").using("hnsw", sql`${table.deltaVector} vector_cosine_ops`),
+    };
+});
+
+// Student Knowledge Hub Entries (Granular log of all AI interactions — shard by student_account_id)
+export const studentKnowledgeHubEntries = pgTable("student_knowledge_hub_entries", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    studentAccountId: varchar("student_account_id").notNull().references(() => accounts.id),
+    workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
+    providerSubjectId: varchar("provider_subject_id").references(() => providerSubjects.id),
+    topicId: varchar("topic_id").references(() => providerSubjectTopics.id),
+
+    sourceType: varchar("source_type").notNull(), // 'quiz_analysis' | 'term_deepdive' | 'homework_report' | 'topic_exploration'
+    sourceId: varchar("source_id"),               // FK to student_quizzes, student_homeworks, etc.
+
+    contentSummary: text("content_summary"),       // Human-readable AI response text
+    contentVector: vector768("content_vector"),    // 768-D embedding of the content
+
+    masterySignal: real("mastery_signal"),         // 0.0–1.0, AI-driven quality signal
+    metadata: jsonb("metadata").default({}),       // { complexity, timeSpent, questionId, etc. }
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => {
+    return {
+        contentVectorIdx: index("skhe_content_vector_idx").using("hnsw", sql`${table.contentVector} vector_cosine_ops`),
+    };
+});
+
+// Provider Knowledge Hub Entries (Aggregated from student entries — shard by provider_workspace_id)
+export const providerKnowledgeHubEntries = pgTable("provider_knowledge_hub_entries", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    providerWorkspaceId: varchar("provider_workspace_id").notNull().references(() => workspaces.id),
+    providerSubjectId: varchar("provider_subject_id").references(() => providerSubjects.id),
+    topicId: varchar("topic_id").references(() => providerSubjectTopics.id),
+
+    sourceType: varchar("source_type").notNull(),
+
+    aggregatedVector: vector768("aggregated_vector"), // Averaged from student entries
+    studentCount: integer("student_count").default(0),
+    averageMasterySignal: real("average_mastery_signal"),
+    metadata: jsonb("metadata").default({}),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+    return {
+        aggregatedVectorIdx: index("pkhe_aggregated_vector_idx").using("hnsw", sql`${table.aggregatedVector} vector_cosine_ops`),
+    };
+});
+
+// Provider Defined Goals (Default workspace goals for all students)
+export const providerDefinedGoals = pgTable("provider_defined_goals", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
+    title: text("title").notNull(),
+    description: text("description"),
+    goalVector: vector768("goal_vector"),
+    status: varchar("status").notNull().default("active"),
+    deadline: timestamp("deadline", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+    return {
+        goalVectorIdx: index("pdg_goal_vector_idx").using("hnsw", sql`${table.goalVector} vector_cosine_ops`),
+    };
+});
+
+// Topic targets for provider goals
+export const providerGoalTopics = pgTable("provider_goal_topics", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    goalId: varchar("goal_id").notNull().references(() => providerDefinedGoals.id),
+    topicId: varchar("topic_id").notNull().references(() => providerSubjectTopics.id),
+    targetScore: real("target_score").notNull().default(85), // 0–100
+});
+
+// Student Defined Goals (Custom goals created by/for a specific student)
+export const studentDefinedGoals = pgTable("student_defined_goals", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    studentAccountId: varchar("student_account_id").notNull().references(() => accounts.id),
+    workspaceId: varchar("workspace_id").notNull().references(() => workspaces.id),
+    title: text("title").notNull(),
+    description: text("description"),
+    goalVector: vector768("goal_vector"),
+    status: varchar("status").notNull().default("active"),
+    deadline: timestamp("deadline", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+    return {
+        goalVectorIdx: index("sdg_goal_vector_idx").using("hnsw", sql`${table.goalVector} vector_cosine_ops`),
+    };
+});
+
+// Topic targets for student custom goals
+export const studentGoalTopics = pgTable("student_goal_topics", {
+    id: varchar("id").primaryKey().$defaultFn(() => generateSlimId()),
+    goalId: varchar("goal_id").notNull().references(() => studentDefinedGoals.id),
+    topicId: varchar("topic_id").notNull().references(() => providerSubjectTopics.id),
+    targetScore: real("target_score").notNull().default(85), // 0–100
 });
 
 // ═══════════════════════════════════════════════════════════════

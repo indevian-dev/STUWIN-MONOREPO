@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { PiCheckCircleFill, PiArrowsClockwiseBold, PiArrowLeftBold } from 'react-icons/pi';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 import Link from 'next/link';
 
 export function CheckoutPageClient() {
@@ -31,7 +31,7 @@ export function CheckoutPageClient() {
             try {
                 // Determine API endpoint based on tier ID structure or context
                 // For root workspace billing, we use the root endpoint
-                const response = await apiCall<any>({
+                const response = await fetchApiUtil<any>({
                     method: 'GET',
                     url: `/api/workspaces/billing/tiers`
                 });
@@ -62,7 +62,7 @@ export function CheckoutPageClient() {
         setError(null);
         try {
             setActionLoading('coupon');
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 method: 'POST',
                 url: `/api/workspaces/billing/coupon`,
                 body: { code: couponCode }
@@ -82,7 +82,7 @@ export function CheckoutPageClient() {
         if (!tier) return;
         try {
             setActionLoading('pay');
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 method: 'POST',
                 url: `/api/workspaces/billing/initiate`,
                 body: {
@@ -110,7 +110,7 @@ export function CheckoutPageClient() {
     if (!tierId || !tier) return (
         <div className="max-w-2xl mx-auto p-8 text-center">
             <h1 className="text-2xl font-black text-slate-900 mb-4">{error || "Plan not found"}</h1>
-            <Link href="/workspaces/billing" className="text-brand-primary font-bold hover:underline">
+            <Link href="/workspaces/billing" className="text-app-bright-green-primary font-bold hover:underline">
                 Return to Plans
             </Link>
         </div>
@@ -132,7 +132,7 @@ export function CheckoutPageClient() {
                     <h1 className="text-3xl font-black text-slate-900 mb-2">Checkout</h1>
                     <p className="text-slate-500 mb-8">Complete your subscription upgrade.</p>
 
-                    <div className="bg-white rounded-3xl p-6 border border-slate-200">
+                    <div className="bg-white rounded-app p-6 border border-slate-200">
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h3 className="text-xl font-black uppercase tracking-tight">{tier.title}</h3>
@@ -188,7 +188,7 @@ export function CheckoutPageClient() {
                                         {tier.price.toFixed(2)} AZN
                                     </span>
                                 )}
-                                <span className="text-3xl font-black text-brand-primary">
+                                <span className="text-3xl font-black text-app-bright-green-primary">
                                     {finalPrice.toFixed(2)} <span className="text-lg text-slate-900">AZN</span>
                                 </span>
                             </div>
@@ -203,12 +203,12 @@ export function CheckoutPageClient() {
                                     value={couponCode}
                                     onChange={(e) => setCouponCode(e.target.value)}
                                     placeholder="Enter code"
-                                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary uppercase font-bold text-sm bg-white"
+                                    className="flex-1 px-4 py-3 rounded-app border border-slate-200 focus:outline-none focus:ring-2 focus:ring-app-primary uppercase font-bold text-sm bg-white"
                                 />
                                 <button
                                     onClick={handleApplyCoupon}
                                     disabled={!couponCode || actionLoading === 'coupon'}
-                                    className="px-4 py-3 rounded-xl bg-slate-200 text-slate-900 font-bold hover:bg-slate-300 transition-colors disabled:opacity-50 text-sm"
+                                    className="px-4 py-3 rounded-app bg-slate-200 text-slate-900 font-bold hover:bg-slate-300 transition-colors disabled:opacity-50 text-sm"
                                 >
                                     {actionLoading === 'coupon' ? <PiArrowsClockwiseBold className="animate-spin" /> : 'Apply'}
                                 </button>
@@ -221,7 +221,7 @@ export function CheckoutPageClient() {
                         <button
                             onClick={handlePayment}
                             disabled={!!actionLoading}
-                            className="w-full py-4 rounded-2xl bg-slate-900 text-white font-black hover:bg-brand-primary hover:text-slate-900 transition-all shadow-lg hover:shadow-brand-primary/20 flex items-center justify-center gap-2"
+                            className="w-full py-4 rounded-app bg-slate-900 text-white font-black hover:bg-app-bright-green-primary hover:text-slate-900 transition-all shadow-lg hover:shadow-app-primary/20 flex items-center justify-center gap-2"
                         >
                             {actionLoading === 'pay' ? (
                                 <PiArrowsClockwiseBold className="animate-spin text-xl" />

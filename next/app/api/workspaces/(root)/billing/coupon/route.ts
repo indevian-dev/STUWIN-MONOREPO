@@ -1,5 +1,5 @@
-import { unifiedApiHandler } from "@/lib/middleware/handlers/ApiInterceptor";
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/Interceptor.Api.middleware";
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (req, { module }) => {
     const body = await req.json();

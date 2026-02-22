@@ -27,5 +27,9 @@
   "invalidImageFile": "Zəhmət olmasa etibarlı şəkil faylı seçin",
   "imageTooSmall": "Şəkil ölçüsü ən azı 20 KB olmalıdır",
   "imageTooLarge": "Şəkil ölçüsü 5 MB-dan az olmalıdır",
-  "coverUploadError": "Örtük şəklini yükləmək alınmadı"
+  "coverUploadError": "Örtük şəklini yükləmək alınmadı",
+  "noCover": "Örtük şəkli yoxdur",
+  "aiGuide": "AI Bələdçi",
+  "aiGuidePlaceholder": "İstəyə bağlı: AI bələdçi təlimatlarını buraya yapışdırın...",
+  "aiGuideHelp": "Bu təlimatlar bu fənnlə işləyərkən AI-a göndərilir."
 }

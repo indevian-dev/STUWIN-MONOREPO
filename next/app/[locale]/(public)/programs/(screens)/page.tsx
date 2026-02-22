@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { PublicProgramsListWidget } from '@/app/[locale]/(public)/programs/(widgets)/PublicProgramsListWidget';
-import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
+import { PublicProgramsListWidget } from '@/app/[locale]/(public)/programs/(widgets)/PublicProgramsList.widget';
+import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbs.tile';
 
 interface PageParams {
     params: Promise<{

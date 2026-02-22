@@ -2,14 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { PiBookOpen, PiBrain, PiListChecks } from "react-icons/pi";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
-import { Topic } from "@stuwin/shared/types";
-import { ProviderPdfTopicExtractorWidget } from "./ProviderPdfTopicExtractorWidget";
-import { TestGenerationModal } from "./TestGenerationModal";
-import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModalWidget";
-import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
-import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
+import { PiBookOpen, PiBrain, PiListChecks, PiX } from "react-icons/pi";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
+import { Topic } from "@stuwin/shared/types/domain/Topic.types";
+import { ProviderPdfTopicExtractorWidget } from "./ProviderPdfTopicExtractor.widget";
+import { TestGenerationModal } from "./TestGeneration.modal";
+import { ProviderAiGuideModalWidget } from "./ProviderAiGuideModal.widget";
+import type { SubjectPdf, Subject } from "./ProviderSubjectDetail.widget";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoader.tile";
+import { Card } from "@/app/primitives/Card.primitive";
+import { Button } from "@/app/primitives/Button.primitive";
 
 interface SubjectTopicsSectionProps {
   workspaceId: string;
@@ -115,7 +117,7 @@ function BulkTopicCreateModal({
               item.topicEstimatedQuestionsCapacity || item.capacity || null,
             pdfPageStart: item.pdfPageStart || item.start_page || null,
             pdfPageEnd: item.pdfPageEnd || item.end_page || null,
-            pdfS3Key: selectedPdf?.pdfUrl || null,
+            pdfFileName: selectedPdf ? selectedPdf.pdfUrl.split("/").pop() : null,
             estimatedEducationStartDate:
               item.estimatedEducationStartDate || null,
             isActiveAiGeneration:
@@ -151,33 +153,19 @@ function BulkTopicCreateModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden
+        bg-white dark:bg-app-dark-blue/95 border-black/10 dark:border-white/10 shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-xl font-bold">{t("bulkCreateTopics")}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+          <h3 className="text-xl font-bold text-app-dark-blue dark:text-white">{t("bulkCreateTopics")}</h3>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <PiX className="w-5 h-5" />
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-app p-3 text-red-800 text-sm">
               {error}
             </div>
           )}
@@ -185,14 +173,16 @@ function BulkTopicCreateModal({
           {/* PDF Selector */}
           {pdfs.length > 0 && (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("selectPdf")}{" "}
-                <span className="text-gray-500">({t("optional")})</span>
+                <span className="text-app-dark-blue/40 dark:text-white/40">({t("optional")})</span>
               </label>
               <select
                 value={selectedPdfId || ""}
                 onChange={(e) => setSelectedPdfId(e.target.value || null)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
               >
                 <option value="">{t("noPdfSelected")}</option>
                 {pdfs.map((pdf) => (
@@ -202,24 +192,20 @@ function BulkTopicCreateModal({
                 ))}
               </select>
               {selectedPdfId && (
-                <p className="text-xs text-blue-600 mt-2">
-                  {t("pdfWillBeLinked")}
-                </p>
+                <p className="text-xs text-app-bright-green mt-2">{t("pdfWillBeLinked")}</p>
               )}
             </div>
           )}
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("format")}
-            </label>
+            <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">{t("format")}</label>
             <div className="flex items-center gap-2 mb-4">
               <button
                 type="button"
                 onClick={() => setFormat("text")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${format === "text"
-                  ? "bg-blue-100 text-blue-700 border-2 border-blue-300"
-                  : "bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200"
+                className={`px-4 py-2 rounded-app text-sm font-semibold transition-colors ${format === "text"
+                  ? "bg-app-bright-green/20 text-app-bright-green border-2 border-app-bright-green/50"
+                  : "border border-black/10 dark:border-white/10 text-app-dark-blue/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
               >
                 {t("textFormat")}
@@ -227,9 +213,9 @@ function BulkTopicCreateModal({
               <button
                 type="button"
                 onClick={() => setFormat("json")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${format === "json"
-                  ? "bg-blue-100 text-blue-700 border-2 border-blue-300"
-                  : "bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200"
+                className={`px-4 py-2 rounded-app text-sm font-semibold transition-colors ${format === "json"
+                  ? "bg-app-bright-green/20 text-app-bright-green border-2 border-app-bright-green/50"
+                  : "border border-black/10 dark:border-white/10 text-app-dark-blue/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
               >
                 {t("jsonFormat")}
@@ -238,10 +224,11 @@ function BulkTopicCreateModal({
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("instructions")}
-            </label>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 mb-4">
+            <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">{t("instructions")}</label>
+            <div className="rounded-app p-3 text-sm
+              bg-app-bright-green/5 dark:bg-app-bright-green/10
+              border border-app-bright-green/20
+              text-app-dark-blue/80 dark:text-white/80 mb-4">
               {format === "text" ? (
                 <ul className="list-disc list-inside space-y-1">
                   <li>{t("instruction1")}</li>
@@ -287,7 +274,7 @@ function BulkTopicCreateModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
               {t("topicsList")} <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -295,57 +282,47 @@ function BulkTopicCreateModal({
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
               rows={15}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-              placeholder={
-                format === "text"
-                  ? t("topicsPlaceholder")
-                  : t("jsonPlaceholder")
-              }
+              className="w-full px-3 py-2 rounded-app text-sm font-mono outline-none transition-colors border
+                border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                text-app-dark-blue dark:text-white focus:border-app-bright-green"
+              placeholder={format === "text" ? t("topicsPlaceholder") : t("jsonPlaceholder")}
               required
             />
             {format === "text" && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mt-2">
                 {t("linesCount")}:{" "}
                 {bulkText.split("\n").filter((line) => line.trim()).length}
               </p>
             )}
             {format === "json" && bulkText && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mt-2">
                 {t("jsonPreview")}:{" "}
                 {(() => {
                   try {
                     const parsed = JSON.parse(bulkText);
-                    const arr = Array.isArray(parsed)
-                      ? parsed
-                      : parsed.topics || [];
+                    const arr = Array.isArray(parsed) ? parsed : parsed.topics || [];
                     return `${arr.length} ${t("topicsDetected")}`;
-                  } catch {
-                    return t("invalidJson");
-                  }
+                  } catch { return t("invalidJson"); }
                 })()}
               </p>
             )}
           </div>
         </form>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t">
-          <button
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-black/10 dark:border-white/10">
+          <Button
             type="button"
+            variant="secondary"
             onClick={onClose}
             disabled={saving}
-            className="px-6 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors disabled:opacity-50"
           >
             {t("cancel")}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving || !bulkText.trim()}
-            className="px-6 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving || !bulkText.trim()}>
             {saving ? t("creating") : t("create")}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -423,33 +400,21 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-xl font-bold">{t("editTopic")}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden
+        bg-white dark:bg-app-dark-blue/95 border-black/10 dark:border-white/10 shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-black/10 dark:border-white/10">
+          <h3 className="text-xl font-bold text-app-dark-blue dark:text-white">{t("editTopic")}</h3>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <PiX className="w-5 h-5" />
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6">
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
+            <div className="mb-4 p-3 rounded-app text-sm
+              bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700
+              text-red-700 dark:text-red-400">
               {error}
             </div>
           )}
@@ -466,13 +431,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                 placeholder={t("topicNamePlaceholder")}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("topicDescription")}
               </label>
               <textarea
@@ -481,13 +448,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                 placeholder={t("topicDescriptionPlaceholder")}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("language")}
               </label>
               <select
@@ -495,7 +464,9 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, language: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
               >
                 <option value="">{t("selectLanguage")}</option>
                 <option value="en">English</option>
@@ -507,7 +478,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                   {t("gradeLevel")}
                 </label>
                 <input
@@ -518,13 +489,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   }
                   min="1"
                   max="12"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                   placeholder={t("gradeLevelPlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                   {t("chapterNumber")}
                 </label>
                 <input
@@ -533,13 +506,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, chapterNumber: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                   placeholder={t("chapterNumberPlaceholder")}
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("aiSummary")}
               </label>
               <textarea
@@ -548,13 +523,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   setFormData({ ...formData, aiSummary: e.target.value })
                 }
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                 placeholder={t("aiSummaryPlaceholder")}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("aiGuide")}
               </label>
               <textarea
@@ -563,14 +540,14 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   setFormData({ ...formData, aiGuide: e.target.value })
                 }
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-app focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                 placeholder={t("aiGuidePlaceholder")}
               />
               <p className="mt-1 text-xs text-gray-500">{t("aiGuideHelp")}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("estimatedQuestionsCapacity")}
               </label>
               <input
@@ -583,15 +560,20 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                   })
                 }
                 min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                 placeholder={t("estimatedQuestionsPlaceholder")}
               />
             </div>
 
             {formData.pdfDetails?.pages && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-                <span className="text-sm font-medium text-blue-700">{t("pdfPages")}:</span>
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
+              <div className="rounded-app p-3 flex items-center gap-2
+              bg-app-bright-green/10 dark:bg-app-bright-green/15
+              border border-app-bright-green/30">
+                <span className="text-sm font-semibold text-app-dark-blue dark:text-white">{t("pdfPages")}:</span>
+                <span className="px-2 py-0.5 rounded text-xs font-bold
+                bg-app-bright-green/20 text-app-bright-green">
                   {formData.pdfDetails.pages.start} – {formData.pdfDetails.pages.end}
                 </span>
               </div>
@@ -599,7 +581,7 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                   {t("pdfPageStart")}
                 </label>
                 <input
@@ -609,13 +591,15 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                     setFormData({ ...formData, pdfPageStart: e.target.value })
                   }
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                   placeholder={t("pdfPageStartPlaceholder")}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                   {t("pdfPageEnd")}
                 </label>
                 <input
@@ -625,14 +609,16 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                     setFormData({ ...formData, pdfPageEnd: e.target.value })
                   }
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
                   placeholder={t("pdfPageEndPlaceholder")}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70">
                 {t("estimatedEducationStartDate")}
               </label>
               <input
@@ -644,45 +630,31 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
                     estimatedEducationStartDate: e.target.value,
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border
+                  border-black/10 dark:border-white/10 bg-white dark:bg-white/5
+                  text-app-dark-blue dark:text-white focus:border-app-bright-green"
               />
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                {t("statistics")}
-              </h4>
+            <div className="rounded-app p-4 border border-black/10 dark:border-white/10 bg-black/3 dark:bg-white/5">
+              <h4 className="text-sm font-bold text-app-dark-blue dark:text-white mb-2">{t("statistics")}</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-gray-600">
-                    {t("publishedQuestions")}:
-                  </span>
-                  <span className="ml-2 font-medium">
-                    {topic.topicPublishedQuestionsStats}
-                  </span>
+                  <span className="text-app-dark-blue/50 dark:text-white/50">{t("publishedQuestions")}:</span>
+                  <span className="ml-2 font-semibold text-app-dark-blue dark:text-white">{topic.topicPublishedQuestionsStats}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">
-                    {t("generalQuestions")}:
-                  </span>
-                  <span className="ml-2 font-medium">
-                    {topic.topicGeneralQuestionsStats}
-                  </span>
+                  <span className="text-app-dark-blue/50 dark:text-white/50">{t("generalQuestions")}:</span>
+                  <span className="ml-2 font-semibold text-app-dark-blue dark:text-white">{topic.topicGeneralQuestionsStats}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">
-                    {t("remainingToGenerate")}:
-                  </span>
-                  <span className="ml-2 font-medium">
-                    {topic.topicQuestionsRemainingToGenerate ?? "N/A"}
-                  </span>
+                  <span className="text-app-dark-blue/50 dark:text-white/50">{t("remainingToGenerate")}:</span>
+                  <span className="ml-2 font-semibold text-app-dark-blue dark:text-white">{topic.topicQuestionsRemainingToGenerate ?? "N/A"}</span>
                 </div>
                 {topic.totalPdfPages && (
                   <div>
-                    <span className="text-gray-600">{t("totalPdfPages")}:</span>
-                    <span className="ml-2 font-medium">
-                      {topic.totalPdfPages}
-                    </span>
+                    <span className="text-app-dark-blue/50 dark:text-white/50">{t("totalPdfPages")}:</span>
+                    <span className="ml-2 font-semibold text-app-dark-blue dark:text-white">{topic.totalPdfPages}</span>
                   </div>
                 )}
               </div>
@@ -690,25 +662,16 @@ function TopicEditModal({ topic, onSave, onClose }: TopicEditModalProps) {
           </div>
         </form>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="px-6 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors disabled:opacity-50"
-          >
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-black/10 dark:border-white/10">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
             {t("cancel")}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="px-6 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving}>
             {saving ? t("saving") : t("save")}
-          </button>
+          </Button>
         </div>
-      </div >
-    </div >
+      </Card>
+    </div>
   );
 }
 
@@ -732,11 +695,11 @@ export function SubjectTopicsSection({
     try {
       setLoading(true);
       const [topicsData, pdfsData] = await Promise.all([
-        apiCall<Topic[]>({
+        fetchApiUtil<Topic[]>({
           url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics`,
           method: "GET",
         }),
-        apiCall<SubjectPdf[]>({
+        fetchApiUtil<SubjectPdf[]>({
           url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
           method: "GET",
         }),
@@ -758,7 +721,7 @@ export function SubjectTopicsSection({
 
   const handleUpdateTopic = async (topicId: string, updatedData: Partial<Topic>) => {
     try {
-      await apiCall<any>({
+      await fetchApiUtil<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/${topicId}/update`,
         method: "PUT",
         body: updatedData,
@@ -790,7 +753,7 @@ export function SubjectTopicsSection({
 
   const handleBulkCreate = async (newTopics: Partial<Topic>[]) => {
     try {
-      await apiCall<any>({
+      await fetchApiUtil<unknown>({
         method: "POST",
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/topics/create`,
         body: { topics: newTopics },
@@ -816,28 +779,27 @@ export function SubjectTopicsSection({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <Card className="mt-4 p-6 bg-white/80 dark:bg-white/5 border-black/10 dark:border-white/10">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{t("topics")}</h2>
+        <h2 className="text-xl font-bold text-app-dark-blue dark:text-white">{t("topics")}</h2>
         <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600">
-            {t("totalTopics")}:{" "}
-            <span className="font-semibold">{topics.length}</span>
-          </div>
+          <span className="text-sm text-app-dark-blue/50 dark:text-white/50">
+            {t("totalTopics")}: <span className="font-semibold text-app-dark-blue dark:text-white">{topics.length}</span>
+          </span>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => setShowBulkCreate(true)}
-              className="px-4 py-2 bg-brand hover:bg-brand/80 text-brand-secondary rounded text-sm font-medium transition-colors"
             >
               {t("bulkCreate")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setShowPdfExtractor(true)}
-              className="px-4 py-2 bg-brand-secondary hover:bg-brand-secondary/80 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
+              className="flex items-center gap-2"
             >
               <PiBookOpen className="w-4 h-4" />
               {t("extractFromPdf")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -845,36 +807,39 @@ export function SubjectTopicsSection({
       <div className="h-4" />
 
       {topics.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg font-medium">{t("noTopics")}</p>
-          <p className="text-sm mt-2">{t("noTopicsDescription")}</p>
+        <div className="py-12 text-center">
+          <PiListChecks className="mx-auto w-12 h-12 mb-3 text-app-dark-blue/20 dark:text-white/20" />
+          <p className="text-base font-semibold text-app-dark-blue/50 dark:text-white/50">{t("noTopics")}</p>
+          <p className="text-sm mt-1 text-app-dark-blue/30 dark:text-white/30">{t("noTopicsDescription")}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {topics.map((topic, index) => (
             <div
               key={topic.id}
-              className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+              className="flex flex-col gap-4 p-4 rounded-app border transition-colors
+                border-black/10 dark:border-white/10
+                hover:border-app-bright-green/30 dark:hover:border-app-bright-green/30
+                bg-white/50 dark:bg-white/5"
             >
               {/* Row 1: Order and Name/Info */}
               <div className="flex items-start gap-4">
-                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 min-w-[3rem] shrink-0">
-                  <span className="text-xs font-bold text-gray-500">
-                    #{index + 1}
-                  </span>
+                <div className="flex flex-col items-center justify-center rounded-app px-3 py-2 min-w-[3rem] shrink-0
+                  bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10">
+                  <span className="text-xs font-bold text-app-dark-blue/50 dark:text-white/50">#{index + 1}</span>
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold text-gray-900 line-clamp-1" title={topic.name}>
+                  <h3 className="text-base font-bold text-app-dark-blue dark:text-white line-clamp-1" title={topic.name}>
                     {topic.name}
                   </h3>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-app-dark-blue/50 dark:text-white/50 mt-1">
                     {topic.chapterNumber && (
                       <span>{t("chapter")}: {topic.chapterNumber}</span>
                     )}
                     {topic.description && (
-                      <span className="line-clamp-1 text-gray-500 border-l pl-4 border-gray-300">
+                      <span className="line-clamp-1 text-app-dark-blue/40 dark:text-white/40 border-l pl-4 border-black/10 dark:border-white/10">
                         {topic.description}
                       </span>
                     )}
@@ -884,12 +849,14 @@ export function SubjectTopicsSection({
                   {(topic.language && subject.language && topic.language !== subject.language || topic.gradeLevel !== null && subject.gradeLevel !== null && topic.gradeLevel !== subject.gradeLevel) && (
                     <div className="flex gap-2 mt-2">
                       {topic.language && subject.language && topic.language !== subject.language && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title={t("languageMismatch")}>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold
+                          bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                           {t("languageMismatch")} ({topic.language.toUpperCase()})
                         </span>
                       )}
                       {topic.gradeLevel !== null && subject.gradeLevel !== null && topic.gradeLevel !== subject.gradeLevel && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800" title={t("gradeMismatch")}>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold
+                          bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
                           {t("gradeMismatch")} ({topic.gradeLevel})
                         </span>
                       )}
@@ -899,11 +866,11 @@ export function SubjectTopicsSection({
               </div>
 
               {/* Row 2: Stats */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-700">
+              <div className="rounded-app p-3 bg-black/3 dark:bg-white/5 border border-black/8 dark:border-white/8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-app-dark-blue/70 dark:text-white/70">
                   {topic.gradeLevel && (
                     <div className="flex flex-col">
-                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("grade")}</span>
+                      <span className="text-app-dark-blue/40 dark:text-white/40 mb-0.5 text-[10px] uppercase tracking-wider">{t("grade")}</span>
                       <span className="font-semibold">{topic.gradeLevel}</span>
                     </div>
                   )}
@@ -914,14 +881,14 @@ export function SubjectTopicsSection({
                   {/* Only show capacity if it exists */}
                   {topic.topicEstimatedQuestionsCapacity && (
                     <div className="flex flex-col">
-                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("capacity")}</span>
+                      <span className="text-app-dark-blue/40 dark:text-white/40 mb-0.5 text-[10px] uppercase tracking-wider">{t("capacity")}</span>
                       <span className="font-semibold">{topic.topicEstimatedQuestionsCapacity}</span>
                     </div>
                   )}
                   {/* PDF Details integrated into stats row or strictly next to it? Let's put in grid if fits or separate line inside this box */}
                   {(topic.pdfDetails?.pages || topic.pdfDetails?.fileName) && (
                     <div className="flex flex-col">
-                      <span className="text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">{t("pdfPages")}</span>
+                      <span className="text-app-dark-blue/40 dark:text-white/40 mb-0.5 text-[10px] uppercase tracking-wider">{t("pdfPages")}</span>
                       <span className="font-semibold truncate" title={topic.pdfDetails.fileName || ""}>
                         {topic.pdfDetails.pages ? `${topic.pdfDetails.pages.start}-${topic.pdfDetails.pages.end}` : "N/A"}
                       </span>
@@ -932,26 +899,28 @@ export function SubjectTopicsSection({
 
               {/* Row 3: Buttons */}
               <div className="flex items-center gap-2 flex-wrap">
-                <button
+                <Button
+                  size="sm"
+                  variant="secondary"
                   onClick={() => onShowQuestions(topic.id, topic.name)}
-                  className="px-3 py-1.5 bg-brand-secondary text-white hover:bg-brand-secondary/80 text-sm font-medium rounded transition-colors flex items-center gap-2"
+                  className="flex items-center gap-2"
                 >
                   <PiListChecks className="w-4 h-4" />
                   {t("showQuestions")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
+                  variant={topic.isActiveAiGeneration ? "secondary" : "outline"}
                   onClick={() => handleToggleAi(topic.id, topic.isActiveAiGeneration)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${topic.isActiveAiGeneration
-                    ? "bg-brand-secondary/50 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/80"
-                    : "bg-brand-secondary/20 text-brand-secondary border-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
-                    }`}
+                  className={topic.isActiveAiGeneration ? "" : "opacity-70 hover:opacity-100"}
                 >
                   {topic.isActiveAiGeneration ? t("aiActive") : t("aiInactive")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
                   onClick={() => handleGenerateTests(topic)}
                   disabled={!topic.isActiveAiGeneration}
-                  className="px-3 py-1.5 bg-brand hover:bg-brand-secondary/90 text-brand-secondary rounded text-sm font-medium transition-colors disabled:opacity-90  hover:text-white disabled:cursor-not-allowed flex items-center gap-2"
+                  className="flex items-center gap-2"
                   title={!topic.isActiveAiGeneration ? t("aiNotActive") : t("generateTestsTooltip")}
                 >
                   <svg
@@ -968,27 +937,27 @@ export function SubjectTopicsSection({
                     />
                   </svg>
                   <span>{t("generateTests")}</span>
-                </button>
+                </Button>
 
                 <div className="flex-1" /> {/* Spacer */}
 
-                <button
+                <Button
+                  size="sm"
+                  variant={topic.aiGuide ? "secondary" : "outline"}
                   onClick={() => setActiveAiGuideTopic(topic)}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-2 ${topic.aiGuide
-                    ? "bg-brand-secondary text-white  hover:bg-brand-secondary/80 hover:text-white"
-                    : "bg-brand-secondary/20 text-brand-secondary hover:bg-brand-secondary/70 hover:text-white"
-                    }`}
+                  className={`flex items-center gap-2 ${topic.aiGuide ? "" : "opacity-70 hover:opacity-100"}`}
                   title={t("manageAiGuide")}
                 >
                   <PiBrain className={topic.aiGuide ? "fill-current" : ""} />
                   <span className="hidden sm:inline">{t("manageAiGuide")}</span>
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => handleEditClick(topic)}
-                  className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium transition-colors"
                 >
                   {t("edit")}
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -1064,6 +1033,6 @@ export function SubjectTopicsSection({
           />
         )
       }
-    </div >
+    </Card>
   );
 }

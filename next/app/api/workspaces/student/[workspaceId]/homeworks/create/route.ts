@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/workspaces/student/[workspaceId]/homeworks/create
@@ -32,7 +32,7 @@ export const POST = unifiedApiHandler(
         return serverErrorResponse(result.error || "Failed to create homework");
       }
 
-      return createdResponse({ success: true, homework: result.data,  });
+      return createdResponse({ success: true, homework: result.data, });
     } catch (error) {
       log.error("POST homework error", error);
       return serverErrorResponse("Failed to create homework");

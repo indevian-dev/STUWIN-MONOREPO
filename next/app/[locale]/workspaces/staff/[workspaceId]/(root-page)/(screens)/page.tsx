@@ -1,5 +1,5 @@
-import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitleTile';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitle.tile';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StaffRootPage() {
 

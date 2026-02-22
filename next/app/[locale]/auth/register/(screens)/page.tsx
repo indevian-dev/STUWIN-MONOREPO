@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 
-const AuthRegisterWidget = dynamic(() => import('@/app/[locale]/auth/register/(widgets)/AuthRegisterWidget'), {
+const AuthRegisterWidget = dynamic(() => import('@/app/[locale]/auth/register/(widgets)/AuthRegister.widget'), {
   ssr: false,
 });
 
@@ -14,13 +14,10 @@ export default function AuthRegisterPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
 
   const checkAuth = async () => {
     try {
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         url: '/api/auth',
         method: 'GET'
       });
@@ -38,6 +35,13 @@ export default function AuthRegisterPage() {
       setChecking(false);
     }
   };
+
+
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
 
   if (checking) {
     return <GlobalLoaderTile fullPage={true} message="Preparing Registration..." />;

@@ -1,7 +1,7 @@
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
 import { z } from 'zod';
-import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { searchParams } = new URL(request.url);
@@ -17,6 +17,11 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
 
   const filterAuthorId = searchParams.get('authorAccountId') || undefined;
 
+  // published=true → only published, published=false → only unpublished, absent → all
+  const publishedParam = searchParams.get('published');
+  const onlyPublished = publishedParam === 'true';
+  const onlyUnpublished = publishedParam === 'false';
+
   const result = await module.question.list({
     page,
     pageSize,
@@ -24,7 +29,8 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
     complexity,
     gradeLevel,
     authorAccountId: filterAuthorId,
-    onlyPublished: false, // Providers need to see drafts
+    onlyPublished,
+    onlyUnpublished,
     workspaceId
   });
 
@@ -35,9 +41,9 @@ export const GET = unifiedApiHandler(async (request, { module, params }) => {
   const { questions, pagination } = result.data;
 
   return okResponse({
-      questions,
-      ...pagination
-    });
+    questions,
+    ...pagination
+  });
 });
 
 // Legacy question create — uses snake_case fields from old frontend

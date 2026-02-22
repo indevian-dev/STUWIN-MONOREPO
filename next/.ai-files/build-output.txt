@@ -1,0 +1,288 @@
+﻿bun.exe : $ next build
+At C:\Users\indev\AppData\Roaming\npm\bun.ps1:14 
+char:3
++   & "$basedir/node_modules/bun/bin/bun.exe"   $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ next b 
+   uild:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Γû▓ Next.js 16.1.4 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 35.3s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/50) ...
+  Generating static pages using 11 workers (12/50) 
+  Generating static pages using 11 workers (24/50) 
+  Generating static pages using 11 workers (37/50) 
+Γ£ô Generating static pages using 11 workers (50/50) in 393.1ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /_not-found
+Γö£ ╞Æ /[locale]
+Γö£ ╞Æ /[locale]/auth/login
+Γö£ ╞Æ /[locale]/auth/oauth/callback
+Γö£ ╞Æ /[locale]/auth/register
+Γö£ ╞Æ /[locale]/auth/reset
+Γö£ ╞Æ /[locale]/auth/verify
+Γö£ ╞Æ /[locale]/contact
+Γö£ ╞Æ /[locale]/deactivation
+Γö£ ╞Æ /[locale]/docs/about
+Γö£ ╞Æ /[locale]/docs/faq
+Γö£ ╞Æ /[locale]/docs/privacy
+Γö£ ╞Æ /[locale]/docs/rules
+Γö£ ╞Æ /[locale]/docs/terms
+Γö£ ╞Æ /[locale]/forbidden
+Γö£ ╞Æ /[locale]/not-found
+Γö£ ╞Æ /[locale]/pdf-tool
+Γö£ ╞Æ /[locale]/programs
+Γö£ ╞Æ /[locale]/providers
+Γö£ ╞Æ /[locale]/providers/[id]
+Γö£ ╞Æ /[locale]/providers/apply
+Γö£ ╞Æ /[locale]/subjects
+Γö£ ╞Æ /[locale]/subjects/[slug]
+Γö£ ╞Æ /[locale]/workspaces
+Γö£ ╞Æ /[locale]/workspaces/billing
+Γö£ ╞Æ /[locale]/workspaces/billing/checkout
+Γö£ ╞Æ /[locale]/workspaces/billing/error
+Γö£ ╞Æ /[locale]/workspaces/billing/verify
+Γö£ ╞Æ /[locale]/workspaces/enroll/[providerId]
+Γö£ ╞Æ /[locale]/workspaces/invitations
+Γö£ ╞Æ /[locale]/workspaces/onboarding/parent
+Γö£ ╞Æ /[locale]/workspaces/onboarding/provider
+Γö£ ╞Æ /[locale]/workspaces/onboarding/student
+Γö£ ╞Æ /[locale]/workspaces/onboarding/tutor
+Γö£ ╞Æ /[locale]/workspaces/onboarding/welcome
+Γö£ ╞Æ /[locale]/workspaces/profile
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/members
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/organization
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/organization/edit
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/students
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/students/[id]
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/students/create
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/students/invite
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/subjects
+Γö£ ╞Æ /[locale]/workspaces/provider/[workspaceId]/subjects/[id]
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/ai-lab
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/blogs
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/blogs/[blogId]
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/docs/about
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/docs/faq
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/docs/privacy
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/docs/rules
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/docs/terms
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/jobs
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/mail
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/manage-workspaces
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/payments/coupons
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/providers
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/providers/applications
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/roles
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/roles/[id]
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/subjects
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/users
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/workspaces/parent
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/workspaces/staff
+Γö£ ╞Æ /[locale]/workspaces/staff/[workspaceId]/workspaces/student
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/accounts/me
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/billing
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/bookmarks
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/goals
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/homeworks
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/homeworks/[id]
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/homeworks/upload
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/learning/sessions
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/notifications
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/progress
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/quizzes
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/quizzes/report/[id]
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/quizzes/results/[id]
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/quizzes/start
+Γö£ ╞Æ /[locale]/workspaces/student/[workspaceId]/quizzes/take/[id]
+Γö£ ╞Æ /api/auth
+Γö£ ╞Æ /api/auth/2fa/generate
+Γö£ ╞Æ /api/auth/2fa/validate
+Γö£ ╞Æ /api/auth/avatar
+Γö£ ╞Æ /api/auth/login
+Γö£ ╞Æ /api/auth/logout
+Γö£ ╞Æ /api/auth/oauth
+Γö£ ╞Æ /api/auth/oauth/callback
+Γö£ ╞Æ /api/auth/oauth/initiate
+Γö£ ╞Æ /api/auth/register
+Γö£ ╞Æ /api/auth/reset/request
+Γö£ ╞Æ /api/auth/reset/set
+Γö£ ╞Æ /api/auth/update-contact
+Γö£ ╞Æ /api/auth/verify
+Γö£ ╞Æ /api/cities
+Γö£ ╞Æ /api/docs
+Γö£ ╞Æ /api/jobs/generate-report
+Γö£ ╞Æ /api/jobs/generate-topic-questions
+Γö£ ╞Æ /api/jobs/mass-report-scanner
+Γö£ ╞Æ /api/pages/rules
+Γö£ ╞Æ /api/programs
+Γö£ ╞Æ /api/providers
+Γö£ ╞Æ /api/providers/[id]
+Γö£ ╞Æ /api/providers/stats
+Γö£ ╞Æ /api/questions
+Γö£ ╞Æ /api/questions/[id]
+Γö£ ╞Æ /api/questions/by-subject
+Γö£ ╞Æ /api/subjects
+Γö£ ╞Æ /api/webhooks/payments/epoint
+Γö£ ╞Æ /api/webhooks/questions-generator
+Γö£ ╞Æ /api/workspaces/billing/coupon
+Γö£ ╞Æ /api/workspaces/billing/initiate
+Γö£ ╞Æ /api/workspaces/billing/subscriptions
+Γö£ ╞Æ /api/workspaces/billing/tiers
+Γö£ ╞Æ /api/workspaces/billing/transactions
+Γö£ ╞Æ /api/workspaces/billing/verify/[transactionId]
+Γö£ ╞Æ /api/workspaces/create
+Γö£ ╞Æ /api/workspaces/dashboard/notifications
+Γö£ ╞Æ /api/workspaces/discover
+Γö£ ╞Æ /api/workspaces/invitations
+Γö£ ╞Æ /api/workspaces/invitations/[invitationId]/respond
+Γö£ ╞Æ /api/workspaces/list
+Γö£ ╞Æ /api/workspaces/onboarding
+Γö£ ╞Æ /api/workspaces/onboarding/search-child
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/invitations/send
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/members
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/organization
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/organization/update
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/[id]/generate-visual
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/[id]/visual
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/delete/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/generate
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/publish/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/queue
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/sync/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/questions/update/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/search/questions
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/search/sync
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/students
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/cover
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/pdfs
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/pdfs/save
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/pdfs/upload
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics/[topicId]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics/[topicId]/generate-tests
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics/[topicId]/questions/create
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics/[topicId]/update
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/topics/create
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/[id]/update
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/subjects/delete/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/analyze-book
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/create
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/delete/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/media/save-pdf/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/media/upload-url/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/update/[id]
+Γö£ ╞Æ /api/workspaces/provider/[workspaceId]/topics/upload-pdf
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/accounts/[id]/workspaces
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/accounts/search
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/ai-lab/prompts
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/ai-lab/prompts/[promptId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/blogs
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/blogs/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/blogs/delete/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/blogs/update/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/docs
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/docs/update
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/jobs/control
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/jobs/stats
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/mail/config
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/mail/send
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/mail/status
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/mail/test
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/memberships/add-staff
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/payments/coupons
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/payments/coupons/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/prompts
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/prompts/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/providers
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/providers/[providerId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/providers/applications
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/providers/applications/update/[applicationId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/roles
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/roles/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/roles/[id]/permissions
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/roles/create
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/create
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/delete/[categoryId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/media/delete/[categoryId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/media/upload/[categoryId]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/subjects/update/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/assign-provider
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/create
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/delete
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/media/delete/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/media/upload/[id]
+Γö£ ╞Æ /api/workspaces/staff/[workspaceId]/users/update
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/delete
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/me
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/me/update
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/media/delete
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/media/upload
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/accounts/update
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/billing
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/billing/coupon
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/billing/tiers
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/favorites
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/favorites/context
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/favorites/create/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/favorites/delete/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/homeworks
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/homeworks/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/homeworks/[id]/initiate
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/homeworks/create
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/learning-conversations
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/learning-conversations/[conversationId]/messages
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/learning/analyze
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/learning/session
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/notifications
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/notifications/update/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/progress
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/providers
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/providers/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/questions
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/questions/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/analyze
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/delete/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/history
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/start
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/quizzes/submit
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/roles
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/roles/[id]
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/roles/[id]/permissions
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/roles/create
+Γö£ ╞Æ /api/workspaces/student/[workspaceId]/subjects
+Γö£ ╞Æ /api/workspaces/student/current/homeworks
+Γö£ ╞Æ /api/workspaces/student/current/homeworks/[id]
+Γö£ ╞Æ /api/workspaces/student/current/homeworks/[id]/initiate
+Γö£ ╞Æ /api/workspaces/student/current/learning-conversations/[id]/chat
+Γöö ╞Æ /api/workspaces/student/current/quizzes/analyze
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

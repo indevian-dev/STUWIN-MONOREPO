@@ -1,7 +1,7 @@
 
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { generateSlimId } from '@/lib/utils/ids/SlimUlidUtil';
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { generateSlimId } from '@/lib/utils/Helper.SlimUlid.util';
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const DELETE = unifiedApiHandler(async (request, { module, params, auth }) => {
   const id = params?.id;

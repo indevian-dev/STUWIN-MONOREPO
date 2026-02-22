@@ -4,11 +4,11 @@
 // Dashboard for managing and monitoring background jobs
 // ═══════════════════════════════════════════════════════════════
 
-import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitleTile';
-import { withPageAuth } from '@/lib/middleware/handlers';
-import { StaffJobControlWidget } from '../(widgets)/StaffJobControlWidget';
-import { StaffJobStatsWidget } from '../(widgets)/StaffJobStatsWidget';
-import { StaffJobLogsWidget } from '../(widgets)/StaffJobLogsWidget';
+import { StaffPageTitleTile } from '@/app/[locale]/workspaces/staff/[workspaceId]/(tiles)/StaffPageTitle.tile';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
+import { StaffJobControlWidget } from '../(widgets)/StaffJobControl.widget';
+import { StaffJobStatsWidget } from '../(widgets)/StaffJobStats.widget';
+import { StaffJobLogsWidget } from '../(widgets)/StaffJobLogs.widget';
 
 function StaffBackgroundJobsPage() {
   return (

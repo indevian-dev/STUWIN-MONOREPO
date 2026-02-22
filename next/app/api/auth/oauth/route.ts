@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import supabase from '@/lib/integrations/supabase/service-role.client';
-import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import supabase from '@/lib/integrations/supabase/Pgsql.client';
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request: NextRequest) => {
   try {

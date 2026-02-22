@@ -1,5 +1,5 @@
-import { StudentHomeworkUploadWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUploadWidget";
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { StudentHomeworkUploadWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworkUpload.widget";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StudentHomeworkUploadPage() {
   return (

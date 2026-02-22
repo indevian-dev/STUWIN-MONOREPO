@@ -3,9 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import axios from "axios";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
-import type { SubjectPdf, Subject } from "./ProviderSubjectDetailWidget";
-import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
+import type { SubjectPdf, Subject } from "./ProviderSubjectDetail.widget";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoader.tile";
+import { Card } from "@/app/primitives/Card.primitive";
+import { Button } from "@/app/primitives/Button.primitive";
+import { PiFilePdf, PiX } from "react-icons/pi";
 
 interface SubjectMediaLibrarySectionProps {
   workspaceId: string;
@@ -14,6 +17,15 @@ interface SubjectMediaLibrarySectionProps {
 }
 
 type UploadMode = "simple" | null;
+
+const inputCls = "w-full px-3 py-2 rounded-app text-sm outline-none transition-colors border\
+  border-black/10 dark:border-white/10\
+  bg-white dark:bg-white/5\
+  text-app-dark-blue dark:text-white\
+  placeholder:text-app-dark-blue/30 dark:placeholder:text-white/30\
+  focus:border-app-bright-green dark:focus:border-app-bright-green";
+
+const labelCls = "block text-sm font-semibold mb-1 text-app-dark-blue/70 dark:text-white/70";
 
 export function SubjectMediaLibrarySection({
   workspaceId,
@@ -36,13 +48,12 @@ export function SubjectMediaLibrarySection({
   const fetchPdfs = async () => {
     try {
       setLoading(true);
-      const data = await apiCall<SubjectPdf[]>({
+      const data = await fetchApiUtil<SubjectPdf[]>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs`,
         method: "GET",
       });
-
       setPdfs(data ?? []);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to fetch PDFs:", err);
       setError(t("errorFetchingData"));
     } finally {
@@ -55,101 +66,53 @@ export function SubjectMediaLibrarySection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjectId]);
 
-  const handleUploadClick = (mode: UploadMode) => {
-    setUploadMode(mode);
-    setError(null);
-    setSelectedFile(null);
-  };
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
-    if (file.type !== "application/pdf") {
-      setError(t("invalidPdfFile"));
-      setSelectedFile(null);
-      return;
-    }
-
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError(t("fileTooLarge"));
-      setSelectedFile(null);
-      return;
-    }
-
+    if (file.type !== "application/pdf") { setError(t("invalidPdfFile")); setSelectedFile(null); return; }
+    if (file.size > 50 * 1024 * 1024) { setError(t("fileTooLarge")); setSelectedFile(null); return; }
     setSelectedFile(file);
     setError(null);
   };
 
   const handleSimplePdfUpload = async () => {
-    if (!selectedFile) {
-      setError(t("noFileSelected"));
-      return;
-    }
-
+    if (!selectedFile) { setError(t("noFileSelected")); return; }
     try {
       setUploading(true);
       setError(null);
       setUploadProgress(0);
 
-      // Step 1: Get presigned URL
-      const uploadData = await apiCall<{ presignedUrl: string; generatedFileName: string }>({
+      const uploadData = await fetchApiUtil<{ presignedUrl: string; generatedFileName: string }>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/upload`,
         method: "POST",
-        body: {
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
-        },
+        body: { fileName: selectedFile.name, fileType: selectedFile.type },
       });
 
-      if (!uploadData) {
-        throw new Error("Failed to get upload URL");
-      }
-
+      if (!uploadData) throw new Error("Failed to get upload URL");
       const { presignedUrl, generatedFileName } = uploadData;
 
-      // Step 2: Upload file to S3 (using axios for progress tracking)
       await axios.put(presignedUrl, selectedFile, {
-        headers: {
-          "Content-Type": "application/pdf",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.lengthComputable && progressEvent.total) {
-            const percentComplete = Math.round(
-              (progressEvent.loaded / progressEvent.total) * 100
-            );
-            setUploadProgress(percentComplete);
-          }
+        headers: { "Content-Type": "application/pdf" },
+        onUploadProgress: (e) => {
+          if (e.lengthComputable && e.total) setUploadProgress(Math.round((e.loaded / e.total) * 100));
         },
       });
 
-      // Step 3: Save PDF metadata to database
-      await apiCall<unknown>({
+      await fetchApiUtil<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/save`,
         method: "POST",
-        body: {
-          pdfFileName: generatedFileName,
-          fileName: selectedFile.name,
-          name: pdfName || selectedFile.name,
-          language: pdfLanguage,
-        },
+        body: { pdfFileName: generatedFileName, fileName: selectedFile.name, name: pdfName || selectedFile.name, language: pdfLanguage },
       });
 
-      // Refresh list
       await fetchPdfs();
-
       setUploadMode(null);
       setSelectedFile(null);
       setPdfName("");
       setPdfLanguage("");
       setUploadProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t("uploadError"));
-      console.error("Failed to upload PDF:", err);
     } finally {
       setUploading(false);
     }
@@ -162,78 +125,61 @@ export function SubjectMediaLibrarySection({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-
   const handleToggleActive = async (pdf: SubjectPdf) => {
     try {
-      await apiCall<unknown>({
+      await fetchApiUtil<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}`,
         method: "PUT",
         body: { isActive: !pdf.isActive },
       });
-
       await fetchPdfs();
-    } catch (err) {
-      console.error("Failed to toggle PDF:", err);
-    }
+    } catch (err: unknown) { console.error("Failed to toggle PDF:", err); }
   };
 
   const handleDelete = async (pdf: SubjectPdf) => {
     if (!confirm(t("confirmDelete"))) return;
-
     try {
-      await apiCall<unknown>({
+      await fetchApiUtil<unknown>({
         url: `/api/workspaces/provider/${workspaceId}/subjects/${subjectId}/pdfs/${pdf.id}/delete`,
         method: "DELETE",
       });
-
       await fetchPdfs();
-    } catch (err) {
-      console.error("Failed to delete PDF:", err);
-    }
+    } catch (err: unknown) { console.error("Failed to delete PDF:", err); }
   };
 
-  const handleViewPdf = (pdf: SubjectPdf) => {
-    setSelectedPdf(pdf);
-  };
-
-  const closePdfViewer = () => {
-    setSelectedPdf(null);
-  };
-
-  if (loading && pdfs.length === 0) {
-    return <GlobalLoaderTile message={t("loadingMedia")} />;
-  }
+  if (loading && pdfs.length === 0) return <GlobalLoaderTile message={t("loadingMedia")} />;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mt-6">
+    <Card className="mt-4 p-6 bg-white/80 dark:bg-white/5 border-black/10 dark:border-white/10">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-xl font-bold text-app-dark-blue dark:text-white">
           {t("mediaLibrary")}
         </h2>
         {!uploadMode && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleUploadClick("simple")}
-              className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium transition-colors"
-            >
-              {t("uploadPdf")}
-            </button>
-          </div>
+          <Button onClick={() => { setUploadMode("simple"); setError(null); setSelectedFile(null); }}>
+            {t("uploadPdf")}
+          </Button>
         )}
       </div>
 
+      {/* Error bar */}
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm">
+        <div className="mb-4 p-3 rounded-app text-sm
+          bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700
+          text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
 
-      {/* Upload Forms */}
+      {/* Upload form */}
       {uploadMode === "simple" && (
-        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold mb-3">{t("uploadPdf")}</h3>
+        <Card className="mb-6 p-4 bg-black/3 dark:bg-white/5 border-black/10 dark:border-white/10">
+          <h3 className="text-base font-semibold mb-4 text-app-dark-blue dark:text-white">
+            {t("uploadPdf")}
+          </h3>
 
-          {/* File Input */}
+          {/* File picker */}
           <div className="mb-4">
             <input
               ref={fileInputRef}
@@ -241,33 +187,30 @@ export function SubjectMediaLibrarySection({
               accept="application/pdf"
               onChange={handleFileSelect}
               disabled={uploading}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+              className="block w-full text-sm
+                text-app-dark-blue/60 dark:text-white/60
+                file:mr-4 file:py-2 file:px-4 file:rounded-app file:border-0
+                file:text-sm file:font-semibold
+                file:bg-app-bright-green/10 file:text-app-bright-green
+                hover:file:bg-app-bright-green/20
+                disabled:opacity-50"
             />
           </div>
 
-          {/* Title and Language Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("pdfName") || "PDF Name"}
-              </label>
+              <label className={labelCls}>{t("pdfName") || "PDF Name"}</label>
               <input
                 type="text"
                 value={pdfName}
                 onChange={(e) => setPdfName(e.target.value)}
                 placeholder={selectedFile?.name || "Enter name"}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className={inputCls}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("language") || "Language"}
-              </label>
-              <select
-                value={pdfLanguage}
-                onChange={(e) => setPdfLanguage(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
+              <label className={labelCls}>{t("language") || "Language"}</label>
+              <select value={pdfLanguage} onChange={(e) => setPdfLanguage(e.target.value)} className={inputCls}>
                 <option value="">{t("selectLanguage") || "Select Language"}</option>
                 <option value="en">English</option>
                 <option value="az">Azerbaijani</option>
@@ -277,37 +220,25 @@ export function SubjectMediaLibrarySection({
             </div>
           </div>
 
-          {/* Selected File Display */}
+          {/* Selected file preview */}
           {selectedFile && (
-            <div className="mb-4 p-3 bg-white border border-gray-200 rounded-md">
+            <div className="mb-4 p-3 rounded-app border border-black/10 dark:border-white/10 bg-white dark:bg-white/5">
               <div className="flex items-center gap-3">
-                <svg
-                  className="w-8 h-8 text-red-500 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <PiFilePdf className="w-8 h-8 text-red-500 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {selectedFile.name}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-medium text-app-dark-blue dark:text-white truncate">{selectedFile.name}</p>
+                  <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mt-0.5">
                     {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
                   {uploading && uploadProgress > 0 && (
                     <div className="mt-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-black/10 dark:bg-white/10 rounded-app-full h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          className="bg-app-bright-green h-2 rounded-app-full transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{uploadProgress}%</p>
+                      <p className="text-xs text-app-dark-blue/40 dark:text-white/40 mt-1">{uploadProgress}%</p>
                     </div>
                   )}
                 </div>
@@ -315,79 +246,63 @@ export function SubjectMediaLibrarySection({
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleSimplePdfUpload}
-              disabled={uploading || !selectedFile}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button onClick={handleSimplePdfUpload} disabled={uploading || !selectedFile}>
               {uploading ? t("uploading") : t("uploadButton")}
-            </button>
+            </Button>
             <button
               onClick={handleCancelUpload}
               disabled={uploading}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+              className="px-4 py-2 rounded-app text-sm font-medium transition-colors
+                border border-black/10 dark:border-white/10
+                text-app-dark-blue dark:text-white
+                hover:bg-black/5 dark:hover:bg-white/10
+                disabled:opacity-50"
             >
               {t("cancel")}
             </button>
           </div>
-        </div>
+        </Card>
       )}
 
-
-
-      {/* PDF List */}
+      {/* PDF list */}
       {pdfs.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg font-medium">{t("noPdfs")}</p>
-          <p className="text-sm mt-2">{t("uploadFirst")}</p>
+        <div className="py-12 text-center">
+          <PiFilePdf className="mx-auto w-12 h-12 mb-3 text-app-dark-blue/20 dark:text-white/20" />
+          <p className="text-base font-semibold text-app-dark-blue/50 dark:text-white/50">{t("noPdfs")}</p>
+          <p className="text-sm mt-1 text-app-dark-blue/30 dark:text-white/30">{t("uploadFirst")}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {pdfs.map((pdf) => (
             <div
               key={pdf.id}
-              className={`flex flex-col p-4 border rounded-lg transition-colors ${pdf.isActive
-                ? "border-green-200 bg-green-50"
-                : "border-gray-200 bg-gray-50"
+              className={`flex flex-col p-4 rounded-app border transition-colors ${pdf.isActive
+                ? "border-app-bright-green/30 bg-app-bright-green/5 dark:bg-app-bright-green/10"
+                : "border-black/10 dark:border-white/10 bg-black/2 dark:bg-white/5"
                 }`}
             >
               <div className="flex items-start gap-4 mb-3">
-                <div className="shrink-0 mt-1">
-                  <svg
-                    className="w-8 h-8 text-red-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+                <PiFilePdf className="w-8 h-8 text-red-500 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-gray-900 line-clamp-1 break-all" title={pdf.name || `PDF #${pdf.id}`}>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <h4 className="font-semibold text-app-dark-blue dark:text-white line-clamp-1 break-all">
                       {pdf.name || `PDF #${pdf.id}`}
                     </h4>
-                    {pdf.language && ` [${pdf.language.toUpperCase()}]`}
                     {pdf.language && subject.language && pdf.language !== subject.language && (
-                      <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" title={t("languageMismatch")}>
+                      <span className="shrink-0 px-2 py-0.5 rounded text-xs font-semibold
+                        bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                         {t("languageMismatch")}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-app-dark-blue/50 dark:text-white/50">
                     <span>{t("uploaded")}: {new Date(pdf.createdAt).toLocaleDateString()}</span>
                     {pdf.pdfOrder && <span>• Order: {pdf.pdfOrder}</span>}
-                    <span
-                      className={`px-2 py-0.5 text-xs font-medium rounded ${pdf.isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-200 text-gray-600"
-                        }`}
-                    >
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-app ${pdf.isActive
+                      ? "bg-app-bright-green/10 dark:bg-app-bright-green/20 text-app-bright-green"
+                      : "bg-black/10 dark:bg-white/10 text-app-dark-blue/50 dark:text-white/50"
+                      }`}>
                       {pdf.isActive ? t("active") : t("inactive")}
                     </span>
                   </div>
@@ -396,23 +311,27 @@ export function SubjectMediaLibrarySection({
 
               <div className="flex items-center gap-2 pl-12">
                 <button
-                  onClick={() => handleViewPdf(pdf)}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-xs font-medium transition-colors"
+                  onClick={() => setSelectedPdf(pdf)}
+                  className="px-3 py-1.5 rounded text-xs font-semibold transition-colors
+                    bg-black/5 dark:bg-white/10 text-app-dark-blue dark:text-white
+                    hover:bg-black/10 dark:hover:bg-white/20"
                 >
                   {t("view")}
                 </button>
                 <button
                   onClick={() => handleToggleActive(pdf)}
-                  className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${pdf.isActive
-                    ? "bg-orange-50 hover:bg-orange-100 text-orange-700"
-                    : "bg-green-50 hover:bg-green-100 text-green-700"
+                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${pdf.isActive
+                    ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50"
+                    : "bg-app-bright-green/10 dark:bg-app-bright-green/20 text-app-bright-green hover:bg-app-bright-green/20"
                     }`}
                 >
                   {pdf.isActive ? t("deactivate") : t("activate")}
                 </button>
                 <button
                   onClick={() => handleDelete(pdf)}
-                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded text-xs font-medium transition-colors"
+                  className="px-3 py-1.5 rounded text-xs font-semibold transition-colors
+                    bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400
+                    hover:bg-red-100 dark:hover:bg-red-900/30"
                 >
                   {t("delete")}
                 </button>
@@ -424,41 +343,32 @@ export function SubjectMediaLibrarySection({
 
       {/* PDF Viewer Modal */}
       {selectedPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">
-                {t("pdfViewer")} - PDF #{selectedPdf.id}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden
+            bg-white dark:bg-app-dark-blue/95 border-black/10 dark:border-white/10 shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
+              <h3 className="text-base font-semibold text-app-dark-blue dark:text-white">
+                {t("pdfViewer")} — {selectedPdf.name || `PDF #${selectedPdf.id}`}
               </h3>
               <button
-                onClick={closePdfViewer}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={() => setSelectedPdf(null)}
+                className="p-2 rounded-app-full transition-colors
+                  text-app-dark-blue/50 dark:text-white/50
+                  hover:bg-black/5 dark:hover:bg-white/10"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <PiX className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-auto p-4">
               <iframe
                 src={selectedPdf.pdfUrl}
-                className="w-full h-full min-h-[600px] border border-gray-200 rounded"
+                className="w-full min-h-[600px] h-full rounded-app border border-black/10 dark:border-white/10"
                 title={`PDF ${selectedPdf.id}`}
               />
             </div>
-          </div>
+          </Card>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

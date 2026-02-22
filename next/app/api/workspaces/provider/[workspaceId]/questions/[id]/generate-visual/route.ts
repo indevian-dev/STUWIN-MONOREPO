@@ -1,7 +1,7 @@
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { VisualGenerationService } from "@/lib/domain/question/visual-generation.service";
-import type { VisualGenerationInput } from "@/lib/domain/question/visual.types";
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { VisualGenerationService } from "@/lib/domain/question/VisualGeneration.service";
+import type { VisualGenerationInput } from "@/lib/domain/question/Visual.types";
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request, { module, params }) => {
     const questionId = params?.id;

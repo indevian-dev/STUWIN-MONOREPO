@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
 
-import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
 export const DELETE = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
   try {
     const { categoryId } = params || {};

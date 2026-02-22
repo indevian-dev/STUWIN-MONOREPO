@@ -1,6 +1,6 @@
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { SubjectUpdateSchema } from "@/lib/domain/learning/learning.inputs";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { SubjectUpdateSchema } from "@/lib/domain/learning/Learning.inputs";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const PUT = unifiedApiHandler(
   async (request, { auth, module, params, log }) => {

@@ -2,90 +2,85 @@
 
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 @plugin "tailwind-scrollbar";
 @plugin "tailwindcss-animated";
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Primary brand colors */
-  --color-brand: #7ee30f;
-  --color-brand-primary: #7ee30f;
-  --color-brand-secondary: #0f172b;
+  /* =========================================
+     APP COLORS (Unified Raw Palette)
+     ========================================= */
 
-  /* Background colors */
-  --color-bglight: #f7f6f6;
-  --color-brand-soft: #1b2d81;
-  --color-brand-light: #e6e8ef;
-  --color-brand-surface: #cacedd;
-  --color-surface: #cacedd;
+  /* Primary Brand */
+  --color-app-bright-green: #7ee30f;
+  --color-app-dark-blue: #060a15;
 
-  /* Text colors */
-  --color-dark: #0f172a;
-  --color-light: #f8fafc;
-  --color-body: #64748b;
+  /* Utility / Feedback Colors */
+  --color-app-success: #10b981;
+  --color-app-warning: #f59e0b;
+  --color-app-danger: #ef4444;
 
-  /* Utility colors */
-  --color-brand-success: #10b981;
-  --color-brand-warning: #f59e0b;
-  --color-brand-error: #ef4444;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-border: #e2e8f0;
-
-  /* Neutral colors */
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-700: #334155;
-  --color-neutral-900: #0f172a;
-
-  /* Border radius */
-  --radius-primary: 0.75rem;
+  /* Border Radius */
+  --radius-app: 0.5rem;
+  --radius-app-full: 9999px;
 }
 
 html {
   font-family: 'Montserrat', sans-serif;
 }
 
-/* Global gradient backgrounds */
-.bg-section-gradient-cool {
-  background: linear-gradient(to right, #f0f9ff, #ffffff, #eef2ff);
+/* =========================================
+   IMAGE PLACEHOLDER STYLES
+   Light uses gray-50/gray-100, dark uses white/10.
+   ========================================= */
+
+/* Loading shimmer skeleton — add class="img-placeholder" to a div */
+.img-placeholder {
+  background: oklch(96% 0 0);
+  background-image: linear-gradient(90deg,
+      oklch(96% 0 0) 0%,
+      oklch(93% 0 0) 40%,
+      oklch(96% 0 0) 80%);
+  background-size: 200% 100%;
+  animation: img-shimmer 1.4s ease-in-out infinite;
+  border-radius: inherit;
 }
 
-.bg-section-gradient-warm {
-  background: linear-gradient(to right, #fef3c7, #ffffff, #fee2e2);
+.dark .img-placeholder {
+  background: rgb(255 255 255 / 0.05);
+  background-image: linear-gradient(90deg,
+      rgb(255 255 255 / 0.05) 0%,
+      rgb(255 255 255 / 0.10) 40%,
+      rgb(255 255 255 / 0.05) 80%);
+  background-size: 200% 100%;
 }
 
-.bg-section-gradient-neutral {
-  background: linear-gradient(to bottom, #f8fafc, #ffffff, #f1f5f9);
-}
+@keyframes img-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
 
-
-.bg-section-gradient-brand {
-  background: linear-gradient(to right, #e6e8ef, #ffffff, #cacedd);
-}
-
-@utility layout-main-grid {
-  @apply relative text-black transition-all duration-300 max-w-7xl mx-auto grid grid-cols-5 gap-4 my-4 px-4;
-}
-
-/* Loader animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  100% {
+    background-position: -200% 0;
   }
 }
 
-.loader {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
+/* Broken / unloaded <img> alt text appearance */
+img:not([src]),
+img[src=""],
+img.broken {
+  display: block;
+  background: oklch(96% 0 0);
+  color: oklch(55% 0 0);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
 }
 
-#main {
-  min-height: 100vh;
+.dark img:not([src]),
+.dark img[src=""],
+.dark img.broken {
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(255 255 255 / 0.30);
 }

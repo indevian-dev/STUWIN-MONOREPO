@@ -1,7 +1,7 @@
 
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
 import { z } from "zod";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 const BulkQuestionsSchema = z.object({
   questions: z.array(z.object({
@@ -73,9 +73,9 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
     });
 
     return okResponse({
-        count: createdQuestions.length,
-        questions: createdQuestions,
-      });
+      count: createdQuestions.length,
+      questions: createdQuestions,
+    });
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

@@ -1,6 +1,6 @@
 
-import { unifiedApiHandler } from "@/lib/middleware/handlers/ApiInterceptor";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/Interceptor.Api.middleware";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (_req, { module, params }) => {
     const transactionId = params?.transactionId;

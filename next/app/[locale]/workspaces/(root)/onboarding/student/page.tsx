@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
 import { PiStudent, PiArrowLeft, PiArrowRight, PiCheckCircle, PiMagnifyingGlass, PiBuildings } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -32,7 +32,7 @@ export default function StudentOnboardingPage() {
         try {
             // Fetch providers
             // Using a large limit to get most relevant ones for client-side search for now
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: "/api/providers?pageSize=100",
                 method: "GET",
             });
@@ -73,7 +73,7 @@ export default function StudentOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {
@@ -107,16 +107,16 @@ export default function StudentOnboardingPage() {
         return (
             <div className="min-h-screen p-6 flex flex-col items-center justify-center ">
                 <div className="max-w-2xl w-full bg-white rounded-[3rem] p-16 text-center shadow-2xl animate-in zoom-in-95 duration-700">
-                    <div className="w-24 h-24 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-8">
+                    <div className="w-24 h-24 bg-teal-50 text-teal-600 rounded-app-full flex items-center justify-center text-5xl mx-auto mb-8">
                         <PiCheckCircle />
                     </div>
-                    <h1 className="text-4xl font-black text-dark mb-4 tracking-tight">{t('ready_title')}</h1>
-                    <p className="text-body font-medium text-lg leading-relaxed mb-10 opacity-70">
+                    <h1 className="text-4xl font-black text-app-dark-blue dark:text-white mb-4 tracking-tight">{t('ready_title')}</h1>
+                    <p className="text-app-dark-blue/70 dark:text-white/70 font-medium text-lg leading-relaxed mb-10 opacity-70">
                         {t('ready_message')}
                     </p>
                     <button
                         onClick={() => router.push("/workspaces")}
-                        className="px-12 py-5 bg-dark text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all text-lg shadow-xl shadow-dark/20"
+                        className="px-12 py-5 bg-app-bright-green-dark text-white font-black rounded-app hover:scale-105 active:scale-95 transition-all text-lg shadow-xl shadow-dark/20"
                     >
                         {t('go_to_dashboard')}
                     </button>
@@ -131,11 +131,11 @@ export default function StudentOnboardingPage() {
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => step === 1 ? router.push("/workspaces/onboarding/welcome") : setStep(1)}
-                        className="flex items-center gap-2 text-neutral-400 hover:text-dark transition font-black uppercase tracking-widest text-xs"
+                        className="flex items-center gap-2 text-neutral-400 hover:text-app-dark-blue dark:text-white transition font-black uppercase tracking-widest text-xs"
                     >
                         <PiArrowLeft /> {t('back')}
                     </button>
-                    <div className="text-xs font-black uppercase tracking-widest text-brand">
+                    <div className="text-xs font-black uppercase tracking-widest text-app-bright-green">
                         {t('step_of', { current: step, total: 2 })}
                     </div>
                 </div>
@@ -143,10 +143,10 @@ export default function StudentOnboardingPage() {
                 {step === 1 && (
                     <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
                         <div className="space-y-4">
-                            <h1 className="text-4xl font-black text-dark tracking-tight leading-none">
+                            <h1 className="text-4xl font-black text-app-dark-blue dark:text-white tracking-tight leading-none">
                                 {t('select_school')} <span className="text-teal-500">{t('school')}</span>
                             </h1>
-                            <p className="text-body font-medium">
+                            <p className="text-app-dark-blue/70 dark:text-white/70 font-medium">
                                 {t('find_school_message')}
                             </p>
                         </div>
@@ -158,7 +158,7 @@ export default function StudentOnboardingPage() {
                                 placeholder={t('search_schools')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full h-16 pl-16 pr-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-teal-500 outline-none font-bold"
+                                className="w-full h-16 pl-16 pr-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-teal-500 outline-none font-bold"
                             />
                         </div>
 
@@ -170,24 +170,24 @@ export default function StudentOnboardingPage() {
                                     <button
                                         key={provider.id}
                                         onClick={() => handleProviderSelect(provider.id)}
-                                        className="w-full p-6 bg-white border-2 border-border hover:border-teal-500 rounded-2xl flex items-center gap-4 transition-all text-left group hover:shadow-lg"
+                                        className="w-full p-6 bg-white border-2 border-black/10 dark:border-white/10 hover:border-teal-500 rounded-app flex items-center gap-4 transition-all text-left group hover:shadow-lg"
                                     >
-                                        <div className="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center text-xl text-neutral-500 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                                        <div className="w-12 h-12 bg-neutral-100 rounded-app flex items-center justify-center text-xl text-neutral-500 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
                                             <PiBuildings />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-bold text-dark group-hover:text-teal-600 truncate">{provider.title}</h3>
+                                            <h3 className="font-bold text-app-dark-blue dark:text-white group-hover:text-teal-600 truncate">{provider.title}</h3>
                                             <div className="flex items-center gap-3">
                                                 <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                                                     {provider.city?.title || "Online"}
                                                 </p>
                                                 {provider.profile?.providerSubscriptionPrice !== undefined && (
-                                                    <p className="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-lg">
+                                                    <p className="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-app">
                                                         {provider.profile?.providerSubscriptionPrice === 0 ? t('free') : `${provider.profile?.providerSubscriptionPrice} AZN`}
                                                     </p>
                                                 )}
                                                 {provider.profile?.providerTrialDaysCount > 0 && (
-                                                    <p className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg uppercase tracking-tighter">
+                                                    <p className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-app uppercase tracking-tighter">
                                                         {provider.profile?.providerTrialDaysCount} {t('trial_days')}
                                                     </p>
                                                 )}
@@ -208,10 +208,10 @@ export default function StudentOnboardingPage() {
                 {step === 2 && (
                     <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
                         <div className="space-y-4">
-                            <h1 className="text-4xl font-black text-dark tracking-tight leading-none">
+                            <h1 className="text-4xl font-black text-app-dark-blue dark:text-white tracking-tight leading-none">
                                 {t('student_profile')} <span className="text-teal-500">{t('profile')}</span>
                             </h1>
-                            <p className="text-body font-medium">
+                            <p className="text-app-dark-blue/70 dark:text-white/70 font-medium">
                                 {t('profile_message')}
                             </p>
                         </div>
@@ -223,7 +223,7 @@ export default function StudentOnboardingPage() {
                                 name="displayName"
                                 value={formData.displayName}
                                 onChange={handleInputChange}
-                                className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-teal-500 outline-none font-bold"
+                                className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-teal-500 outline-none font-bold"
                                 placeholder={t('display_name_placeholder')}
                             />
                         </div>
@@ -234,7 +234,7 @@ export default function StudentOnboardingPage() {
                                 name="gradeLevel"
                                 value={formData.gradeLevel}
                                 onChange={handleInputChange}
-                                className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-teal-500 outline-none font-bold appearance-none"
+                                className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-teal-500 outline-none font-bold appearance-none"
                             >
                                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
                                     <option key={g} value={g}>{t('grade_n', { n: g })}</option>
@@ -245,7 +245,7 @@ export default function StudentOnboardingPage() {
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="w-full h-20 bg-teal-500 text-white font-black rounded-2xl flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-teal-500/20"
+                            className="w-full h-20 bg-teal-500 text-white font-black rounded-app flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-teal-500/20"
                         >
                             {isSubmitting ? t('creating') : t('create_workspace')}
                             <PiArrowRight />

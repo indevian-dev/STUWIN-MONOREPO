@@ -73,5 +73,9 @@
   "student_workspaces": "Рабочие области студентов",
   "parent_workspaces": "Рабочие области родителей",
   "workspaces": "Рабочие области",
-  "invitations": "Приглашения"
+  "invitations": "Приглашения",
+  "activities": "Активности",
+  "insights": "Аналитика",
+  "goals": "Цели",
+  "progress": "Прогресс"
 }

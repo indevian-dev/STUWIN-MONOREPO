@@ -1,5 +1,5 @@
-import StudentMyAccountWidget from "@/app/[locale]/workspaces/student/[workspaceId]/accounts/(widgets)/StudentMyAccountWidget";
-import { withPageAuth } from "@/lib/middleware/handlers";
+import StudentMyAccountWidget from "@/app/[locale]/workspaces/student/[workspaceId]/accounts/(widgets)/StudentMyAccount.widget";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StudentMyAccountPage() {
   return <StudentMyAccountWidget />;

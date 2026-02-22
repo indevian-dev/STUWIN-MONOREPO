@@ -24,13 +24,13 @@ export default async function NotFound() {
                 <div className="flex gap-4 justify-center">
                     <Link
                         href="/blog"
-                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                        className="px-6 py-3 bg-blue-600 text-white rounded-app hover:bg-blue-700 transition-colors duration-200"
                     >
                         Bütün postlar
                     </Link>
                     <Link
                         href="/"
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-app hover:bg-gray-50 transition-colors duration-200"
                     >
                         Ana səhifəyə keç
                     </Link>

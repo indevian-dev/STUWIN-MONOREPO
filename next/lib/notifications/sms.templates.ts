@@ -1,4 +1,4 @@
-import type { SMSTemplate } from '@/lib/notifications';
+import type { SMSTemplate } from '@/lib/notifications/_Notifications.index';
 
 interface BodyContent {
   type: 'general' | 'code' | 'bold';

@@ -1,5 +1,5 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const GET = unifiedApiHandler(async (request, { module, authData, log }) => {
   const accountId = authData.account.id;
@@ -25,14 +25,16 @@ export const GET = unifiedApiHandler(async (request, { module, authData, log }) 
 
     const unreadCount = notifications.filter((n: any) => !n.markAsRead).length;
 
-    return okResponse({ notifications: paginatedNotifications, pagination: {
+    return okResponse({
+      notifications: paginatedNotifications, pagination: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
         hasNext: page < Math.ceil(total / limit),
         hasPrev: page > 1
-      }, unread_count: unreadCount });
+      }, unread_count: unreadCount
+    });
   } catch (error) {
     log.error('Failed to fetch student notifications', error as Error);
     return serverErrorResponse('Internal server error');

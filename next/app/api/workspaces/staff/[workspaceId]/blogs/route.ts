@@ -1,5 +1,5 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 import slugify from 'slugify';
 
 export const GET = unifiedApiHandler(async (request, { module }) => {

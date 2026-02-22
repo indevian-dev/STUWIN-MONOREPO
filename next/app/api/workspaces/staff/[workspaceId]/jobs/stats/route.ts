@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
 
 /**
  * GET /api/workspaces/staff/jobs/stats

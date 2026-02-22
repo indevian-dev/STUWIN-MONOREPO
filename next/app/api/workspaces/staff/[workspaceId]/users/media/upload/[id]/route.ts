@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
 
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 export const POST = unifiedApiHandler(async (request: NextRequest, { params, module }) => {
   const { id } = await params;
   if (!id) {

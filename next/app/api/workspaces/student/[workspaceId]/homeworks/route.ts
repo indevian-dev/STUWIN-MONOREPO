@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
-import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/Interceptor.Api.middleware";
+import { okResponse, createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * GET /api/workspaces/student/[workspaceId]/homeworks

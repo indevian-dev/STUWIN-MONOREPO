@@ -4,11 +4,11 @@ import {
   safetySettings,
   defaultGenerationConfig,
   GEMINI_MODELS
-} from '@/lib/integrations/google/gemini.client';
+} from '@/lib/integrations/google/Gemini.client';
 import fs from 'fs/promises';
 import path from 'path';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface GeminiQuestionResult {
   questions: Array<{
     question: string;

@@ -1,5 +1,5 @@
-import { StudentHomeworksListWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworksListWidget";
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { StudentHomeworksListWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/homeworks/(widgets)/StudentHomeworksList.widget";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StudentHomeworksPage() {
   return (

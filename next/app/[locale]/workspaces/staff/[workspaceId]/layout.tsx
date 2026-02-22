@@ -1,12 +1,12 @@
 import { ReactNode } from "react";
-import { withLayoutAuth } from "@/lib/middleware/handlers";
+import { withLayoutAuth } from "@/lib/middleware/_Middleware.index";
 import { StaffLayoutClient } from "./StaffLayoutClient";
-import type { AuthData } from "@stuwin/shared/types";
+import type { ClientAuthData } from "@stuwin/shared/types/auth/AuthData.types";
 
 interface StaffLayoutProps {
   children: ReactNode;
   params: Promise<{ locale: string;[key: string]: string }>;
-  authData?: AuthData | null;
+  clientAuth?: ClientAuthData | null;
   layoutPath?: string;
 }
 
@@ -15,9 +15,9 @@ interface StaffLayoutProps {
  * Validates auth at layout level so UI never renders for unauthorized users
  * Staff requires STAFF_ACCESS permission
  */
-async function StaffLayout({ children, authData }: StaffLayoutProps) {
+async function StaffLayout({ children, clientAuth }: StaffLayoutProps) {
   return (
-    <StaffLayoutClient authData={authData ?? null}>
+    <StaffLayoutClient authData={clientAuth ?? null}>
       {children}
     </StaffLayoutClient>
   );

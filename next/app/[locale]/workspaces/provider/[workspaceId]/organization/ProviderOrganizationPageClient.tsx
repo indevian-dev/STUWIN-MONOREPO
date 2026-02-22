@@ -6,14 +6,14 @@ import {
 } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { toast } from 'react-toastify';
-import { ProviderOrganizationWidget } from './(widgets)/ProviderOrganizationWidget';
-import { ProviderOrganizationEditWidget } from './(widgets)/ProviderOrganizationEditWidget';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ProviderOrganizationWidget } from './(widgets)/ProviderOrganization.widget';
+import { ProviderOrganizationEditWidget } from './(widgets)/ProviderOrganizationEdit.widget';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 import { PiPencilSimple, PiX } from 'react-icons/pi';
-import type { Provider } from '@stuwin/shared/types/domain';
+import type { Provider } from '@stuwin/shared/types/domain/Domain.types';
 
 export default function ProviderOrganizationPageClient() {
   const [organization, setOrganization] = useState<Provider.PrivateAccess | null>(null);
@@ -27,7 +27,7 @@ export default function ProviderOrganizationPageClient() {
   const fetchOrganization = async () => {
     try {
       setLoading(true);
-      const data = await apiCall<Provider.PrivateAccess>({
+      const data = await fetchApiUtil<Provider.PrivateAccess>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/organization`,
       });
@@ -63,7 +63,7 @@ export default function ProviderOrganizationPageClient() {
       // Pass through any extra metadata fields (pricing, features, etc.)
       Object.assign(profilePayload, rest);
 
-      await apiCall({
+      await fetchApiUtil<any>({
         method: 'PUT',
         url: `/api/workspaces/provider/${workspaceId}/organization/update`,
         body: {
@@ -89,15 +89,15 @@ export default function ProviderOrganizationPageClient() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-dark">
+        <h1 className="text-3xl font-bold text-app-dark-blue dark:text-white">
           {t('organization_details')}
         </h1>
         {organization && (
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-primary transition-colors ${isEditing
+            className={`flex items-center gap-2 px-4 py-2 rounded-app-primary transition-colors ${isEditing
               ? 'border border-neutral-300 text-neutral-700 hover:bg-neutral-50'
-              : 'bg-brand text-white hover:bg-brand/80'
+              : 'bg-app-bright-green text-white hover:bg-app-bright-green/80'
               }`}
           >
             {isEditing ? (

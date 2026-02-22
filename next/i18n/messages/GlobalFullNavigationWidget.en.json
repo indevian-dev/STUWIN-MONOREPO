@@ -73,5 +73,9 @@
   "student_workspaces": "Student Workspaces",
   "parent_workspaces": "Parent Workspaces",
   "workspaces": "Workspaces",
-  "invitations": "Invitations"
+  "invitations": "Invitations",
+  "activities": "Activities",
+  "insights": "Insights",
+  "goals": "Goals",
+  "progress": "Progress"
 }

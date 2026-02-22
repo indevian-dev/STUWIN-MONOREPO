@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Gradient for the main glow -->
+    <radialGradient id="glow1" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#7ee30f" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#7ee30f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="20%" cy="60%" r="40%">
+      <stop offset="0%" stop-color="#7ee30f" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#7ee30f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow3" cx="80%" cy="30%" r="35%">
+      <stop offset="0%" stop-color="#7ee30f" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#7ee30f" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Grid pattern -->
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.06"/>
+    </pattern>
+
+    <!-- Dot pattern -->
+    <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1" fill="#7ee30f" opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <!-- Subtle grid -->
+  <rect width="100%" height="100%" fill="url(#grid)" />
+
+  <!-- Dot field -->
+  <rect width="100%" height="100%" fill="url(#dots)" />
+
+  <!-- Ambient glow orbs with gentle float animation -->
+  <ellipse cx="720" cy="350" rx="500" ry="350" fill="url(#glow1)">
+    <animate attributeName="cy" values="350;320;380;350" dur="12s" repeatCount="indefinite" />
+    <animate attributeName="rx" values="500;520;480;500" dur="15s" repeatCount="indefinite" />
+  </ellipse>
+
+  <ellipse cx="250" cy="550" rx="350" ry="250" fill="url(#glow2)">
+    <animate attributeName="cx" values="250;300;220;250" dur="18s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="550;520;580;550" dur="14s" repeatCount="indefinite" />
+  </ellipse>
+
+  <ellipse cx="1100" cy="280" rx="300" ry="200" fill="url(#glow3)">
+    <animate attributeName="cx" values="1100;1150;1080;1100" dur="16s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="280;310;260;280" dur="20s" repeatCount="indefinite" />
+  </ellipse>
+
+  <!-- Floating orbital rings -->
+  <g opacity="1">
+    <ellipse cx="720" cy="400" rx="350" ry="120" fill="none" stroke="#7ee30f" stroke-width="2">
+      <animateTransform attributeName="transform" type="rotate" values="0 720 400;360 720 400" dur="60s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="720" cy="400" rx="280" ry="90" fill="none" stroke="#7ee30f" stroke-width="1.5">
+      <animateTransform attributeName="transform" type="rotate" values="360 720 400;0 720 400" dur="45s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="720" cy="400" rx="420" ry="150" fill="none" stroke="#7ee30f" stroke-width="1" stroke-dasharray="8 16">
+      <animateTransform attributeName="transform" type="rotate" values="0 720 400;360 720 400" dur="80s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+
+  <!-- Floating particles -->
+  <g opacity="0.2">
+    <circle cx="200" cy="200" r="3" fill="#7ee30f">
+      <animate attributeName="cy" values="200;160;220;200" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.5;0.1;0.2" dur="8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="600" r="2" fill="#7ee30f">
+      <animate attributeName="cy" values="600;560;640;600" dur="10s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.15;0.4;0.1;0.15" dur="10s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="900" cy="150" r="2.5" fill="#7ee30f">
+      <animate attributeName="cy" values="150;120;180;150" dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.45;0.1;0.2" dur="9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1200" cy="500" r="2" fill="#7ee30f">
+      <animate attributeName="cy" values="500;460;540;500" dur="11s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.1;0.35;0.15;0.1" dur="11s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="600" cy="750" r="3" fill="#7ee30f">
+      <animate attributeName="cy" values="750;710;780;750" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.4;0.1;0.2" dur="7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1050" cy="700" r="1.5" fill="#7ee30f">
+      <animate attributeName="cy" values="700;670;730;700" dur="13s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.15;0.3;0.1;0.15" dur="13s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="150" cy="450" r="2" fill="#7ee30f">
+      <animate attributeName="cy" values="450;420;480;450" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.1;0.3;0.15;0.1" dur="12s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1300" cy="300" r="2.5" fill="#7ee30f">
+      <animate attributeName="cy" values="300;270;330;300" dur="10s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.35;0.1;0.2" dur="10s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Subtle connection lines between some particles -->
+  <g stroke="#7ee30f" stroke-width="0.5" opacity="0.05">
+    <line x1="200" y1="200" x2="400" y2="600">
+      <animate attributeName="opacity" values="0.05;0.1;0.03;0.05" dur="10s" repeatCount="indefinite"/>
+    </line>
+    <line x1="900" y1="150" x2="1200" y2="500">
+      <animate attributeName="opacity" values="0.04;0.08;0.02;0.04" dur="12s" repeatCount="indefinite"/>
+    </line>
+    <line x1="600" y1="750" x2="1050" y2="700">
+      <animate attributeName="opacity" values="0.03;0.07;0.02;0.03" dur="14s" repeatCount="indefinite"/>
+    </line>
+  </g>
+</svg>

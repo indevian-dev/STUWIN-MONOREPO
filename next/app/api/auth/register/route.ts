@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { CookieAuthenticator } from "@/lib/middleware/authenticators/CookieAuthenticator";
-import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { CookieAuthenticator } from "@/lib/middleware/Authenticator.Cookie.middleware";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/auth/register

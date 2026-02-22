@@ -1,4 +1,4 @@
-import { SystemPrompt, PromptFlowType } from "../../ai-prompt/intelligence.types";
+import { SystemPrompt, PromptFlowType } from "../../ai-prompt/Intelligence.types";
 
 export const QUESTION_GENERATION_PROMPT: Partial<SystemPrompt> = {
     title: "Default Question Generator",

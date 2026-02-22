@@ -1,6 +1,6 @@
 "use client";
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 
 import {
     createContext,

@@ -1,14 +1,14 @@
-import { getS3Url } from '@/lib/utils/upload/S3Util';
+import { getS3Url } from '@/lib/utils/Uploader.S3.util';
 /**
  * Public Providers Service
  * Utility functions for fetching and managing educational organizations data
  */
 
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { ORGANIZATIONS } from '@/lib/database';
-import type { Organization } from '@stuwin/shared/types/domain/organization';
+import type { Organization } from '@stuwin/shared/types/domain/Organization.types';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 
 interface FetchProvidersServerOptions {
   page?: number;
@@ -67,7 +67,7 @@ export async function fetchProvidersClient(options: FetchProvidersOptions = {}):
   }
 
   try {
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/providers?${params.toString()}`
     });
@@ -99,7 +99,7 @@ export async function fetchProvidersClient(options: FetchProvidersOptions = {}):
  */
 export async function fetchProviderByIdClient(id: string): Promise<Provider | null> {
   try {
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/providers/${id}`
     });
@@ -151,7 +151,7 @@ interface SubmitProviderApplicationResponse {
  */
 export async function submitProviderApplication(applicationData: any): Promise<SubmitProviderApplicationResponse> {
   try {
-    const response = await apiCall<any>({
+    const response = await fetchApiUtil<any>({
       method: 'POST',
       url: '/api/providers/applications/create',
       body: applicationData

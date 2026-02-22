@@ -6,10 +6,10 @@ import {
 } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import { StudentPageTitleWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitleWidget';
-import { StudentQuizResultsWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/quizzes/(widgets)/StudentQuizResultsWidget';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { StudentPageTitleWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/(widgets)/StudentPageTitle.widget';
+import { StudentQuizResultsWidget } from '@/app/[locale]/workspaces/student/[workspaceId]/quizzes/(widgets)/StudentQuizResults.widget';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 
 export default function StudentQuizResultsPageClient() {
   const params = useParams();
@@ -29,7 +29,7 @@ export default function StudentQuizResultsPageClient() {
   const fetchQuiz = async () => {
     setLoading(true);
 
-    const response = await apiCallForSpaHelper({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/workspaces/student/${workspaceId}/quizzes/${quizId}`,
     });

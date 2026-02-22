@@ -1,6 +1,6 @@
 import { SendMailClient } from "zeptomail";
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 // Create a reusable ZeptoMail client
 const client = new SendMailClient({
   url: "https://api.zeptomail.eu/v1.1/email",

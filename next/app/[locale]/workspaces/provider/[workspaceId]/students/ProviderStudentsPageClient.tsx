@@ -6,16 +6,17 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { toast } from 'react-toastify';
 import { Link } from '@/i18n/routing';
 import { PiPlusCircle, PiEnvelope } from 'react-icons/pi';
-import { ProviderStudentsListWidget } from './(widgets)/ProviderStudentsListWidget';
+import { ProviderStudentsListWidget } from './(widgets)/ProviderStudentsList.widget';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+import { User } from '@stuwin/shared/types/domain/User.types';
 export default function ProviderStudentsPageClient() {
-  const [students, setStudents] = useState<import('@stuwin/shared/types').User.Profile[]>([]);
+  const [students, setStudents] = useState<User.Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -28,7 +29,7 @@ export default function ProviderStudentsPageClient() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/students?page=${page}&limit=${limit}`,
       });
@@ -53,7 +54,7 @@ export default function ProviderStudentsPageClient() {
     if (!window.confirm(t('confirm_delete_student'))) return;
 
     try {
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'DELETE',
         url: `/api/workspaces/provider/${workspaceId}/students/delete/${studentId}`,
       });
@@ -70,7 +71,7 @@ export default function ProviderStudentsPageClient() {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-dark">
+          <h1 className="text-3xl font-bold text-app-dark-blue dark:text-white">
             {t('students')}
           </h1>
           <p className="text-neutral-600 mt-1">
@@ -80,14 +81,14 @@ export default function ProviderStudentsPageClient() {
         <div className="flex gap-3">
           <Link
             href={`/workspaces/provider/${workspaceId}/students/invite`}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-primary hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-app-primary hover:bg-green-700 transition-colors"
           >
             <PiEnvelope className="text-lg" />
             {t('invite_students')}
           </Link>
           <Link
             href={`/workspaces/provider/${workspaceId}/students/create`}
-            className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-primary hover:bg-brand/80 transition-colors"
+            className="flex items-center gap-2 bg-app-bright-green text-white px-4 py-2 rounded-app-primary hover:bg-app-bright-green/80 transition-colors"
           >
             <PiPlusCircle className="text-lg" />
             {t('add_student')}

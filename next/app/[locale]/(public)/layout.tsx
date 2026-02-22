@@ -12,11 +12,13 @@ import {
   PiStorefront,
   PiEnvelopeSimple
 } from 'react-icons/pi';
-import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeaderWidget';
-import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigationWidget';
-import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigationWidget';
-import { PublicFooterWidget } from '@/app/[locale]/(public)/(layout)/footer/(widgets)/PublicFooterWidget';
-import type { DomainNavConfig } from '@stuwin/shared/types';
+import { GlobalHeaderWidget } from '@/app/[locale]/(global)/(widgets)/GlobalHeader.widget';
+import { GlobalFastNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFastNavigation.widget';
+import { GlobalFullNavigationWidget } from '@/app/[locale]/(global)/(widgets)/GlobalFullNavigation.widget';
+import { PublicFooterWidget } from '@/app/[locale]/(public)/(layout)/footer/(widgets)/PublicFooter.widget';
+import { Main } from '@/app/primitives/Main.primitive';
+import { Container } from '@/app/primitives/Container.primitive';
+import type { DomainNavConfig } from '@stuwin/shared/types/ui/Navigation.types';
 
 
 interface PublicLayoutProps {
@@ -104,7 +106,11 @@ function PublicLayout({ children }: PublicLayoutProps) {
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
       />
-      <main className="text-dark min-h-[calc(60vh-100px)]">{children}</main>
+      <Main className="text-app-dark-blue dark:text-white min-h-[calc(60vh-100px)]">
+        <Container variant="full">
+          {children}
+        </Container>
+      </Main>
       <PublicFooterWidget />
     </>
   );

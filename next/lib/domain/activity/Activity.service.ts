@@ -1,0 +1,927 @@
+import { ActivityRepository } from "./Activity.repository";
+import {
+    type QuestionEntity,
+    type UserAnswer,
+    type QuizResult,
+    type QuizResultDetail,
+    type DigestNode,
+    type SessionDigests,
+    type QuizAiReport,
+    type QuizPerformanceAnalytics,
+    type HomeworkEntity,
+    type ActivitySessionEntity
+} from "./Activity.types";
+import { type DbClient } from "@/lib/database";
+import { SemanticMasteryService } from "../semantic-mastery/SemanticMastery.service";
+import { BaseService } from "../base/Base.service";
+import { AuthContext } from "@/lib/domain/base/Base.types";
+import { Database } from "@/lib/database";
+import { genAI, GEMINI_MODELS } from "@/lib/integrations/google/Gemini.client";
+import { providerQuestions as questionsTable, studentAiSessions, providerSubjects, providerSubjectTopics, studentHomeworks, studentQuizReports } from "@/lib/database/schema";
+import { inArray, eq, and, sql, desc } from "drizzle-orm";
+
+
+import { PromptFlowType } from "@/lib/domain/ai-prompt/Intelligence.types";
+import { SystemPromptService } from "../ai-prompt/SystemPrompt.service";
+
+
+/**
+ * ActivityService - Logic for managing quizzes, homework, and sessions
+ */
+export class ActivityService extends BaseService {
+    constructor(
+        private readonly repository: ActivityRepository,
+        private readonly ctx: AuthContext,
+        private readonly db: Database,
+        private readonly systemPrompts: SystemPromptService,
+        private readonly semanticMastery: SemanticMasteryService
+    ) {
+        super();
+    }
+
+    async startQuiz(accountId: string, workspaceId: string, params: {
+        subjectId?: string | null;
+        gradeLevel?: string | number | null;
+        complexity?: string | null;
+        language?: string | null;
+        questionCount?: number | string;
+    }) {
+        try {
+            const {
+                subjectId = null,
+                gradeLevel = null,
+                complexity = null,
+                language = null,
+                questionCount = 25,
+            } = params;
+
+            const validQuestionCount = Math.min(
+                Math.max(Number(questionCount) || 25, 1),
+                25,
+            );
+
+            // Prepare filters
+            const conditions = [eq(questionsTable.isPublished, true)];
+
+            if (subjectId) {
+                conditions.push(eq(questionsTable.providerSubjectId, subjectId));
+            }
+            if (gradeLevel) {
+                conditions.push(eq(questionsTable.gradeLevel, Number(gradeLevel)));
+            }
+            if (complexity) {
+                conditions.push(eq(questionsTable.complexity, complexity));
+            }
+            if (language) {
+                conditions.push(eq(questionsTable.language, language));
+            }
+
+            // Fetch random questions
+            const selectedQuestions = await this.db.select()
+                .from(questionsTable)
+                .where(and(...conditions))
+                .orderBy(sql`RANDOM()`)
+                .limit(validQuestionCount);
+
+            if (selectedQuestions.length === 0) {
+                return { success: false, error: "No questions found matching criteria" };
+            }
+
+            // Create quiz
+            const newQuiz = await this.repository.createQuiz({
+                studentAccountId: accountId,
+                workspaceId: workspaceId,
+                providerSubjectId: subjectId,
+                gradeLevel: gradeLevel ? Number(gradeLevel) : null,
+                language: language,
+                totalQuestions: selectedQuestions.length,
+                status: "in_progress",
+                startedAt: new Date(),
+                questions: selectedQuestions.map(q => q.id), // Store IDs for legacy
+                snapshotQuestions: selectedQuestions, // Immutable full snapshot
+                snapshotSubjectTitle: null, // Context removed from DB
+                snapshotTopicTitle: null, // Context removed from DB
+            });
+
+            // Prepare questions for user (hide correct answers)
+            const questionsForUser = selectedQuestions.map((q: QuestionEntity) => ({
+                id: q.id,
+                body: q.question,
+                answers: q.answers,
+                complexity: q.complexity,
+                grade_level: q.gradeLevel,
+            }));
+
+            return {
+                success: true as const,
+                data: {
+                    id: newQuiz.id,
+                    provider_subject_id: newQuiz.providerSubjectId,
+                    grade_level: newQuiz.gradeLevel,
+                    language: newQuiz.language,
+                    total_questions: selectedQuestions.length,
+                    questions: questionsForUser,
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "startQuiz");
+            return { success: false as const, error: "Failed to start quiz" };
+        }
+    }
+
+    async getQuizDetail(quizId: string) {
+        try {
+            const quiz = await this.repository.findQuizById(quizId);
+            if (!quiz) return { success: false as const, error: "Quiz not found" };
+            return { success: true as const, data: quiz };
+        } catch (error) {
+            this.handleError(error, "getQuizDetail");
+            return { success: false as const, error: "Failed to get quiz detail" };
+        }
+    }
+
+    async listQuizzes(accountId: string, params: { page?: number; pageSize?: number; status?: string; subjectId?: string; workspaceId?: string }) {
+        try {
+            const page = params.page || 1;
+            const pageSize = params.pageSize || 20;
+            const offset = (page - 1) * pageSize;
+
+            const [quizzes, total] = await Promise.all([
+                this.repository.listQuizzes({
+                    accountId,
+                    status: params.status,
+                    providerSubjectId: params.subjectId,
+                    workspaceId: params.workspaceId,
+                    limit: pageSize,
+                    offset
+                }),
+                this.repository.countQuizzes({
+                    accountId,
+                    status: params.status,
+                    providerSubjectId: params.subjectId,
+                    workspaceId: params.workspaceId
+                })
+            ]);
+
+            // Enrich with subject details
+            const subjectIds = Array.from(new Set(quizzes.map(q => q.providerSubjectId).filter(id => id))) as string[];
+            let subjectsMap = new Map<string, { id: string, name: string | null, slug: string | null }>();
+
+            if (subjectIds.length > 0) {
+                const subjects = await this.db
+                    .select({ id: providerSubjects.id, name: providerSubjects.name, slug: providerSubjects.slug })
+                    .from(providerSubjects)
+                    .where(inArray(providerSubjects.id, subjectIds));
+                subjectsMap = new Map(subjects.map(s => [s.id, s]));
+            }
+
+            const enrichedQuizzes = quizzes.map(quiz => ({
+                ...quiz,
+                subjectTitle: quiz.providerSubjectId ? subjectsMap.get(quiz.providerSubjectId)?.name : null,
+                subjectSlug: quiz.providerSubjectId ? subjectsMap.get(quiz.providerSubjectId)?.slug : null,
+            }));
+
+            return {
+                success: true,
+                data: {
+                    quizzes: enrichedQuizzes,
+                    pagination: {
+                        page,
+                        pageSize,
+                        total,
+                        totalPages: Math.ceil(total / pageSize)
+                    }
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "listQuizzes");
+            return { success: false, error: "Failed to list quizzes" };
+        }
+    }
+
+    async submitQuiz(quizId: string, accountId: string, answers: UserAnswer[], analytics?: QuizPerformanceAnalytics) {
+        try {
+            const quiz = await this.repository.findQuizById(quizId);
+            if (!quiz) return { success: false, error: "Quiz not found" };
+            if (quiz.studentAccountId !== accountId) return { success: false, error: "Access denied" };
+            if (quiz.status === "completed") return { success: false, error: "Quiz already completed" };
+
+            // Start typing the questions properly
+            const snapshotQuestions = (quiz.snapshotQuestions || []) as QuestionEntity[];
+            const legacyQuestions = (quiz.questions || []) as (string | QuestionEntity)[];
+
+            // Normalize raw questions to handle both ID strings and objects
+            const rawQuestions = snapshotQuestions.length > 0 ? snapshotQuestions : legacyQuestions;
+
+            const questionIds = rawQuestions.map((q) => typeof q === 'string' ? q : String(q.id));
+            if (questionIds.length === 0) return { success: false, error: "No questions found in quiz" };
+
+            // We will prioritize the immutable snapshot if available
+            const questions = snapshotQuestions.length > 0 ? snapshotQuestions : [];
+
+            const questionsFromDb = await this.db
+                .select({
+                    id: questionsTable.id,
+                    question: questionsTable.question,
+                    correctAnswer: questionsTable.correctAnswer,
+                    complexity: questionsTable.complexity,
+                    answers: questionsTable.answers,
+                    explanationGuide: questionsTable.explanationGuide
+                })
+                .from(questionsTable)
+                .where(inArray(questionsTable.id, questionIds));
+
+            const correctAnswerMap = new Map(
+                questionsFromDb.map((q) => [
+                    String(q.id),
+                    {
+                        correctAnswer: q.correctAnswer || "",
+                        question: q.question || "",
+                        complexity: q.complexity || "",
+                        answers: (q.answers as string[]) || [],
+                        explanationGuide: q.explanationGuide,
+                    },
+                ])
+            );
+
+            let correctAnswersCount = 0;
+            let totalAnswered = 0;
+            const detailedResults: QuizResultDetail[] = []; // Typed for activity report
+            const answerMap = new Map(answers.map((a) => [String(a.questionId), a]));
+
+            const convertLetterToAnswer = (letter: string, answersArray: unknown): string => {
+                if (!letter || !answersArray || !Array.isArray(answersArray)) return letter;
+                const index = letter.charCodeAt(0) - "A".charCodeAt(0);
+                if (index < 0 || index >= answersArray.length) return letter;
+                return (answersArray[index] as string) || letter;
+            };
+
+            // If we have snapshot questions, iterate them; otherwise iterate DB results
+            // This ensures we respect the quiz AS IT WAS generated
+            const iteratorIds = questions.length > 0 ? questions.map(q => q.id) : questionIds;
+
+            iteratorIds.forEach((qId) => {
+                const questionKey = String(qId);
+                const dbQuestion = correctAnswerMap.get(questionKey);
+
+                // If using snapshot, try to get body from there, otherwise DB
+                const snapshotQ = questions.find(q => q.id === qId);
+
+                const correctAnswer = dbQuestion?.correctAnswer || "";
+                const questionBody = snapshotQ?.question || dbQuestion?.question || "";
+                const answersArray = (dbQuestion?.answers) || [];
+                const userAnswer = answerMap.get(questionKey);
+
+                if (userAnswer) {
+                    totalAnswered++;
+                    const userAnswerText = convertLetterToAnswer(userAnswer.selectedAnswer, answersArray);
+                    const isCorrect = userAnswerText === correctAnswer;
+                    if (isCorrect) correctAnswersCount++;
+
+                    detailedResults.push({
+                        question_id: qId,
+                        question_body: questionBody,
+                        user_answer: userAnswerText,
+                        user_answer_letter: userAnswer.selectedAnswer,
+                        correct_answer: correctAnswer,
+                        is_correct: isCorrect,
+                        time_spent: userAnswer.timeSpent || 0,
+                        complexity: snapshotQ?.complexity || dbQuestion?.complexity,
+                        explanation: (dbQuestion?.explanationGuide as { body?: string; text?: string })?.body ?? (dbQuestion?.explanationGuide as { body?: string; text?: string })?.text ?? (dbQuestion?.explanationGuide as string) ?? "",
+                    });
+                } else {
+                    detailedResults.push({
+                        question_id: qId,
+                        question_body: questionBody,
+                        user_answer: null,
+                        user_answer_letter: null,
+                        correct_answer: correctAnswer,
+                    });
+                }
+            });
+
+            const totalQuestions = Number(quiz.totalQuestions) || iteratorIds.length;
+            const score = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
+            const totalTimeSpent = answers.reduce((sum, a) => sum + (a.timeSpent || 0), 0);
+
+            const resultData: QuizResult = {
+                score,
+                correct_answers: correctAnswersCount,
+                total_questions: totalQuestions,
+                total_answered: totalAnswered,
+                unanswered: totalQuestions - totalAnswered,
+                total_time_spent: totalTimeSpent,
+                average_time_per_question: totalAnswered > 0 ? totalTimeSpent / totalAnswered : 0,
+                completed_at: new Date().toISOString(),
+                details: detailedResults,
+            };
+
+            const result = await this.repository.updateQuiz(quizId, {
+                status: "completed",
+                completedAt: new Date(),
+                score: score,
+                correctAnswers: correctAnswersCount,
+                userAnswers: answers,
+                result: resultData,
+                performanceAnalytics: analytics,
+            });
+
+            // Trigger Mastery Tracking (Asynchronous in background)
+            // Note: rawQuestions might be mixed types, but updateStudentMastery expects array
+            this.updateStudentMastery(accountId, quiz.workspaceId, resultData, rawQuestions).catch(err => {
+                this.handleError(err, "submitQuiz.triggerMastery");
+            });
+
+            return { success: true, data: result };
+        } catch (error) {
+            this.handleError(error, "submitQuiz");
+            return { success: false, error: "Failed to submit quiz" };
+        }
+    }
+
+    async deleteQuiz(quizId: string, accountId: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const success = await this.repository.deleteQuiz(quizId, accountId);
+            if (!success) return { success: false, error: "Quiz not found or access denied" };
+            return { success: true };
+        } catch (error) {
+            this.handleError(error, "deleteQuiz");
+            return { success: false, error: "Failed to delete quiz" };
+        }
+    }
+
+    async submitHomework(accountId: string, data: { title: string; workspaceId: string; topicId?: string; description?: string; textContent?: string; media?: unknown[] }): Promise<{ success: boolean; data?: HomeworkEntity; error?: string }> {
+        try {
+            return await this.db.transaction(async (tx) => {
+                const homework = await this.repository.createHomework({
+                    studentAccountId: accountId,
+                    title: data.title,
+                    workspaceId: data.workspaceId,
+                    topicId: data.topicId,
+                    description: data.description,
+                    textContent: data.textContent,
+                    media: data.media || [],
+                    status: "pending",
+                }, tx as DbClient);
+
+                // Trigger Semantic Processing for Homework (Initial context)
+                if (data.textContent || data.description) {
+                    this.semanticMastery.runUnifiedKnowledgePipeline({
+                        studentAccountId: accountId,
+                        workspaceId: data.workspaceId,
+                        providerWorkspaceId: data.workspaceId,
+                        topicId: data.topicId,
+                        sourceType: 'homework_report',
+                        sourceId: homework.id,
+                        contentSummary: `${data.title}: ${data.description || ''} ${data.textContent || ''}`,
+                        masterySignal: 0.5,
+                    }).catch(err => this.handleError(err, "submitHomework.semanticMastery"));
+                }
+
+                return { success: true, data: homework };
+            });
+        } catch (error) {
+            this.handleError(error, "submitHomework");
+            return { success: false, error: "Failed to submit homework" };
+        }
+    }
+
+    async listHomeworks(accountId: string): Promise<{ success: boolean; data?: HomeworkEntity[]; error?: string }> {
+        try {
+            const homeworks = await this.repository.listHomeworksByAccount(accountId);
+            return { success: true, data: homeworks };
+        } catch (error) {
+            this.handleError(error, "listHomeworks");
+            return { success: false, error: "Failed to list homeworks" };
+        }
+    }
+
+    async getHomeworkDetail(homeworkId: string): Promise<{ success: boolean; data?: HomeworkEntity; error?: string }> {
+        try {
+            const homework = await this.repository.findHomeworkById(homeworkId);
+            if (!homework) return { success: false, error: "Homework not found" };
+            return { success: true, data: homework };
+        } catch (error) {
+            this.handleError(error, "getHomeworkDetail");
+            return { success: false, error: "Failed to get homework detail" };
+        }
+    }
+
+    async initiateHomeworkAiSession(homeworkId: string): Promise<{ success: boolean; data?: ActivitySessionEntity; error?: string }> {
+        try {
+            const homework = await this.repository.findHomeworkById(homeworkId);
+            if (!homework) return { success: false, error: "Homework not found" };
+
+            if (homework.aiSessionId) {
+                const session = await this.repository.findAiSessionById(homework.aiSessionId);
+                return { success: true, data: session as unknown as ActivitySessionEntity | undefined };
+            }
+
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                homeworkId: homework.id,
+                topicId: homework.topicId || undefined,
+            });
+
+            const systemPrompt = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.HOMEWORK_EXPLANATION, {
+
+                homeworkTitle: homework.title,
+                description: homework.description,
+                textContent: homework.textContent,
+                aiCrib
+            });
+
+            const session = await this.repository.createAiSession({
+                workspaceId: homework.workspaceId,
+                studentAccountId: homework.studentAccountId,
+                homeworkId: homework.id,
+                rootQuestion: `Working on: ${homework.title}`,
+                digests: {
+                    nodes: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'assistant', content: `Hello! I see you're working on "${homework.title}". How can I help you get started or which part is challenging for you right now?` }
+                    ]
+                },
+                status: 'active',
+                branchCount: 1,
+                messageCount: 1,
+            });
+
+            // Link session to homework
+            await this.repository.updateHomework(homework.id, { aiSessionId: session.id });
+
+            return { success: true, data: session as unknown as ActivitySessionEntity };
+        } catch (error) {
+            this.handleError(error, "initiateHomeworkSession");
+            return { success: false, error: "Failed to initiate session" };
+        }
+    }
+
+    async addMessageToAiSession(sessionId: string, userMessage: string) {
+        try {
+            const session = await this.repository.findAiSessionById(sessionId);
+            if (!session) return { success: false, error: "Session not found" };
+
+            // Cast to typed interface
+            const digests = (session.digests as unknown as SessionDigests);
+            const messages: DigestNode[] = digests?.nodes || [];
+
+            // 1. Prepare history for Gemini
+            const history = messages.map((m) => ({
+                role: m.role === 'assistant' ? 'model' : (m.role || 'user'),
+                parts: [{ text: m.content }]
+            }));
+
+            // 2. Setup Gemini
+            const model = genAI.getGenerativeModel({
+                model: GEMINI_MODELS.FLASH_1_5,
+                systemInstruction: messages.find((m) => m.role === 'system')?.content
+            });
+
+            const chat = model.startChat({
+                history: history.filter((m) => m.role !== 'system'),
+            });
+
+            // 3. Generate response
+            const result = await chat.sendMessage(userMessage);
+            const aiResponse = result.response.text();
+
+            // 4. Update session messages
+            const updatedMessages: DigestNode[] = [
+                ...messages,
+                { id: crypto.randomUUID(), type: 'chat', role: 'user', content: userMessage, createdAt: new Date().toISOString() },
+                { id: crypto.randomUUID(), type: 'chat', role: 'assistant', content: aiResponse, createdAt: new Date().toISOString() }
+            ];
+
+            await this.repository.updateAiSession(sessionId, {
+                digests: { nodes: updatedMessages },
+                messageCount: updatedMessages.length,
+                totalTokensUsed: (session.totalTokensUsed || 0) + (result.response.usageMetadata?.totalTokenCount || 0)
+            });
+
+            return {
+                success: true,
+                data: {
+                    answer: aiResponse,
+                    sessionId
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "addMessageToSession");
+            return { success: false, error: "Failed to process chat message" };
+        }
+    }
+
+    async analyzeQuiz(quizId: string, locale: string = 'en'): Promise<{ success: boolean; data?: typeof studentQuizReports.$inferSelect; error?: string }> {
+        try {
+            const quiz = await this.repository.findQuizById(quizId);
+            if (!quiz) return { success: false, error: "Quiz not found" };
+            if (quiz.status !== 'completed') return { success: false, error: "Quiz is not completed yet" };
+
+            // 1. Prepare data for AI
+            const quizData = {
+                score: quiz.score,
+                totalQuestions: quiz.totalQuestions,
+                correctAnswers: quiz.correctAnswers,
+                questions: quiz.questions,
+                userAnswers: quiz.userAnswers,
+            };
+
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                subjectId: quiz.providerSubjectId || undefined,
+            });
+
+            const prompt = await this.systemPrompts.getEffectivePromptResult(PromptFlowType.STUDENT_QUIZ_SUMMARY, {
+
+                score: quizData.score || 0,
+                correctAnswers: quizData.correctAnswers || 0,
+                totalQuestions: quizData.totalQuestions || 0,
+                questionsData: JSON.stringify(quizData.questions),
+                locale,
+                aiCrib
+            });
+
+            const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.PRO_002 });
+            const aiResult = await model.generateContent([{ text: prompt }]);
+            const response = await aiResult.response.text();
+
+            let reportData: QuizAiReport;
+            try {
+                // Clean markdown if AI wrapped it
+                const cleaned = response.replace(/```json\n?/, '').replace(/```/, '').trim();
+                reportData = JSON.parse(cleaned) as QuizAiReport;
+            } catch {
+                reportData = { reportText: response, learningInsights: { strengths: [], gaps: [], recommendations: [] } };
+            }
+
+            // 3. Save to DB
+            const report = await this.repository.createQuizReport({
+                quizId,
+                studentAccountId: quiz.studentAccountId,
+                workspaceId: quiz.workspaceId,
+                reportText: reportData.reportText,
+                learningInsights: reportData.learningInsights,
+            });
+
+            // 4. Update the Quiz itself with the report snapshot for semantic processing
+            await this.repository.updateQuiz(quizId, {
+                aiReport: reportData
+            });
+
+            // 5. Trigger Semantic DNA Synthesis
+            this.semanticMastery.runUnifiedKnowledgePipeline({
+                studentAccountId: quiz.studentAccountId!,
+                workspaceId: quiz.workspaceId,
+                providerWorkspaceId: quiz.workspaceId,
+                providerSubjectId: quiz.providerSubjectId || undefined,
+                sourceType: 'quiz_analysis',
+                sourceId: quizId,
+                contentSummary: reportData.reportText || response,
+                masterySignal: (quiz.score || 0) / 100, // 0.0–1.0 based on quiz score
+                metadata: { score: quiz.score, totalQuestions: quiz.totalQuestions, correctAnswers: quiz.correctAnswers },
+            }).catch(err => this.handleError(err, "analyzeQuiz.semanticMastery"));
+
+            return { success: true, data: report };
+        } catch (error) {
+            this.handleError(error, "analyzeQuiz");
+            return { success: false, error: "Failed to analyze quiz" };
+        }
+    }
+
+    async getAiSession(accountId: string, contextId: string, contextType: 'quiz' | 'homework' | 'topic'): Promise<{ success: boolean; data?: ActivitySessionEntity | null; error?: string }> {
+        try {
+            const session = await this.repository.findActiveAiSession(accountId, contextId, contextType);
+            if (!session) return { success: true, data: null };
+            return { success: true, data: session as unknown as ActivitySessionEntity };
+        } catch (error) {
+            this.handleError(error, "getSession");
+            return { success: false, error: "Failed to get session" };
+        }
+    }
+
+    async listAiSessions(accountId: string, status: string = 'active') {
+        try {
+            const sessions = await this.db
+                .select()
+                .from(studentAiSessions)
+                .where(and(
+                    eq(studentAiSessions.studentAccountId, accountId),
+                    eq(studentAiSessions.status, status)
+                ))
+                .orderBy(desc(studentAiSessions.createdAt));
+            return { success: true, data: sessions };
+        } catch (error) {
+            this.handleError(error, "listSessions");
+            return { success: false, error: "Failed to list sessions" };
+        }
+    }
+
+    async getAiSessionById(sessionId: string) {
+        try {
+            const session = await this.repository.findAiSessionById(sessionId);
+            if (!session) return { success: false, error: "Session not found" };
+            return { success: true, data: session };
+        } catch (error) {
+            this.handleError(error, "getSessionById");
+            return { success: false, error: "Failed to get session by ID" };
+        }
+    }
+
+    async analyzeLearningContext(data: {
+        workspaceId: string;
+        accountId: string;
+        contextType: 'quiz' | 'homework' | 'topic';
+        contextId: string;
+        question: string;
+        correctAnswer: string;
+        userAnswer: string;
+        subjectTitle?: string;
+        complexity?: string;
+        selectedText?: string;
+        digests?: DigestNode[];
+        parentDigestId?: string;
+        regenerateDigestId?: string;
+        locale?: string;
+    }): Promise<{ success: boolean; data?: { explanation: string; digest: DigestNode; session: ActivitySessionEntity }; error?: string }> {
+        try {
+            const {
+                workspaceId, accountId, contextType, contextId,
+                question, correctAnswer, userAnswer,
+                subjectTitle, complexity, selectedText,
+                digests = [] as DigestNode[], parentDigestId, regenerateDigestId, locale = 'en'
+            } = data;
+
+            // 1. Find or create session
+            let session = await this.repository.findActiveAiSession(accountId, contextId, contextType);
+
+            if (!session) {
+                const sessionData: Partial<typeof studentAiSessions.$inferInsert> = {
+                    workspaceId,
+                    studentAccountId: accountId,
+                    rootQuestion: question,
+                    digests: { nodes: [] },
+                    status: 'active',
+                    branchCount: 0,
+                    messageCount: 0,
+                };
+
+                // polymorphic mapping
+                if (contextType === 'quiz') sessionData.quizId = contextId;
+                else if (contextType === 'homework') sessionData.homeworkId = contextId;
+                else if (contextType === 'topic') sessionData.topicId = contextId;
+
+                session = await this.repository.createAiSession(sessionData as typeof studentAiSessions.$inferInsert);
+            }
+
+            // 2. Prepare Context & Prompt
+            let context = `
+Topic: ${subjectTitle || 'General Mathematics'}
+Complexity: ${complexity || 'Standard'}
+Question: ${question}
+Correct Answer: ${correctAnswer}
+Student's Answer: ${userAnswer}
+CONTEXT: This is a ${contextType} session.
+`;
+
+            if (selectedText) {
+                context += `\nSPECIFIC FOCUS: The student wants to understand this specific part better: "${selectedText}"\n`;
+            }
+
+            // Add history from provided digests if any
+            if (digests.length > 0) {
+                const historyText = digests.map((d) => `Node [${d.id.slice(0, 4)}]: ${d.type.toUpperCase()} -> ${d.content}\nAI: ${d.aiResponse?.slice(0, 200)}...`).join('\n---\n');
+                context += `\n\nPrevious Discovery Paths (Summary):\n${historyText}\n`;
+            }
+
+            // Fetch effective crib
+            const aiCrib = await this.getEffectiveCrib({
+                questionId: contextId && contextType === 'topic' ? undefined : contextId, // ContextId might be question id in many cases
+                subjectId: session.topicId ? (await this.db.select({ sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, session.topicId)).limit(1))[0]?.sid || undefined : undefined,
+                topicId: session.topicId || undefined,
+            });
+
+            // Map contextType to fallback prompt flow type
+            let flowType = PromptFlowType.QUESTION_EXPLANATION;
+            if (contextType === 'topic') flowType = PromptFlowType.TOPIC_EXPLORATION;
+
+            const prompt = await this.systemPrompts.getEffectivePromptResult(flowType, {
+
+                contextType,
+                subjectTitle: subjectTitle || 'General Mathematics',
+                complexity: complexity || 'Standard',
+                question,
+                correctAnswer,
+                userAnswer,
+                selectedText: selectedText || undefined,
+                historyText: digests.length > 0 ? context : undefined,
+                locale,
+                aiCrib
+            });
+
+            const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH_1_5 });
+            const aiResult = await model.generateContent([{ text: prompt }]);
+            const response = await aiResult.response.text();
+
+            // 3. Create new digest node
+            const newDigest = {
+                id: regenerateDigestId || crypto.randomUUID(),
+                parentId: parentDigestId || null,
+                type: selectedText ? 'term' : 'analysis',
+                content: selectedText || 'Full Analysis',
+                aiResponse: response,
+                createdAt: new Date().toISOString()
+            };
+
+            // 4. Update Session & Purge if regenerating
+            const sessionDigests = (session.digests as unknown as SessionDigests);
+            let currentDigests: DigestNode[] = sessionDigests?.nodes || [];
+
+            if (regenerateDigestId) {
+                // BFS/DFS to find all descendants of the node being regenerated
+                const toRemove = new Set<string>();
+                const queue = [regenerateDigestId];
+
+                while (queue.length > 0) {
+                    const pid = queue.shift();
+                    currentDigests.forEach((d) => {
+                        if (d.parentId === pid) {
+                            toRemove.add(d.id);
+                            queue.push(d.id);
+                        }
+                    });
+                }
+
+                // Filter out descendants and the old version of the node itself
+                currentDigests = currentDigests.filter((d) => d.id !== regenerateDigestId && !toRemove.has(d.id));
+            }
+
+            const updatedDigests = [...currentDigests, newDigest];
+
+            await this.repository.updateAiSession(session.id, {
+                digests: { nodes: updatedDigests },
+                messageCount: (session.messageCount || 0) + 1,
+                totalTokensUsed: (session.totalTokensUsed || 0) + (aiResult.response.usageMetadata?.totalTokenCount || 0)
+            });
+
+            return {
+                success: true,
+                data: {
+                    explanation: response,
+                    digest: newDigest,
+                    session: {
+                        ...session,
+                        digests: { nodes: updatedDigests }
+                    }
+                }
+            };
+        } catch (error) {
+            this.handleError(error, "analyzeQuizQuestion");
+            return { success: false, error: "Failed to analyze question" };
+        }
+    }
+
+
+    private async getEffectiveCrib(params: {
+        questionId?: string;
+        topicId?: string;
+        subjectId?: string;
+        homeworkId?: string;
+    }) {
+        const cribs: string[] = [];
+
+        // 1. Question Crib
+        if (params.questionId) {
+            const q = await this.db.select({ crib: questionsTable.aiGuide }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            if (q[0]?.crib) cribs.push(q[0].crib);
+        }
+
+        // 2. Homework Crib
+        if (params.homeworkId) {
+            const h = await this.db.select({ crib: studentHomeworks.aiGuide }).from(studentHomeworks).where(eq(studentHomeworks.id, params.homeworkId)).limit(1);
+            if (h[0]?.crib) cribs.push(h[0].crib);
+        }
+
+        // 3. Topic Crib (If only questionId provided, we should probably fetch its topic and subject too)
+        let topicId = params.topicId;
+        let subjectId = params.subjectId;
+
+        if (params.questionId && !topicId) {
+            const qData = await this.db.select({ tid: questionsTable.providerSubjectTopicId, sid: questionsTable.providerSubjectId }).from(questionsTable).where(eq(questionsTable.id, params.questionId)).limit(1);
+            if (qData[0]) {
+                topicId = qData[0].tid || undefined;
+                subjectId = qData[0].sid || undefined;
+            }
+        }
+
+        if (topicId) {
+            const t = await this.db.select({ crib: providerSubjectTopics.aiGuide, sid: providerSubjectTopics.providerSubjectId }).from(providerSubjectTopics).where(eq(providerSubjectTopics.id, topicId)).limit(1);
+            if (t[0]?.crib) cribs.push(t[0].crib);
+            if (!subjectId) subjectId = t[0]?.sid || undefined;
+        }
+
+        // 4. Subject Crib
+        if (subjectId) {
+            const s = await this.db.select({ crib: providerSubjects.aiGuide }).from(providerSubjects).where(eq(providerSubjects.id, subjectId)).limit(1);
+            if (s[0]?.crib) cribs.push(s[0].crib);
+        }
+
+        return cribs.length > 0 ? cribs.join("\n\n---\n\n") : undefined;
+    }
+
+    async getStudentProgress(accountId: string, subjectId?: string) {
+        try {
+            const masteryRecords = subjectId
+                ? await this.repository.findMasteryBySubject(accountId, subjectId)
+                : [];
+
+            return { success: true, data: masteryRecords };
+        } catch (error) {
+            this.handleError(error, "getStudentProgress");
+            return { success: false, error: "Failed to fetch progress" };
+        }
+    }
+
+    private async updateStudentMastery(accountId: string, workspaceId: string, resultData: QuizResult, snapshotQuestions: (QuestionEntity | string)[]) {
+        try {
+            // Group performance by topic
+            const topicPerformance: Record<string, { subjectId: string | null, correct: number, total: number, timeSpent: number }> = {};
+
+            snapshotQuestions.forEach((rawQ) => {
+                if (typeof rawQ === 'string') return;
+                // Cast to handle legacy properties that might exist in JSONB snapshots
+                const q = rawQ as QuestionEntity & {
+                    learningSubjectTopicId?: string;
+                    topicId?: string;
+                    learningSubjectId?: string;
+                    subjectId?: string;
+                };
+
+                const topicId = q.providerSubjectTopicId || q.learningSubjectTopicId || q.topicId;
+                if (!topicId) return;
+
+                if (!topicPerformance[topicId]) {
+                    topicPerformance[topicId] = {
+                        subjectId: q.providerSubjectId || q.learningSubjectId || q.subjectId || null,
+                        correct: 0,
+                        total: 0,
+                        timeSpent: 0
+                    };
+                }
+
+                const details = resultData.details as { question_id: string; is_correct: boolean; time_spent: number }[];
+                const answer = details.find((d) => d.question_id === q.id);
+                if (answer) {
+                    topicPerformance[topicId].total++;
+                    if (answer.is_correct) topicPerformance[topicId].correct++;
+                    topicPerformance[topicId].timeSpent += (answer.time_spent || 0);
+                }
+            });
+
+            // Update each topic mastery record
+            for (const [topicId, stats] of Object.entries(topicPerformance)) {
+                const mastery = await this.repository.findMastery(accountId, topicId);
+
+                const currentScore = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+
+                if (!mastery) {
+                    await this.repository.createMastery({
+                        studentAccountId: accountId,
+                        workspaceId,
+                        topicId,
+                        providerSubjectId: stats.subjectId,
+                        masteryScore: currentScore,
+                        totalQuizzesTaken: 1,
+                        questionsAttempted: stats.total,
+                        questionsCorrect: stats.correct,
+                        averageTimePerQuestion: stats.total > 0 ? stats.timeSpent / stats.total : 0,
+                        lastAttemptAt: new Date(),
+                        masteryTrend: [{ score: currentScore, date: new Date().toISOString() }]
+                    });
+                } else {
+                    const totalAttempted = (mastery.questionsAttempted || 0) + stats.total;
+                    const totalCorrect = (mastery.questionsCorrect || 0) + stats.correct;
+                    const newQuizzesTaken = (mastery.totalQuizzesTaken || 0) + 1;
+
+                    // Simple moving average for mastery score (30% weight to new attempt)
+                    const newMasteryScore = ((mastery.masteryScore || 0) * 0.7) + (currentScore * 0.3);
+
+                    const trend = ((mastery.masteryTrend as { score: number; date: string }[]) || []).slice(-9);
+                    trend.push({ score: currentScore, date: new Date().toISOString() });
+
+                    await this.repository.updateMastery(mastery.id, {
+                        masteryScore: newMasteryScore,
+                        totalQuizzesTaken: newQuizzesTaken,
+                        questionsAttempted: totalAttempted,
+                        questionsCorrect: totalCorrect,
+                        lastAttemptAt: new Date(),
+                        masteryTrend: trend,
+                        updatedAt: new Date()
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("[ActivityService] Error updating mastery:", err);
+        }
+    }
+}

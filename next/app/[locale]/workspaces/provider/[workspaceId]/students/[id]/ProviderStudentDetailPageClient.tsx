@@ -6,15 +6,15 @@ import {
 } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { toast } from 'react-toastify';
 import { PiArrowLeft, PiPencil } from 'react-icons/pi';
 import { Link } from '@/i18n/routing';
-import { ProviderStudentDetailWidget } from './(widgets)/ProviderStudentDetailWidget';
-import type { UserPrivateAccess } from '@/lib/domain/auth/auth.types';
+import { ProviderStudentDetailWidget } from './(widgets)/ProviderStudentDetail.widget';
+import type { UserPrivateAccess } from '@/lib/domain/auth/Auth.types';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 interface ProviderStudentDetailPageClientProps {
   studentId: string;
 }
@@ -33,7 +33,7 @@ export default function ProviderStudentDetailPageClient({
   const fetchStudent = async () => {
     try {
       setLoading(true);
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'GET',
         url: `/api/workspaces/provider/${workspaceId}/students/${studentId}`,
       });
@@ -62,7 +62,7 @@ export default function ProviderStudentDetailPageClient({
         <p className="text-neutral-600">{t('student_not_found')}</p>
         <Link
           href={`/workspaces/provider/${workspaceId}/students`}
-          className="inline-flex items-center gap-2 mt-4 text-brand hover:underline"
+          className="inline-flex items-center gap-2 mt-4 text-app-bright-green hover:underline"
         >
           <PiArrowLeft className="w-4 h-4" />
           {t('back_to_students')}
@@ -77,12 +77,12 @@ export default function ProviderStudentDetailPageClient({
         <div className="flex items-center gap-4">
           <Link
             href={`/workspaces/provider/${workspaceId}/students`}
-            className="p-2 text-neutral-600 hover:text-brand hover:bg-brand/10 rounded-md transition-colors"
+            className="p-2 text-neutral-600 hover:text-app-bright-green hover:bg-app-bright-green/10 rounded-app transition-colors"
           >
             <PiArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-dark">
+            <h1 className="text-3xl font-bold text-app-dark-blue dark:text-white">
               {student.fullName || t('unnamed_student')}
             </h1>
             <p className="text-neutral-600 mt-1">
@@ -93,11 +93,11 @@ export default function ProviderStudentDetailPageClient({
         <div className="flex gap-3">
           <Link
             href={`/workspaces/provider/${workspaceId}/progress/${studentId}`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-primary hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-app-primary hover:bg-blue-700 transition-colors"
           >
             {t('view_progress')}
           </Link>
-          <button className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-primary hover:bg-brand/80 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 bg-app-bright-green text-white rounded-app-primary hover:bg-app-bright-green/80 transition-colors">
             <PiPencil className="w-4 h-4" />
             {t('edit_student')}
           </button>

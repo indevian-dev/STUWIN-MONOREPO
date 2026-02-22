@@ -70,12 +70,12 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
   }
 
   return (
-    <main className="relative w-full min-h-screen bg-section-gradient-brand text-dark overflow-hidden">
+    <main className="relative w-full min-h-screen bg-section-gradient-app text-app-dark-blue dark:text-white overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-soft/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-brandSoftDanger/20 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-app-bright-green/10 rounded-app-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-app-bright-green-soft/10 rounded-app-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-brandSoftDanger/20 rounded-app-full blur-3xl" />
       </div>
       {/* Content */}
       <div className="relative z-10 flex justify-center items-center min-h-screen">

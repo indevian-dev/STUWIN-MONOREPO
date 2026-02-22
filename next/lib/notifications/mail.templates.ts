@@ -1,4 +1,4 @@
-import type { EmailTemplate } from '@/lib/notifications';
+import type { EmailTemplate } from '@/lib/notifications/_Notifications.index';
 
 interface BodyContent {
   type: 'general' | 'copyable' | 'boldBig';

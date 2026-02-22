@@ -5,30 +5,43 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiCheckCircleFill, PiCrownBold, PiLightningBold, PiStarBold, PiArrowsClockwiseBold, PiCheckBold } from 'react-icons/pi';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
 import { useGlobalAuthProfileContext } from '@/app/[locale]/(global)/(context)/GlobalAuthProfileContext';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+
+interface BillingTier {
+    id: string;
+    type: string;
+    title: string;
+    price: number;
+    metadata?: { features?: string[] };
+}
+
+interface AppliedCoupon {
+    code: string;
+    discountPercent: number;
+}
 
 export function StudentBillingPageClient() {
     const t = useTranslations('StudentBillingPage');
     const { workspaceId } = useParams();
     const { subscriptionType, subscribedUntil, refreshProfile } = useGlobalAuthProfileContext();
 
-    const [tiers, setTiers] = useState<any[]>([]);
+    const [tiers, setTiers] = useState<BillingTier[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [couponCode, setCouponCode] = useState('');
-    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
     useEffect(() => {
         const fetchTiers = async () => {
             try {
-                const response = await apiCallForSpaHelper({
+                const tiers = await fetchApiUtil<BillingTier[]>({
                     method: 'GET',
                     url: `/api/workspaces/student/${workspaceId}/billing/tiers`
                 });
-                if (response.data) {
-                    setTiers(response.data);
+                if (tiers) {
+                    setTiers(tiers);
                 }
             } catch (error) {
                 console.error("Failed to fetch tiers", error);
@@ -43,7 +56,7 @@ export function StudentBillingPageClient() {
     const handleUpgrade = async (tierId: string) => {
         try {
             setActionLoading(tierId);
-            const response = await apiCallForSpaHelper({
+            const result = await fetchApiUtil<{ redirectUrl?: string }>({
                 method: 'POST',
                 url: `/api/workspaces/student/${workspaceId}/billing/pay`,
                 body: {
@@ -53,14 +66,14 @@ export function StudentBillingPageClient() {
                 }
             });
 
-            if (response.data && response.data.redirectUrl) {
-                window.location.href = response.data.redirectUrl;
+            if (result?.redirectUrl) {
+                window.location.href = result.redirectUrl;
             } else {
                 alert("Failed to initiate payment. Please try again.");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Upgrade error:", error);
-            alert(error.message || "Something went wrong");
+            alert(error instanceof Error ? error.message : "Something went wrong");
         } finally {
             setActionLoading(null);
         }
@@ -70,16 +83,16 @@ export function StudentBillingPageClient() {
         if (!couponCode) return;
         try {
             setActionLoading('coupon');
-            const response = await apiCallForSpaHelper({
+            const coupon = await fetchApiUtil<{ code: string; discountPercent: number }>({
                 method: 'POST',
                 url: `/api/workspaces/student/${workspaceId}/billing/coupon`,
                 body: { code: couponCode }
             });
-            if (response.data) {
-                setAppliedCoupon(response.data);
+            if (coupon) {
+                setAppliedCoupon(coupon);
             }
-        } catch (error: any) {
-            alert(error.message || "Invalid coupon");
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : "Invalid coupon");
         } finally {
             setActionLoading(null);
         }
@@ -95,10 +108,10 @@ export function StudentBillingPageClient() {
             </div>
 
             {/* Current Status */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-white rounded-app p-6 border border-slate-200 mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
-                        <PiCrownBold className="text-3xl text-brand-primary" />
+                    <div className="w-16 h-16 rounded-app bg-app-bright-green-primary/10 flex items-center justify-center">
+                        <PiCrownBold className="text-3xl text-app-bright-green-primary" />
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t('current_plan')}</p>
@@ -108,7 +121,7 @@ export function StudentBillingPageClient() {
                     </div>
                 </div>
                 {subscribedUntil && (
-                    <div className="px-6 py-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold">
+                    <div className="px-6 py-3 rounded-app bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold">
                         {t('expires_on')}: {new Date(subscribedUntil).toLocaleDateString()}
                     </div>
                 )}
@@ -124,13 +137,13 @@ export function StudentBillingPageClient() {
                     return (
                         <div
                             key={tier.id}
-                            className={`p-8 rounded-[2.5rem] bg-white border-2 flex flex-col transition-all ${isCurrent ? 'border-brand-primary shadow-xl' : 'border-slate-100 hover:border-slate-200'
+                            className={`p-8 rounded-[2.5rem] bg-white border-2 flex flex-col transition-all ${isCurrent ? 'border-app-primary shadow-xl' : 'border-slate-100 hover:border-slate-200'
                                 }`}
                         >
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-black uppercase tracking-tight">{tier.title}</h3>
                                 {isCurrent && (
-                                    <span className="px-3 py-1 rounded-full bg-brand-primary text-slate-900 text-[10px] font-black uppercase">
+                                    <span className="px-3 py-1 rounded-app-full bg-app-bright-green-primary text-slate-900 text-[10px] font-black uppercase">
                                         {t('active')}
                                     </span>
                                 )}
@@ -151,9 +164,9 @@ export function StudentBillingPageClient() {
                             <button
                                 onClick={() => handleUpgrade(tier.id)}
                                 disabled={isCurrent || !!actionLoading}
-                                className={`w-full py-4 rounded-2xl font-black transition-all mb-8 ${isCurrent
+                                className={`w-full py-4 rounded-app font-black transition-all mb-8 ${isCurrent
                                     ? 'bg-emerald-50 text-emerald-600 cursor-default'
-                                    : 'bg-slate-900 text-white hover:bg-brand-primary hover:text-slate-900'
+                                    : 'bg-slate-900 text-white hover:bg-app-bright-green-primary hover:text-slate-900'
                                     }`}
                             >
                                 {actionLoading === tier.id ? (
@@ -189,12 +202,12 @@ export function StudentBillingPageClient() {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                         placeholder="SUMMER2026"
-                        className="flex-1 px-6 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-primary uppercase font-bold"
+                        className="flex-1 px-6 py-3 rounded-app border border-slate-200 focus:outline-none focus:ring-2 focus:ring-app-primary uppercase font-bold"
                     />
                     <button
                         onClick={handleApplyCoupon}
                         disabled={!!actionLoading}
-                        className="px-8 py-3 rounded-2xl bg-slate-900 text-white font-black hover:bg-slate-800 transition-all disabled:opacity-50"
+                        className="px-8 py-3 rounded-app bg-slate-900 text-white font-black hover:bg-slate-800 transition-all disabled:opacity-50"
                     >
                         {actionLoading === 'coupon' ? <PiArrowsClockwiseBold className="animate-spin" /> : t('apply')}
                     </button>

@@ -9,9 +9,9 @@ import {
   useSearchParams
 } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface OAuthData {
   code: string;
   state: string | null;
@@ -45,7 +45,7 @@ export default function AuthOAuthCallbackPage() {
 
         try {
           // Exchange code for token
-          const response = await apiCall<any>({
+          const response = await fetchApiUtil<any>({
             method: 'POST',
             url: '/api/auth/oauth/callback',
             body: { code, state, provider, deviceInfo }
@@ -104,7 +104,7 @@ export default function AuthOAuthCallbackPage() {
 
     try {
       // Submit the code with the provided email
-      const response = await apiCall<any>({
+      const response = await fetchApiUtil<any>({
         method: 'POST',
         url: '/api/auth/oauth/callback',
         body: { ...oauthData, email }
@@ -144,7 +144,7 @@ export default function AuthOAuthCallbackPage() {
   if (needEmail) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <div className="w-full max-w-md p-6 bg-white rounded-app shadow-md">
           <h2 className="text-2xl font-semibold text-center mb-6">Email Required</h2>
           <p className="mb-4 text-gray-600">Please provide your email address to complete the login process.</p>
 
@@ -154,7 +154,7 @@ export default function AuthOAuthCallbackPage() {
               <input
                 type="email"
                 id="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-app focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -164,7 +164,7 @@ export default function AuthOAuthCallbackPage() {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              className="w-full py-2 px-4 bg-emerald-500 text-white rounded-app hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
               disabled={!email}
             >
               Continue

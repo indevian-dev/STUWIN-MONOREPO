@@ -1,2 +1,0 @@
-// Re-export from base for backward compatibility
-export * from './base/base.service';

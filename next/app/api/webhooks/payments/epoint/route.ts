@@ -1,8 +1,8 @@
 
-import { ModuleFactory } from "@/lib/domain/factory";
+import { ModuleFactory } from "@/lib/domain/Domain.factory";
 import { NextResponse, NextRequest } from "next/server";
-import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { ConsoleLogger } from "@/lib/logging/Console.logger";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/webhooks/payments/epoint

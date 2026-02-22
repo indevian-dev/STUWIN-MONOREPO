@@ -1,7 +1,7 @@
 
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
-import { getS3Url } from '@/lib/utils/upload/S3Util';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
+import { getS3Url } from '@/lib/utils/Uploader.S3.util';
 
 export interface Program {
     id: string;
@@ -64,7 +64,7 @@ export async function fetchProgramsClient(options: FetchProgramsOptions = {}): P
     }
 
     try {
-        const response = await apiCall<any>({
+        const response = await fetchApiUtil<any>({
             method: 'GET',
             url: `/api/programs?${params.toString()}`
         });

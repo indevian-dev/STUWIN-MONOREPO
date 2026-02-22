@@ -4,13 +4,13 @@
 // API for managing background job schedules
 // Pause, resume, trigger, and list jobs
 // ═══════════════════════════════════════════════════════════════
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 import type {
   JobControlRequest,
   JobControlResponse,
   JobListResponse,
-} from '@/lib/domain/jobs/jobs.types';
+} from '@/lib/domain/jobs/Jobs.types';
 
 /**
  * GET /api/workspaces/staff/jobs/control

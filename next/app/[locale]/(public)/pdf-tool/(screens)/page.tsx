@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { PdfToolManagementWidget } from '../(widgets)/PdfToolManagementWidget';
+import { PdfToolManagementWidget } from '../(widgets)/PdfToolManagement.widget';
 
 export const metadata = {
     title: 'stuwin.ai - PDF Tools'

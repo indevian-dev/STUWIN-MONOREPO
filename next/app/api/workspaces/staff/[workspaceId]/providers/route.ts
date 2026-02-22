@@ -1,6 +1,6 @@
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
 
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 export const GET = unifiedApiHandler(async (request, { module }) => {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');

@@ -1,6 +1,6 @@
 
-import type { TopicEntity } from './learning.entity';
-import type { Timestamps } from '@/lib/domain/base/types';
+import type { TopicEntity } from './Learning.entity';
+import type { Timestamps } from '@/lib/domain/base/Base.types';
 
 // ═══════════════════════════════════════════════════════════════
 // SUBJECT VIEWS — Context-specific projections

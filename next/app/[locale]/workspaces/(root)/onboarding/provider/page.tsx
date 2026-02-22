@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
 import { PiBuildings, PiArrowLeft, PiArrowRight, PiCheckCircle } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -32,7 +32,7 @@ export default function ProviderOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {
@@ -59,18 +59,18 @@ export default function ProviderOnboardingPage() {
 
     if (step === 3) {
         return (
-            <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-brand">
+            <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-app">
                 <div className="max-w-2xl w-full bg-white rounded-[3rem] p-16 text-center shadow-2xl animate-in zoom-in-95 duration-700">
-                    <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-8">
+                    <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-app-full flex items-center justify-center text-5xl mx-auto mb-8">
                         <PiCheckCircle />
                     </div>
-                    <h1 className="text-4xl font-black text-dark mb-4 tracking-tight">{t('application_submitted')}</h1>
-                    <p className="text-body font-medium text-lg leading-relaxed mb-10 opacity-70">
+                    <h1 className="text-4xl font-black text-app-dark-blue dark:text-white mb-4 tracking-tight">{t('application_submitted')}</h1>
+                    <p className="text-app-dark-blue/70 dark:text-white/70 font-medium text-lg leading-relaxed mb-10 opacity-70">
                         {t('review_message')}
                     </p>
                     <button
                         onClick={() => router.push("/workspaces")}
-                        className="px-12 py-5 bg-dark text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all text-lg shadow-xl shadow-dark/20"
+                        className="px-12 py-5 bg-app-bright-green-dark text-white font-black rounded-app hover:scale-105 active:scale-95 transition-all text-lg shadow-xl shadow-dark/20"
                     >
                         {t('back_to_home')}
                     </button>
@@ -80,20 +80,20 @@ export default function ProviderOnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-brand">
+        <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-app">
             <div className="max-w-2xl w-full bg-white rounded-[3rem] p-10 md:p-16 shadow-2xl space-y-12">
                 <button
                     onClick={() => router.push("/workspaces/onboarding/welcome")}
-                    className="flex items-center gap-2 text-neutral-400 hover:text-dark transition font-black uppercase tracking-widest text-xs"
+                    className="flex items-center gap-2 text-neutral-400 hover:text-app-dark-blue dark:text-white transition font-black uppercase tracking-widest text-xs"
                 >
                     <PiArrowLeft /> {t('back')}
                 </button>
 
                 <div className="space-y-4">
-                    <h1 className="text-4xl font-black text-dark tracking-tight leading-none">
+                    <h1 className="text-4xl font-black text-app-dark-blue dark:text-white tracking-tight leading-none">
                         {t('register_as')} <span className="text-blue-600">{t('provider')}</span>
                     </h1>
-                    <p className="text-body font-medium">
+                    <p className="text-app-dark-blue/70 dark:text-white/70 font-medium">
                         {t('provider_message')}
                     </p>
                 </div>
@@ -107,7 +107,7 @@ export default function ProviderOnboardingPage() {
                                 name="title"
                                 value={formData.title}
                                 onChange={handleInputChange}
-                                className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-blue-500 outline-none font-bold"
+                                className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-blue-500 outline-none font-bold"
                                 placeholder={t('org_name_placeholder')}
                             />
                         </div>
@@ -119,7 +119,7 @@ export default function ProviderOnboardingPage() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-blue-500 outline-none font-bold"
+                                className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-blue-500 outline-none font-bold"
                                 placeholder={t('address_placeholder')}
                             />
                         </div>
@@ -132,7 +132,7 @@ export default function ProviderOnboardingPage() {
                                     name="regNumber"
                                     value={formData.regNumber}
                                     onChange={handleInputChange}
-                                    className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-blue-500 outline-none font-bold"
+                                    className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-blue-500 outline-none font-bold"
                                     placeholder={t('reg_number_placeholder')}
                                 />
                             </div>
@@ -143,7 +143,7 @@ export default function ProviderOnboardingPage() {
                                     name="contactPhone"
                                     value={formData.contactPhone}
                                     onChange={handleInputChange}
-                                    className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-blue-500 outline-none font-bold"
+                                    className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-blue-500 outline-none font-bold"
                                     placeholder={t('phone_placeholder')}
                                 />
                             </div>
@@ -153,7 +153,7 @@ export default function ProviderOnboardingPage() {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="w-full h-20 bg-blue-600 text-white font-black rounded-2xl flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-blue-600/20"
+                        className="w-full h-20 bg-blue-600 text-white font-black rounded-app flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-blue-600/20"
                     >
                         {isSubmitting ? t('submitting') : t('submit_for_approval')}
                         <PiArrowRight />

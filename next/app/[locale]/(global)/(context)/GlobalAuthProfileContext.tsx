@@ -9,10 +9,10 @@ import React, {
     useCallback,
     ReactNode
 } from 'react';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import type { AuthContextPayload } from '@stuwin/shared/types/auth/authData';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import type { AuthContextPayload } from '@stuwin/shared/types/auth/AuthData.types';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 
 // Extend Window interface for global auth context update
 declare global {
@@ -208,18 +208,16 @@ export function GlobalAuthProfileProvider({ children }: GlobalAuthProfileProvide
     const loadProfileData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await apiCallForSpaHelper({
+            // fetchApiUtil already unwraps the { success, data } envelope
+            const data = await fetchApiUtil<Partial<AuthContextPayload>>({
                 method: 'GET',
                 url: '/api/auth'
             });
 
-            // response.data is the Axios payload: { success, data: { user, account, ... } }
-            // We need to unwrap the envelope to get user/account at the top level
-            const envelope = response.data;
-            if (envelope?.data) {
+            if (data) {
                 updateFromAuthPayload({
                     action: 'initial',
-                    ...(envelope.data as Partial<AuthContextPayload>)
+                    ...data
                 });
             }
         } catch (error) {

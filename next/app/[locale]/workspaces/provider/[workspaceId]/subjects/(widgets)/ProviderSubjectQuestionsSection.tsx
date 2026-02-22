@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
-import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
-import { Question as QuestionType } from "@stuwin/shared/types/domain/question";
-import { ProviderQuestionListItemWidget } from "./ProviderQuestionListItemWidget";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoader.tile";
+import { Question as QuestionType } from "@stuwin/shared/types/domain/Question.types";
+import { ProviderQuestionListItemWidget } from "./ProviderQuestionListItem.widget";
+import { Card } from "@/app/primitives/Card.primitive";
 import { toast } from "react-toastify";
-import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
-import { PiX } from "react-icons/pi";
+import { ConsoleLogger } from "@/lib/logging/Console.logger";
+import { PiX, PiListChecks } from "react-icons/pi";
 
 interface ProviderSubjectQuestionsSectionProps {
     workspaceId: string;
@@ -35,16 +36,15 @@ export function ProviderSubjectQuestionsSection({
     const [questions, setQuestions] = useState<QuestionType.PrivateAccess[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
+    const [publishedFilter, setPublishedFilter] = useState<'all' | 'published' | 'unpublished'>('all');
     const [pagination, setPagination] = useState<PaginationState>({
         total: 0,
         totalPages: 0,
         pageSize: 10,
     });
 
-    // Reset page when topic filter changes
-    useEffect(() => {
-        setPage(1);
-    }, [topicId]);
+    useEffect(() => { setPage(1); }, [topicId]);
+    useEffect(() => { setPage(1); }, [publishedFilter]);
 
     const fetchQuestions = async () => {
         try {
@@ -52,27 +52,29 @@ export function ProviderSubjectQuestionsSection({
             const params = new URLSearchParams({
                 page: page.toString(),
                 pageSize: pagination.pageSize.toString(),
-                subjectId: subjectId,
+                subjectId,
             });
+            if (topicId) params.append("topicId", topicId);
+            if (publishedFilter === 'published') params.append("published", "true");
+            if (publishedFilter === 'unpublished') params.append("published", "false");
 
-            if (topicId) {
-                params.append("topicId", topicId);
-            }
-
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<{
+                questions: QuestionType.PrivateAccess[];
+                total: number;
+                totalPages: number;
+                pageSize: number;
+            }>({
                 method: "GET",
                 url: `/api/workspaces/provider/${workspaceId}/questions?${params.toString()}`,
             });
 
-            const result = response as any;
-
-            setQuestions(result.questions || []);
+            setQuestions(response?.questions || []);
             setPagination({
-                total: result.total || 0,
-                totalPages: result.totalPages || 0,
-                pageSize: result.pageSize || 10,
+                total: response?.total || 0,
+                totalPages: response?.totalPages || 0,
+                pageSize: response?.pageSize || 10,
             });
-        } catch (err) {
+        } catch (err: unknown) {
             ConsoleLogger.error("Error fetching questions:", err);
             toast.error(t("errorFetchingQuestions"));
         } finally {
@@ -83,45 +85,67 @@ export function ProviderSubjectQuestionsSection({
     useEffect(() => {
         fetchQuestions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, subjectId, topicId]);
+    }, [page, subjectId, topicId, publishedFilter]);
 
-    const handleQuestionUpdate = (
-        updatedQuestion: QuestionType.PrivateAccess,
-    ): void => {
-        setQuestions((prevQuestions) =>
-            prevQuestions.map((q) =>
-                q.id === updatedQuestion.id ? updatedQuestion : q,
-            ),
-        );
+    const handleQuestionUpdate = (updatedQuestion: QuestionType.PrivateAccess): void => {
+        setQuestions((prev) => prev.map((q) => q.id === updatedQuestion.id ? updatedQuestion : q));
     };
 
-    const handleQuestionDelete = (deletedQuestionId: string): void => {
-        setQuestions((prevQuestions) =>
-            prevQuestions.filter((q) => q.id !== deletedQuestionId),
-        );
+    const handleQuestionDelete = (deletedId: string): void => {
+        setQuestions((prev) => prev.filter((q) => q.id !== deletedId));
         toast.success(t("questionDeleted"));
-        fetchQuestions(); // Refresh to keep pagination correct
+        fetchQuestions();
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mt-6">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{t("questions")}</h2>
+        <Card className="mt-4 p-6 bg-white/80 dark:bg-white/5 border-black/10 dark:border-white/10">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-app-dark-blue dark:text-white flex items-center gap-2">
+                    <PiListChecks className="text-app-bright-green" />
+                    {t("questions")}
+                    {pagination.total > 0 && (
+                        <span className="text-sm font-normal text-app-dark-blue/40 dark:text-white/40">
+                            ({pagination.total})
+                        </span>
+                    )}
+                </h2>
             </div>
 
+            {/* Published filter tabs */}
+            <div className="flex items-center gap-1 mb-4 p-1 rounded-app bg-black/5 dark:bg-white/5 w-fit">
+                {(['all', 'published', 'unpublished'] as const).map((f) => (
+                    <button
+                        key={f}
+                        onClick={() => setPublishedFilter(f)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-app transition-all ${publishedFilter === f
+                            ? 'bg-white dark:bg-white/10 text-app-dark-blue dark:text-white shadow-sm'
+                            : 'text-app-dark-blue/50 dark:text-white/50 hover:text-app-dark-blue dark:hover:text-white'
+                            }`}
+                    >
+                        {f === 'all' ? t('filterAll') : f === 'published' ? t('filterPublished') : t('filterUnpublished')}
+                    </button>
+                ))}
+            </div>
+
+            {/* Topic filter pill */}
             {topicId && (
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-blue-800">
-                        <span className="font-medium">{t("filteredByTopic")}:</span>
-                        <span className="font-bold">{topicName || topicId}</span>
+                <div className="mb-6 px-4 py-3 rounded-app flex items-center justify-between
+                    bg-app-bright-green/10 dark:bg-app-bright-green/15
+                    border border-app-bright-green/30">
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="font-semibold text-app-dark-blue dark:text-white">{t("filteredByTopic")}:</span>
+                        <span className="text-app-bright-green font-bold">{topicName || topicId}</span>
                     </div>
                     {onClearFilter && (
                         <button
                             onClick={onClearFilter}
-                            className="p-1 hover:bg-blue-100 rounded-full transition-colors text-blue-600 hover:text-blue-800"
+                            className="p-1 rounded-app-full transition-colors
+                                text-app-dark-blue/50 dark:text-white/50
+                                hover:bg-black/10 dark:hover:bg-white/10"
                             title={t("clearFilter")}
                         >
-                            <PiX className="w-5 h-5" />
+                            <PiX className="w-4 h-4" />
                         </button>
                     )}
                 </div>
@@ -132,8 +156,11 @@ export function ProviderSubjectQuestionsSection({
             ) : (
                 <div className="space-y-4">
                     {questions.length === 0 ? (
-                        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
-                            <p className="text-gray-500">
+                        <div className="text-center py-12 rounded-app border-2 border-dashed
+                            border-black/10 dark:border-white/10
+                            bg-black/2 dark:bg-white/5">
+                            <PiListChecks className="mx-auto w-10 h-10 mb-2 text-app-dark-blue/20 dark:text-white/20" />
+                            <p className="text-app-dark-blue/50 dark:text-white/50">
                                 {topicId ? t("noQuestionsForTopic") : t("noQuestionsFound")}
                             </p>
                         </div>
@@ -150,27 +177,36 @@ export function ProviderSubjectQuestionsSection({
                 </div>
             )}
 
+            {/* Pagination */}
             {!loading && pagination.totalPages > 1 && (
-                <div className="mt-6 flex justify-center items-center space-x-2">
+                <div className="mt-6 flex justify-center items-center gap-2">
                     <button
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm font-medium"
+                        className="px-4 py-2 rounded-app text-sm font-medium transition-colors
+                            border border-black/10 dark:border-white/10
+                            text-app-dark-blue dark:text-white
+                            hover:bg-black/5 dark:hover:bg-white/10
+                            disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {t("previous")}
                     </button>
-                    <span className="px-4 py-2 text-gray-700 text-sm">
+                    <span className="px-4 py-2 text-sm text-app-dark-blue/60 dark:text-white/60">
                         {t("pageOf", { page, totalPages: pagination.totalPages })}
                     </span>
                     <button
                         onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                         disabled={page === pagination.totalPages}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm font-medium"
+                        className="px-4 py-2 rounded-app text-sm font-medium transition-colors
+                            border border-black/10 dark:border-white/10
+                            text-app-dark-blue dark:text-white
+                            hover:bg-black/5 dark:hover:bg-white/10
+                            disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {t("next")}
                     </button>
                 </div>
             )}
-        </div>
+        </Card>
     );
 }

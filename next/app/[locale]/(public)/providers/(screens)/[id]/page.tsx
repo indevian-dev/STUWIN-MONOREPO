@@ -1,14 +1,14 @@
-import { getS3Url } from '@/lib/utils/upload/S3Util';
-import { PublicSingleProviderWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicSingleProviderWidget';
-import { PublicRelatedProvidersWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicRelatedProvidersWidget';
-import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
+import { getS3Url } from '@/lib/utils/Uploader.S3.util';
+import { PublicSingleProviderWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicSingleProvider.widget';
+import { PublicRelatedProvidersWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicRelatedProviders.widget';
+import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbs.tile';
 import { db, ORGANIZATIONS } from '@/lib/database';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
 import { sql } from 'drizzle-orm';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface PageParams {
   params: Promise<{
     id: string;

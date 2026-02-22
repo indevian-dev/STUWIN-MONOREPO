@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
 import { PiArrowLeft, PiCheckCircleBold, PiBuildingsBold, PiCreditCardBold, PiLightningBold, PiStudentBold } from "react-icons/pi";
 import { toast } from "react-toastify";
-import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoaderTile";
+import { GlobalLoaderTile } from "@/app/[locale]/(global)/(tiles)/GlobalLoader.tile";
 
 export default function EnrollmentPage() {
     const router = useRouter();
@@ -27,17 +27,10 @@ export default function EnrollmentPage() {
     const [hasUsedTrial, setHasUsedTrial] = useState(false);
     const [existingAccess, setExistingAccess] = useState<any>(null);
 
-    useEffect(() => {
-        if (providerId) {
-            fetchProvider();
-            checkEnrollmentStatus();
-        }
-    }, [providerId]);
-
     const checkEnrollmentStatus = async () => {
         try {
             // apiCall unwraps { success, data } → response is the data directly
-            const result = await apiCall<unknown[]>({
+            const result = await fetchApiUtil<unknown[]>({
                 url: `/api/workspaces/billing/subscriptions`,
                 method: "GET",
             });
@@ -58,7 +51,7 @@ export default function EnrollmentPage() {
     const fetchProvider = async () => {
         try {
             // apiCall unwraps { success, data } → response IS the provider object
-            const result = await apiCall<Record<string, unknown>>({
+            const result = await fetchApiUtil<Record<string, unknown>>({
                 url: `/api/providers/${providerId}`,
                 method: "GET",
             });
@@ -73,6 +66,16 @@ export default function EnrollmentPage() {
             setLoading(false);
         }
     };
+
+
+    useEffect(() => {
+        if (providerId) {
+            fetchProvider();
+            checkEnrollmentStatus();
+        }
+    }, [providerId]);
+
+
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -92,7 +95,7 @@ export default function EnrollmentPage() {
             if (useTrial) {
                 // Free Trial / Direct Enrollment
                 // apiCall unwraps outer { success, data } → we get { success, data: { id, ... } }
-                const result = await apiCall<{ success?: boolean; data?: { id: string }; id?: string }>({
+                const result = await fetchApiUtil<{ success?: boolean; data?: { id: string }; id?: string }>({
                     url: "/api/workspaces/onboarding",
                     method: "POST",
                     body: {
@@ -103,7 +106,7 @@ export default function EnrollmentPage() {
                             providerId: provider.id,
                         }
                     }
-                } as Parameters<typeof apiCall>[0]);
+                } as Parameters<typeof fetchApiUtil>[0]);
 
                 // result = { success: true, data: { id, type, title, ... } } OR { id, type, title, ... }
                 const workspaceId = result?.data?.id || result?.id;
@@ -118,7 +121,7 @@ export default function EnrollmentPage() {
                 let targetWorkspaceId = existingAccess?.workspace?.id;
 
                 if (!targetWorkspaceId) {
-                    const result = await apiCall<{ success?: boolean; data?: { id: string }; id?: string }>({
+                    const result = await fetchApiUtil<{ success?: boolean; data?: { id: string }; id?: string }>({
                         url: "/api/workspaces/onboarding",
                         method: "POST",
                         body: {
@@ -129,7 +132,7 @@ export default function EnrollmentPage() {
                                 providerId: provider.id,
                             }
                         }
-                    } as Parameters<typeof apiCall>[0]);
+                    } as Parameters<typeof fetchApiUtil>[0]);
 
                     // result = { success: true, data: { id, ... } } OR { id, ... }
                     targetWorkspaceId = result?.data?.id || result?.id;
@@ -139,7 +142,7 @@ export default function EnrollmentPage() {
                 }
 
                 // Now Initiate Payment
-                const payRes = await apiCall<{ redirectUrl?: string; data?: { redirectUrl?: string } }>({
+                const payRes = await fetchApiUtil<{ redirectUrl?: string; data?: { redirectUrl?: string } }>({
                     url: "/api/workspaces/billing/initiate",
                     method: "POST",
                     body: {
@@ -172,10 +175,10 @@ export default function EnrollmentPage() {
     if (!provider) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 p-6">
-                <h1 className="text-2xl font-black text-dark mb-4">{t('provider_not_found')}</h1>
+                <h1 className="text-2xl font-black text-app-dark-blue dark:text-white mb-4">{t('provider_not_found')}</h1>
                 <button
                     onClick={() => router.back()}
-                    className="px-6 py-3 bg-dark text-white rounded-xl font-bold"
+                    className="px-6 py-3 bg-app-bright-green-dark text-white rounded-app font-bold"
                 >
                     {t('go_back')}
                 </button>
@@ -193,42 +196,42 @@ export default function EnrollmentPage() {
                 <div className="space-y-8">
                     <button
                         onClick={() => step === 2 ? setStep(1) : router.back()}
-                        className="flex items-center gap-2 text-neutral-400 hover:text-dark transition font-black uppercase tracking-widest text-xs"
+                        className="flex items-center gap-2 text-neutral-400 hover:text-app-dark-blue dark:text-white transition font-black uppercase tracking-widest text-xs"
                     >
                         <PiArrowLeft /> {t('back')}
                     </button>
 
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-full text-xs font-black uppercase tracking-widest">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-app-full text-xs font-black uppercase tracking-widest">
                             <PiBuildingsBold /> {t('school_enrollment')}
                         </div>
-                        <h1 className="text-5xl font-black text-dark tracking-tight leading-tight">
+                        <h1 className="text-5xl font-black text-app-dark-blue dark:text-white tracking-tight leading-tight">
                             {t('enroll_in')} <br /> <span className="text-teal-500">{provider.title}</span>
                         </h1>
-                        <p className="text-body text-lg font-medium opacity-70">
+                        <p className="text-app-dark-blue/70 dark:text-white/70 text-lg font-medium opacity-70">
                             {provider.profile?.providerProgramDescription || t('default_description')}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-6 bg-white rounded-3xl border-2 border-slate-100 space-y-3">
-                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+                        <div className="p-6 bg-white rounded-app border-2 border-slate-100 space-y-3">
+                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-app flex items-center justify-center text-xl">
                                 <PiCheckCircleBold />
                             </div>
-                            <h3 className="font-black text-dark">{t('what_you_get')}</h3>
+                            <h3 className="font-black text-app-dark-blue dark:text-white">{t('what_you_get')}</h3>
                             <ul className="text-sm font-medium text-neutral-500 space-y-2">
                                 <li className="flex items-center gap-2 italic">✓ {t('feature_ai_subjects')}</li>
                                 <li className="flex items-center gap-2 italic">✓ {t('feature_quizzes')}</li>
                                 <li className="flex items-center gap-2 italic">✓ {t('feature_progress')}</li>
                             </ul>
                         </div>
-                        <div className="p-6 bg-white rounded-3xl border-2 border-slate-100 space-y-3">
-                            <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl">
+                        <div className="p-6 bg-white rounded-app border-2 border-slate-100 space-y-3">
+                            <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-app flex items-center justify-center text-xl">
                                 <PiLightningBold />
                             </div>
-                            <h3 className="font-black text-dark">{t('pricing_plan')}</h3>
+                            <h3 className="font-black text-app-dark-blue dark:text-white">{t('pricing_plan')}</h3>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-black text-dark">{price} AZN</span>
+                                <span className="text-2xl font-black text-app-dark-blue dark:text-white">{price} AZN</span>
                                 <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">/ {t('month')}</span>
                             </div>
                             {trialDays > 0 && (
@@ -247,10 +250,10 @@ export default function EnrollmentPage() {
                             <div className="space-y-10 animate-in slide-in-from-right-8 duration-500">
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-2xl">
+                                        <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-app flex items-center justify-center text-2xl">
                                             <PiStudentBold />
                                         </div>
-                                        <h2 className="text-2xl font-black text-dark tracking-tight">{t('student_profile')}</h2>
+                                        <h2 className="text-2xl font-black text-app-dark-blue dark:text-white tracking-tight">{t('student_profile')}</h2>
                                     </div>
 
                                     <div className="space-y-4">
@@ -264,7 +267,7 @@ export default function EnrollmentPage() {
                                                 value={formData.displayName}
                                                 onChange={handleInputChange}
                                                 placeholder={t('student_name_placeholder')}
-                                                className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-teal-500 outline-none font-bold placeholder:text-neutral-300 transition-all"
+                                                className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-teal-500 outline-none font-bold placeholder:text-neutral-300 transition-all"
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -276,7 +279,7 @@ export default function EnrollmentPage() {
                                                     name="gradeLevel"
                                                     value={formData.gradeLevel}
                                                     onChange={handleInputChange}
-                                                    className="w-full h-16 px-6 bg-neutral-50 rounded-2xl border-2 border-border focus:border-teal-500 outline-none font-bold appearance-none cursor-pointer pr-12"
+                                                    className="w-full h-16 px-6 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-teal-500 outline-none font-bold appearance-none cursor-pointer pr-12"
                                                 >
                                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
                                                         <option key={g} value={g}>{t('grade_n', { n: g })}</option>
@@ -291,7 +294,7 @@ export default function EnrollmentPage() {
                                 </div>
                                 <button
                                     onClick={handleContinue}
-                                    className="w-full h-20 bg-dark text-white font-black rounded-3xl flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-dark/20 group"
+                                    className="w-full h-20 bg-app-bright-green-dark text-white font-black rounded-app flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-dark/20 group"
                                 >
                                     {t('continue')}
                                     <PiStudentBold className="group-hover:translate-x-1 transition-transform" />
@@ -300,7 +303,7 @@ export default function EnrollmentPage() {
                         ) : (
                             <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
                                 <div className="space-y-2">
-                                    <h2 className="text-2xl font-black text-dark tracking-tight">{t('choose_plan')}</h2>
+                                    <h2 className="text-2xl font-black text-app-dark-blue dark:text-white tracking-tight">{t('choose_plan')}</h2>
                                     <p className="text-sm font-bold text-neutral-400">{t('choose_plan_desc')}</p>
                                 </div>
 
@@ -309,13 +312,13 @@ export default function EnrollmentPage() {
                                         <button
                                             onClick={() => handleEnroll(true)}
                                             disabled={isSubmitting}
-                                            className="w-full p-6 bg-white border-2 border-slate-100 hover:border-teal-500 rounded-3xl flex items-center gap-6 transition-all group text-left"
+                                            className="w-full p-6 bg-white border-2 border-slate-100 hover:border-teal-500 rounded-app flex items-center gap-6 transition-all group text-left"
                                         >
-                                            <div className="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                            <div className="w-14 h-14 bg-teal-50 text-teal-600 rounded-app flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                                 <PiLightningBold />
                                             </div>
                                             <div className="flex-1">
-                                                <h4 className="font-black text-dark text-lg">{t('start_free_trial')}</h4>
+                                                <h4 className="font-black text-app-dark-blue dark:text-white text-lg">{t('start_free_trial')}</h4>
                                                 <p className="text-xs font-bold text-neutral-400 italic">
                                                     {t('includes_trial', { days: trialDays })}
                                                 </p>
@@ -326,13 +329,13 @@ export default function EnrollmentPage() {
                                     <button
                                         onClick={() => handleEnroll(false)}
                                         disabled={isSubmitting}
-                                        className="w-full p-6 bg-white border-2 border-slate-100 hover:border-indigo-500 rounded-3xl flex items-center gap-6 transition-all group text-left"
+                                        className="w-full p-6 bg-white border-2 border-slate-100 hover:border-indigo-500 rounded-app flex items-center gap-6 transition-all group text-left"
                                     >
-                                        <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                        <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-app flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                             <PiCreditCardBold />
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="font-black text-dark text-lg">{t('pay_and_enroll')}</h4>
+                                            <h4 className="font-black text-app-dark-blue dark:text-white text-lg">{t('pay_and_enroll')}</h4>
                                             <p className="text-xs font-bold text-neutral-400 italic">
                                                 {price} {t('currency_suffix')} / {t('month')}
                                             </p>
@@ -342,7 +345,7 @@ export default function EnrollmentPage() {
 
                                 {isSubmitting && (
                                     <div className="flex items-center justify-center gap-3 text-teal-600 font-black animate-pulse">
-                                        <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-app-full animate-spin"></div>
                                         {t('processing')}
                                     </div>
                                 )}

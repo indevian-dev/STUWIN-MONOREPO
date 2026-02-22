@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
-import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/Interceptor.Api.middleware";
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const DELETE = unifiedApiHandler(
   async (request: NextRequest, { module, params, log }: UnifiedContext) => {

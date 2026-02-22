@@ -34,14 +34,14 @@ const Pagination = ({ currentPage, page, totalPages, totalItems, itemsPerPage, o
                 <button
                     onClick={() => handlePageChange(1)}
                     disabled={activePage === 1}
-                    className={`px-4 py-2 rounded-md ${activePage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+                    className={`px-4 py-2 rounded-app ${activePage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
                 >
                     First
                 </button>
                 <button
                     onClick={() => handlePageChange(activePage - 1)}
                     disabled={activePage === 1}
-                    className={`px-4 py-2 rounded-md ${activePage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+                    className={`px-4 py-2 rounded-app ${activePage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
                 >
                     Previous
                 </button>
@@ -58,7 +58,7 @@ const Pagination = ({ currentPage, page, totalPages, totalItems, itemsPerPage, o
                             <button
                                 key={pageNumber}
                                 onClick={() => handlePageChange(pageNumber)}
-                                className={`px-4 py-2 rounded-md ${
+                                className={`px-4 py-2 rounded-app ${
                                     pageNumber === activePage
                                         ? 'bg-semilight text-black'
                                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
@@ -79,14 +79,14 @@ const Pagination = ({ currentPage, page, totalPages, totalItems, itemsPerPage, o
                 <button
                     onClick={() => handlePageChange(activePage + 1)}
                     disabled={activePage >= calculatedTotalPages}
-                    className={`px-4 py-2 rounded-md ${activePage >= calculatedTotalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+                    className={`px-4 py-2 rounded-app ${activePage >= calculatedTotalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
                 >
                     Next
                 </button>
                 <button
                     onClick={() => handlePageChange(calculatedTotalPages)}
                     disabled={activePage === calculatedTotalPages}
-                    className={`px-4 py-2 rounded-md ${activePage === calculatedTotalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+                    className={`px-4 py-2 rounded-app ${activePage === calculatedTotalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
                 >
                     Last
                 </button>

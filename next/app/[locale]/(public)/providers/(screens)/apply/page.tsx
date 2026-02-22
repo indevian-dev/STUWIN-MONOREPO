@@ -1,6 +1,6 @@
-import { PublicProviderApplicationFormWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProviderApplicationFormWidget';
-import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitleTile';
-import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbsTile';
+import { PublicProviderApplicationFormWidget } from '@/app/[locale]/(public)/providers/(widgets)/PublicProviderApplicationForm.widget';
+import { PublicScreenTitleTile } from '@/app/[locale]/(public)/(tiles)/PublicScreenTitle.tile';
+import { PublicBreadCrumbsTile } from '@/app/[locale]/(public)/(tiles)/PublicBreadCrumbs.tile';
 import type { Metadata } from 'next';
 
 interface PageParams {
@@ -52,7 +52,7 @@ export default function PublicProviderApplicationPage() {
         <PublicProviderApplicationFormWidget />
 
         {/* Info Section */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-app p-6">
           <h3 className="font-semibold text-blue-900 mb-2">
             Müraciət prosesi
           </h3>

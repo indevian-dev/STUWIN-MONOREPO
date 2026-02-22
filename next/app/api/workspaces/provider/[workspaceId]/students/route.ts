@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import { okResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import { okResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, params }) => {
     const workspaceId = params.workspaceId;

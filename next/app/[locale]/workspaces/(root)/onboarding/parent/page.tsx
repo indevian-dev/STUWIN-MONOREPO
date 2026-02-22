@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
 import { PiMagnifyingGlass, PiCheckCircleFill, PiUserCircle, PiArrowLeft, PiArrowRight } from "react-icons/pi";
 import { toast } from "react-toastify";
 
@@ -24,7 +24,7 @@ export default function ParentOnboardingPage() {
 
         try {
             setIsSearching(true);
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: `/api/workspaces/onboarding/search-child?fin=${fin}`,
                 method: "GET",
             } as any);
@@ -56,7 +56,7 @@ export default function ParentOnboardingPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: "/api/workspaces/onboarding",
                 method: "POST",
                 body: {
@@ -80,20 +80,20 @@ export default function ParentOnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-brand">
+        <div className="min-h-screen bg-neutral-50 p-6 flex flex-col items-center justify-center bg-section-gradient-app">
             <div className="max-w-2xl w-full bg-white rounded-[3rem] p-10 md:p-16 shadow-2xl space-y-12">
                 <button
                     onClick={() => router.push("/workspaces/onboarding/welcome")}
-                    className="flex items-center gap-2 text-neutral-400 hover:text-dark transition font-black uppercase tracking-widest text-xs"
+                    className="flex items-center gap-2 text-neutral-400 hover:text-app-dark-blue dark:text-white transition font-black uppercase tracking-widest text-xs"
                 >
                     <PiArrowLeft /> {t('back')}
                 </button>
 
                 <div className="space-y-4">
-                    <h1 className="text-4xl font-black text-dark tracking-tight leading-none">
-                        {t('find_your_child')} <span className="text-brand">{t('child')}</span>
+                    <h1 className="text-4xl font-black text-app-dark-blue dark:text-white tracking-tight leading-none">
+                        {t('find_your_child')} <span className="text-app-bright-green">{t('child')}</span>
                     </h1>
-                    <p className="text-body font-medium">
+                    <p className="text-app-dark-blue/70 dark:text-white/70 font-medium">
                         {t('parent_message')}
                     </p>
                 </div>
@@ -105,12 +105,12 @@ export default function ParentOnboardingPage() {
                             value={fin}
                             onChange={(e) => setFin(e.target.value.toUpperCase())}
                             placeholder={t('fin_placeholder')}
-                            className="w-full h-20 px-8 bg-neutral-50 rounded-2xl border-2 border-border focus:border-brand outline-none text-xl font-black tracking-widest placeholder:text-neutral-300 transition-all"
+                            className="w-full h-20 px-8 bg-neutral-50 rounded-app border-2 border-black/10 dark:border-white/10 focus:border-app outline-none text-xl font-black tracking-widest placeholder:text-neutral-300 transition-all"
                         />
                         <button
                             onClick={handleSearch}
                             disabled={isSearching}
-                            className="absolute right-4 top-4 bottom-4 px-6 bg-dark text-white rounded-xl font-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                            className="absolute right-4 top-4 bottom-4 px-6 bg-app-bright-green-dark text-white rounded-app font-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                         >
                             <PiMagnifyingGlass size={24} />
                             {isSearching ? t('searching') : t('search')}
@@ -125,22 +125,22 @@ export default function ParentOnboardingPage() {
                                     <button
                                         key={res.workspaceId}
                                         onClick={() => handleToggleSelection(res.workspaceId)}
-                                        className={`flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${selectedWorkspaces.includes(res.workspaceId)
-                                            ? "border-brand bg-brand/5"
-                                            : "border-border bg-white hover:border-neutral-300"
+                                        className={`flex items-center justify-between p-6 rounded-app border-2 transition-all ${selectedWorkspaces.includes(res.workspaceId)
+                                            ? "border-app bg-app-bright-green/5"
+                                            : "border-black/10 dark:border-white/10 bg-white hover:border-neutral-300"
                                             }`}
                                     >
                                         <div className="flex items-center gap-4 text-left">
-                                            <div className="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center text-2xl">
+                                            <div className="w-12 h-12 bg-neutral-100 rounded-app flex items-center justify-center text-2xl">
                                                 <PiUserCircle />
                                             </div>
                                             <div>
-                                                <p className="font-black text-dark leading-none mb-1">{res.workspaceTitle}</p>
+                                                <p className="font-black text-app-dark-blue dark:text-white leading-none mb-1">{res.workspaceTitle}</p>
                                                 <p className="text-xs font-bold text-neutral-400">{res.studentName}</p>
                                             </div>
                                         </div>
                                         {selectedWorkspaces.includes(res.workspaceId) && (
-                                            <PiCheckCircleFill className="text-brand text-2xl" />
+                                            <PiCheckCircleFill className="text-app-bright-green text-2xl" />
                                         )}
                                     </button>
                                 ))}
@@ -149,7 +149,7 @@ export default function ParentOnboardingPage() {
                             <button
                                 onClick={handleComplete}
                                 disabled={isSubmitting}
-                                className="w-full h-20 bg-brand text-dark font-black rounded-2xl flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand/20"
+                                className="w-full h-20 bg-app-bright-green text-app-dark-blue dark:text-white font-black rounded-app flex items-center justify-center gap-3 text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-app/20"
                             >
                                 {isSubmitting ? t('finishing') : t('continue_to_dashboard')}
                                 <PiArrowRight />

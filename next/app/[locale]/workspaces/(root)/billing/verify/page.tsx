@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiCall } from "@/lib/utils/http/SpaApiClient";
+import { fetchApiUtil } from "@/lib/utils/Http.FetchApiSPA.util";
 import { PiCheckCircleBold, PiXCircleBold, PiSpinnerBold, PiLightningBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
@@ -27,7 +27,7 @@ export default function PaymentVerifyPage() {
         setIsVerifying(true);
         setStatus('loading');
         try {
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 url: `/api/workspaces/billing/verify/${transactionId}`,
                 method: "POST"
             });
@@ -60,9 +60,9 @@ export default function PaymentVerifyPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 p-6">
                 <PiXCircleBold className="text-red-500 text-6xl mb-4" />
-                <h1 className="text-2xl font-black text-dark mb-2">Invalid Access</h1>
+                <h1 className="text-2xl font-black text-app-dark-blue dark:text-white mb-2">Invalid Access</h1>
                 <p className="text-neutral-500 mb-6 text-center">We couldn't find a transaction ID to verify. Please contact support if you have already paid.</p>
-                <button onClick={() => router.push("/workspaces")} className="px-8 py-3 bg-dark text-white rounded-2xl font-bold">Go to Dashboard</button>
+                <button onClick={() => router.push("/workspaces")} className="px-8 py-3 bg-app-bright-green-dark text-white rounded-app font-bold">Go to Dashboard</button>
             </div>
         );
     }
@@ -72,38 +72,38 @@ export default function PaymentVerifyPage() {
             <div className="max-w-md w-full bg-white rounded-[3rem] p-10 md:p-14 shadow-2xl shadow-dark/5 border border-slate-100 text-center space-y-8">
                 {status === 'loading' && (
                     <div className="space-y-6 animate-pulse">
-                        <div className="w-20 h-20 bg-teal-50 text-teal-500 rounded-3xl flex items-center justify-center text-4xl mx-auto">
+                        <div className="w-20 h-20 bg-teal-50 text-teal-500 rounded-app flex items-center justify-center text-4xl mx-auto">
                             <PiSpinnerBold className="animate-spin" />
                         </div>
-                        <h2 className="text-2xl font-black text-dark">Verifying Payment...</h2>
+                        <h2 className="text-2xl font-black text-app-dark-blue dark:text-white">Verifying Payment...</h2>
                         <p className="text-neutral-400 font-medium italic">Communicating with Epoint.az</p>
                     </div>
                 )}
 
                 {status === 'success' && (
                     <div className="space-y-6 animate-in zoom-in duration-500">
-                        <div className="w-20 h-20 bg-green-50 text-green-500 rounded-3xl flex items-center justify-center text-5xl mx-auto">
+                        <div className="w-20 h-20 bg-green-50 text-green-500 rounded-app flex items-center justify-center text-5xl mx-auto">
                             <PiCheckCircleBold />
                         </div>
-                        <h2 className="text-2xl font-black text-dark">{t('enrollment_success')}</h2>
+                        <h2 className="text-2xl font-black text-app-dark-blue dark:text-white">{t('enrollment_success')}</h2>
                         <p className="text-neutral-500 font-medium">Your subscription is now active. Redirecting you to your dashboard...</p>
                     </div>
                 )}
 
                 {status === 'error' && (
                     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                        <div className="w-20 h-20 bg-orange-50 text-orange-500 rounded-3xl flex items-center justify-center text-4xl mx-auto">
+                        <div className="w-20 h-20 bg-orange-50 text-orange-500 rounded-app flex items-center justify-center text-4xl mx-auto">
                             <PiLightningBold />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-dark">Almost there!</h2>
+                            <h2 className="text-2xl font-black text-app-dark-blue dark:text-white">Almost there!</h2>
                             <p className="text-neutral-500 font-medium text-sm leading-relaxed">{message}</p>
                         </div>
                         <div className="pt-4 space-y-3">
                             <button
                                 onClick={verifyPayment}
                                 disabled={isVerifying}
-                                className="w-full h-16 bg-dark text-white font-black rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                className="w-full h-16 bg-app-bright-green-dark text-white font-black rounded-app flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             >
                                 {isVerifying ? <PiSpinnerBold className="animate-spin" /> : <PiCheckCircleBold />}
                                 Check Again & Activate
@@ -117,13 +117,13 @@ export default function PaymentVerifyPage() {
 
                 {status === 'pending' && !isVerifying && (
                     <div className="space-y-6">
-                        <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-3xl flex items-center justify-center text-4xl mx-auto">
+                        <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-app flex items-center justify-center text-4xl mx-auto">
                             <PiLightningBold />
                         </div>
-                        <h2 className="text-2xl font-black text-dark text-balance">Verify Your Enrollment</h2>
+                        <h2 className="text-2xl font-black text-app-dark-blue dark:text-white text-balance">Verify Your Enrollment</h2>
                         <button
                             onClick={verifyPayment}
-                            className="w-full h-16 bg-dark text-white font-black rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
+                            className="w-full h-16 bg-app-bright-green-dark text-white font-black rounded-app flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
                         >
                             <PiCheckCircleBold />
                             Complete Activation

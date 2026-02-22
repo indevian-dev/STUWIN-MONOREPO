@@ -1,5 +1,5 @@
-import { StudentLearningSessionsListWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsListWidget";
-import { withPageAuth } from "@/lib/middleware/handlers";
+import { StudentLearningSessionsListWidget } from "@/app/[locale]/workspaces/student/[workspaceId]/learning/(widgets)/StudentLearningSessionsList.widget";
+import { withPageAuth } from "@/lib/middleware/_Middleware.index";
 
 function StudentLearningSessionsPage() {
   return (

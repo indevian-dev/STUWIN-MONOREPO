@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/Interceptor.Api.middleware";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const GET = unifiedApiHandler(
   async (request: NextRequest, { module, auth, log, isValidSlimId }: UnifiedContext) => {

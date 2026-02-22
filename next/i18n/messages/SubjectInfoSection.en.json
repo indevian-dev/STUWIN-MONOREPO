@@ -27,5 +27,9 @@
   "invalidImageFile": "Please select a valid image file",
   "imageTooSmall": "Image size must be at least 20KB",
   "imageTooLarge": "Image size must be less than 5MB",
-  "coverUploadError": "Failed to upload cover image"
+  "coverUploadError": "Failed to upload cover image",
+  "noCover": "No cover image",
+  "aiGuide": "AI Guide",
+  "aiGuidePlaceholder": "Optional: paste AI guide instructions here...",
+  "aiGuideHelp": "These instructions are sent to the AI when working with this subject."
 }

@@ -1,6 +1,6 @@
 
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { okResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { okResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * GET /api/programs
@@ -33,7 +33,7 @@ export const GET = unifiedApiHandler(async (request, { module }) => {
 
         const { data, total } = result.data;
 
-        return okResponse({ success: true, programs: data, total, page, pageSize,  });
+        return okResponse({ success: true, programs: data, total, page, pageSize, });
     } catch (error) {
         console.error('Error in programs API:', error);
         return serverErrorResponse(error instanceof Error ? error.message : 'Internal server error',);

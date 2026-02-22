@@ -4,9 +4,9 @@ import type {
   PasswordValidationResult,
   HashPasswordResult,
   VerifyPasswordResult,
-} from "@stuwin/shared/types/auth/password";
+} from "@stuwin/shared/types/auth/Password.types";
 
-import { ConsoleLogger } from "@/lib/logging/ConsoleLogger";
+import { ConsoleLogger } from "@/lib/logging/Console.logger";
 
 export async function validatePassword({
   password,

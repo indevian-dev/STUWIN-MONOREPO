@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { qstashReceiver } from "@/lib/integrations/upstash/qstash.client";
-import { okResponse, errorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { qstashReceiver } from "@/lib/integrations/upstash/Qstash.client";
+import { okResponse, errorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 /**
  * POST /api/workspaces/jobs/generate-topic-questions

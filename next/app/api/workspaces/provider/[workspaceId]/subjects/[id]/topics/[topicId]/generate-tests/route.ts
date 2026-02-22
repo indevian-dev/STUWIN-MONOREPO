@@ -1,6 +1,5 @@
-import type { NextRequest } from "next/server";
-import { unifiedApiHandler } from "@/lib/middleware/handlers";
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler } from "@/lib/middleware/_Middleware.index";
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request, { module, params, isValidSlimId, log, auth }) => {
   const subjectId = params?.id as string;
@@ -11,18 +10,32 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
   }
 
   try {
-    let count = 10;
+    let counts = { easy: 2, medium: 2, hard: 1 };
+
     try {
       const body = await request.json();
-      if (body && typeof body.count === 'number') {
-        count = Math.max(1, Math.min(10, body.count));
+      if (body?.counts && typeof body.counts === 'object') {
+        counts = {
+          easy: Math.max(0, Math.min(5, Number(body.counts.easy) || 0)),
+          medium: Math.max(0, Math.min(5, Number(body.counts.medium) || 0)),
+          hard: Math.max(0, Math.min(5, Number(body.counts.hard) || 0)),
+        };
+      } else if (body && typeof body.count === 'number') {
+        // Backward compat: single count → all medium
+        const count = Math.max(1, Math.min(5, body.count));
+        counts = { easy: 0, medium: count, hard: 0 };
       }
-    } catch (e) {
-      // Body might be empty, ignore
+    } catch (_e) {
+      // Body might be empty, use defaults
     }
 
-    // Call the Topic Service to generate real questions using AI
-    const generationResult = await module.topic.generateQuestions(topicId, subjectId, count);
+    const totalCount = counts.easy + counts.medium + counts.hard;
+    if (totalCount === 0) {
+      return errorResponse("Total question count must be greater than 0", 400);
+    }
+
+    // Call the Topic Service to generate questions with per-complexity counts
+    const generationResult = await module.topic.generateQuestions(topicId, subjectId, counts);
 
     if (!generationResult.success) {
       return serverErrorResponse(generationResult.error || "Failed to generate questions");
@@ -32,14 +45,15 @@ export const POST = unifiedApiHandler(async (request, { module, params, isValidS
       subjectId,
       topicId,
       accountId: auth.accountId,
-      count: generationResult.data.count
+      count: generationResult.data.count,
+      counts,
     });
 
     return okResponse(generationResult.data);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to generate tests";
     log.error("Failed to generate tests", {
-      error: error.message,
-      stack: error.stack,
+      error: message,
       subjectId,
       topicId,
       accountId: auth.accountId,

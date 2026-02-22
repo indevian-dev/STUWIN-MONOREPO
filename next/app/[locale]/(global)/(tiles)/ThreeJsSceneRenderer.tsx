@@ -7,7 +7,7 @@ import type {
     QuestionVisualData,
     SceneObject,
     SceneAnimation,
-} from "@/lib/domain/question/visual.types";
+} from "@/lib/domain/question/Visual.types";
 import * as THREE from "three";
 
 // ─── Geometry Component ────────────────────────────────────────────────────────

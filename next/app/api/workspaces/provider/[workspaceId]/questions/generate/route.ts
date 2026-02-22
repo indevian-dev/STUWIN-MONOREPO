@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/handlers/ApiInterceptor";
-import { QuestionGenerationService } from "@/lib/domain/question/question-generation.service";
-import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from "@/lib/middleware/Interceptor.Api.middleware";
+import { QuestionGenerationService } from "@/lib/domain/question/QuestionGeneration.service";
+import { createdResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(
   async (request: NextRequest, { auth, log }: UnifiedContext) => {

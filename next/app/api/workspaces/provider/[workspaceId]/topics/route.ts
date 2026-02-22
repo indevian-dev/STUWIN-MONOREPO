@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/handlers/ApiInterceptor';
-import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/responses/ApiResponse';
+import { unifiedApiHandler, type UnifiedContext } from '@/lib/middleware/Interceptor.Api.middleware';
+import { okResponse, errorResponse, serverErrorResponse } from '@/lib/middleware/Response.Api.middleware';
 
 // GET /api/workspaces/provider/topics - List all topics
 export const GET = unifiedApiHandler(async (request: NextRequest, { module, log }: UnifiedContext) => {

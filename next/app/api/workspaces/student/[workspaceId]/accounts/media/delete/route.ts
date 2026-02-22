@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import { unifiedApiHandler } from '@/lib/middleware/handlers';
-import s3 from '@/lib/integrations/aws/s3.client';
+import { unifiedApiHandler } from '@/lib/middleware/_Middleware.index';
+import s3 from '@/lib/integrations/aws/S3.client';
 import { DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/responses/ApiResponse';
+import { errorResponse, serverErrorResponse, messageResponse } from '@/lib/middleware/Response.Api.middleware';
 
 export const POST = unifiedApiHandler(async (request: NextRequest, { log }) => {
   const { filename, filePath } = await request.json();

@@ -6,12 +6,12 @@ import {
 } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { apiCallForSpaHelper } from '@/lib/utils/http/SpaApiClient';
-import { StudentPageTitleWidget } from '../../../../(widgets)/StudentPageTitleWidget';
-import { StudentQuizQuestionWidget } from '../../../(widgets)/StudentQuizQuestionWidget';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { StudentPageTitleWidget } from '../../../../(widgets)/StudentPageTitle.widget';
+import { StudentQuizQuestionWidget } from '../../../(widgets)/StudentQuizQuestion.widget';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 
-import { ConsoleLogger } from '@/lib/logging/ConsoleLogger';
+import { ConsoleLogger } from '@/lib/logging/Console.logger';
 interface Answer {
   questionId: string;
   selectedAnswer: string;
@@ -40,7 +40,7 @@ export default function StudentTakeQuizPageClient() {
   const fetchQuiz = async () => {
     setLoading(true);
 
-    const response = await apiCallForSpaHelper({
+    const response = await fetchApiUtil<any>({
       method: 'GET',
       url: `/api/workspaces/student/${workspaceId}/quizzes/${quizId}`,
     });
@@ -111,7 +111,7 @@ export default function StudentTakeQuizPageClient() {
     try {
       const answersArray = Object.values(answers);
 
-      const response = await apiCallForSpaHelper({
+      const response = await fetchApiUtil<any>({
         method: 'POST',
         url: `/api/workspaces/student/${workspaceId}/quizzes/submit`,
         body: {
@@ -167,7 +167,7 @@ export default function StudentTakeQuizPageClient() {
         <button
           onClick={handlePrevious}
           disabled={currentQuestionIndex === 0}
-          className='px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+          className='px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-app hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
         >
           ← Previous
         </button>
@@ -205,8 +205,8 @@ export default function StudentTakeQuizPageClient() {
                 <button
                   key={page}
                   onClick={() => setCurrentQuestionIndex(page)}
-                  className={`w-8 h-8 rounded-full font-medium text-sm transition-colors ${page === current
-                    ? 'bg-brand text-white'
+                  className={`w-8 h-8 rounded-app-full font-medium text-sm transition-colors ${page === current
+                    ? 'bg-app-bright-green text-white'
                     : answers[questions[page]?.id]
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -223,14 +223,14 @@ export default function StudentTakeQuizPageClient() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className='px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+            className='px-6 py-3 bg-green-600 text-white font-semibold rounded-app hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
           >
             {submitting ? 'Submitting...' : 'Submit Quiz'}
           </button>
         ) : (
           <button
             onClick={handleNext}
-            className='px-6 py-3 bg-brand text-white font-semibold rounded-md hover:bg-brand-dark transition-colors'
+            className='px-6 py-3 bg-app-bright-green text-white font-semibold rounded-app hover:bg-app-bright-green-dark transition-colors'
           >
             Next →
           </button>

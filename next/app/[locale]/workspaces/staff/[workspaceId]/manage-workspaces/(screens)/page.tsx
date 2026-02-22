@@ -1,5 +1,5 @@
-import { StaffManageWorkspacesWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/manage-workspaces/(widgets)/StaffManageWorkspacesWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { StaffManageWorkspacesWidget } from '@/app/[locale]/workspaces/staff/[workspaceId]/manage-workspaces/(widgets)/StaffManageWorkspaces.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 function StaffManageWorkspacesPage() {
     return (

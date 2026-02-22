@@ -1,6 +1,6 @@
 
-import { AuthVerificationWidget } from '../(widgets)/AuthVerificationWidget';
-import { withPageAuth } from '@/lib/middleware/handlers';
+import { AuthVerificationWidget } from '../(widgets)/AuthVerification.widget';
+import { withPageAuth } from '@/lib/middleware/_Middleware.index';
 
 interface AuthVerifyPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

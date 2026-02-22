@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PiPlusBold, PiTrashBold, PiToggleLeftFill, PiToggleRightFill, PiArrowsClockwiseBold, PiCheckCircleFill, PiTicketBold } from 'react-icons/pi';
-import { apiCall } from '@/lib/utils/http/SpaApiClient';
-import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoaderTile';
+import { fetchApiUtil } from '@/lib/utils/Http.FetchApiSPA.util';
+import { GlobalLoaderTile } from '@/app/[locale]/(global)/(tiles)/GlobalLoader.tile';
 
 export function StaffCouponManagementClient() {
     const t = useTranslations('StaffCouponManagement');
@@ -32,7 +32,7 @@ export function StaffCouponManagementClient() {
     const fetchCoupons = async () => {
         try {
             setLoading(true);
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 method: 'GET',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons`
             });
@@ -50,7 +50,7 @@ export function StaffCouponManagementClient() {
         e.preventDefault();
         try {
             setActionLoading('create');
-            const response = await apiCall<any>({
+            const response = await fetchApiUtil<any>({
                 method: 'POST',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons`,
                 body: {
@@ -73,7 +73,7 @@ export function StaffCouponManagementClient() {
     const handleToggleStatus = async (coupon: any) => {
         try {
             setActionLoading(coupon.id);
-            await apiCall<any>({
+            await fetchApiUtil<any>({
                 method: 'PUT',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons/${coupon.id}`,
                 body: { isActive: !coupon.isActive }
@@ -90,7 +90,7 @@ export function StaffCouponManagementClient() {
         if (!confirm("Are you sure you want to delete this coupon?")) return;
         try {
             setActionLoading(id);
-            await apiCall<any>({
+            await fetchApiUtil<any>({
                 method: 'DELETE',
                 url: `/api/workspaces/staff/${workspaceId}/payments/coupons/${id}`
             });
@@ -113,7 +113,7 @@ export function StaffCouponManagementClient() {
                 </div>
                 <button
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black hover:bg-brand-primary hover:text-slate-900 transition-all shadow-lg"
+                    className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-app font-black hover:bg-app-bright-green-primary hover:text-slate-900 transition-all shadow-lg"
                 >
                     <PiPlusBold /> {t('create_new')}
                 </button>
@@ -128,7 +128,7 @@ export function StaffCouponManagementClient() {
                             }`}
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-app bg-slate-50 flex items-center justify-center">
                                 <PiTicketBold className="text-2xl text-slate-400" />
                             </div>
                             <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export function StaffCouponManagementClient() {
                                 <button
                                     onClick={() => handleDelete(coupon.id)}
                                     disabled={!!actionLoading}
-                                    className="p-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
+                                    className="p-2 rounded-app text-red-500 hover:bg-red-50 transition-colors"
                                 >
                                     <PiTrashBold />
                                 </button>
@@ -184,7 +184,7 @@ export function StaffCouponManagementClient() {
                                     value={formData.code}
                                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                     placeholder="SUMMER20"
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-brand-primary focus:bg-white outline-none font-black text-lg transition-all"
+                                    className="w-full px-6 py-4 rounded-app bg-slate-50 border-2 border-transparent focus:border-app-primary focus:bg-white outline-none font-black text-lg transition-all"
                                 />
                             </div>
                             <div>
@@ -198,21 +198,21 @@ export function StaffCouponManagementClient() {
                                     max="100"
                                     value={formData.discountPercent}
                                     onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-brand-primary focus:bg-white outline-none font-black text-lg transition-all"
+                                    className="w-full px-6 py-4 rounded-app bg-slate-50 border-2 border-transparent focus:border-app-primary focus:bg-white outline-none font-black text-lg transition-all"
                                 />
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => setShowCreateModal(false)}
-                                    className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-500 font-black hover:bg-slate-200 transition-all"
+                                    className="flex-1 py-4 rounded-app bg-slate-100 text-slate-500 font-black hover:bg-slate-200 transition-all"
                                 >
                                     {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={!!actionLoading}
-                                    className="flex-1 py-4 rounded-2xl bg-slate-900 text-white font-black hover:bg-brand-primary hover:text-slate-900 transition-all shadow-lg"
+                                    className="flex-1 py-4 rounded-app bg-slate-900 text-white font-black hover:bg-app-bright-green-primary hover:text-slate-900 transition-all shadow-lg"
                                 >
                                     {actionLoading === 'create' ? <PiArrowsClockwiseBold className="animate-spin mx-auto text-xl" /> : t('create')}
                                 </button>
