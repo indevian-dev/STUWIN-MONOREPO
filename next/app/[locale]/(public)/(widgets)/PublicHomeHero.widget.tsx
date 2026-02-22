@@ -53,11 +53,11 @@ export function PublicHomeHeroWidget() {
           Stuwin AI 1.0
         </div>
 
-        <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tighter text-app-dark-blue dark:text-white drop-shadow-sm leading-[1.05] max-w-5xl">
+        <h1 className="text-3xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tighter text-app-dark-blue dark:text-white drop-shadow-sm leading-[1.05] max-w-5xl drop-shadow-xl drop-shadow-white dark:drop-shadow-app-dark-blue">
           {t('headline')}
         </h1>
 
-        <p className="text-lg md:text-2xl text-app-dark-blue/70 dark:text-white/70 max-w-3xl mx-auto leading-relaxed font-medium">
+        <p className="text-lg md:text-2xl text-app-dark-blue/80 dark:text-white/80 max-w-3xl mx-auto leading-relaxed font-medium drop-shadow-xl drop-shadow-white dark:drop-shadow-app-dark-blue">
           {t('body')}
         </p>
 

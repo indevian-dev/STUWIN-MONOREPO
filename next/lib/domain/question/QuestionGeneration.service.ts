@@ -8,6 +8,8 @@ import { eq, sql } from "drizzle-orm";
 import {
     generateQuestionsWithGemini,
     generateQuestionsWithGeminiText,
+    generateQuestionsWithGeminiMultiComplexity,
+    generateQuestionsWithGeminiTextMultiComplexity,
 } from "@/lib/integrations/google/GeminiPdfProcessor";
 import { ConsoleLogger } from "@/lib/logging/Console.logger";
 
@@ -109,6 +111,19 @@ export class QuestionGenerationService {
     }
 
     /**
+     * Build combined assistant crib from subject + topic context
+     */
+    private static buildAssistantCrib(
+        subjectContext: string | { label: string; crib: string | null },
+        topicData: TopicData
+    ): string | undefined {
+        const cribParts: string[] = [];
+        if (typeof subjectContext === 'object' && subjectContext.crib) cribParts.push(`[Subject Crib] ${subjectContext.crib}`);
+        if (topicData.aiGuide) cribParts.push(`[Topic Crib] ${topicData.aiGuide}`);
+        return cribParts.length > 0 ? cribParts.join('\n') : undefined;
+    }
+
+    /**
      * Generate questions with single complexity
      */
     static async generateQuestionsForTopic({
@@ -136,14 +151,9 @@ export class QuestionGenerationService {
             generationMode = topicData.pdfS3Key ? "pdf" : "text";
         }
 
-        // Build combined crib from subject + topic
-        const cribParts: string[] = [];
-        if (typeof subjectContext === 'object' && subjectContext.crib) cribParts.push(`[Subject Crib] ${subjectContext.crib}`);
-        if (topicData.aiGuide) cribParts.push(`[Topic Crib] ${topicData.aiGuide}`);
-        const assistantCrib = cribParts.length > 0 ? cribParts.join('\n') : undefined;
-
-        // Default params
+        const assistantCrib = this.buildAssistantCrib(subjectContext, topicData);
         const subjectLabel = typeof subjectContext === 'object' ? subjectContext.label : subjectContext;
+
         const options = {
             topic: topicData.name || "Unknown Topic",
             subject: subjectLabel,
@@ -157,7 +167,6 @@ export class QuestionGenerationService {
         };
 
         if (generationMode === "pdf" && topicData.pdfS3Key && topicData.pdfPageStart && topicData.pdfPageEnd) {
-            // PDF Mode (Only if start and end pages are explicitly defined)
             const result = await generateQuestionsWithGemini(topicData.pdfS3Key, {
                 ...options,
                 pageStart: topicData.pdfPageStart,
@@ -165,17 +174,15 @@ export class QuestionGenerationService {
             });
             return result.questions;
         } else {
-            // Text Mode (fallback if PDF missing or text mode explicitly requested)
             const textContent =
                 topicData.aiSummary || topicData.body || `Topic: ${topicData.name}`;
-
             const result = await generateQuestionsWithGeminiText(textContent, options);
             return result.questions;
         }
     }
 
     /**
-     * Generate questions for multiple complexities
+     * Generate questions for multiple complexities in a SINGLE AI call
      */
     static async generateQuestionsMultiComplexity({
         topicData,
@@ -194,64 +201,39 @@ export class QuestionGenerationService {
         comment?: string;
         existingQuestions?: string[];
     }) {
-        // const results = [];
-
-        // Run in parallel for efficiency
-        const promises = [];
-
-        if (counts.easy > 0) {
-            promises.push(
-                this.generateQuestionsForTopic({
-                    topicData,
-                    subjectContext,
-                    complexity: "easy",
-                    language,
-                    count: counts.easy,
-                    mode,
-                    comment,
-                    existingQuestions,
-                }).then((questions) =>
-                    questions.map((q) => ({ ...q, complexity: "easy" }))
-                )
-            );
+        // Determine generation mode
+        let generationMode = mode;
+        if (mode === "auto") {
+            generationMode = topicData.pdfS3Key ? "pdf" : "text";
         }
 
-        if (counts.medium > 0) {
-            promises.push(
-                this.generateQuestionsForTopic({
-                    topicData,
-                    subjectContext,
-                    complexity: "medium",
-                    language,
-                    count: counts.medium,
-                    mode,
-                    comment,
-                    existingQuestions,
-                }).then((questions) =>
-                    questions.map((q) => ({ ...q, complexity: "medium" }))
-                )
-            );
-        }
+        const assistantCrib = this.buildAssistantCrib(subjectContext, topicData);
+        const subjectLabel = typeof subjectContext === 'object' ? subjectContext.label : subjectContext;
 
-        if (counts.hard > 0) {
-            promises.push(
-                this.generateQuestionsForTopic({
-                    topicData,
-                    subjectContext,
-                    complexity: "hard",
-                    language,
-                    count: counts.hard,
-                    mode,
-                    comment,
-                    existingQuestions,
-                }).then((questions) =>
-                    questions.map((q) => ({ ...q, complexity: "hard" }))
-                )
-            );
-        }
+        const options = {
+            topic: topicData.name || "Unknown Topic",
+            subject: subjectLabel,
+            gradeLevel: String(topicData.gradeLevel || 10),
+            language,
+            counts,
+            comment,
+            assistantCrib,
+            existingQuestions,
+        };
 
-        const responses = await Promise.all(promises);
-        return responses.flat();
+        if (generationMode === "pdf" && topicData.pdfS3Key && topicData.pdfPageStart && topicData.pdfPageEnd) {
+            const result = await generateQuestionsWithGeminiMultiComplexity(topicData.pdfS3Key, {
+                ...options,
+                pageStart: topicData.pdfPageStart,
+                pageEnd: topicData.pdfPageEnd,
+            });
+            return result.questions;
+        } else {
+            const textContent =
+                topicData.aiSummary || topicData.body || `Topic: ${topicData.name}`;
+            const result = await generateQuestionsWithGeminiTextMultiComplexity(textContent, options);
+            return result.questions;
+        }
     }
 
     /**

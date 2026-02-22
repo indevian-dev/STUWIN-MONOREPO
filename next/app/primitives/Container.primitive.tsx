@@ -6,8 +6,8 @@ const containerVariants = cva(
     {
         variants: {
             variant: {
-                full: "max-w-full px-4 md:px-8 lg:px-16", // Standard centered container for public pages
-                '7xl': "max-w-7xl px-4 md:px-8 lg:px-16", // Accommodates left navigation
+                full: "max-w-full px-4", // Standard centered container for public pages
+                '7xl': "max-w-7xl px-4", // Accommodates left navigation
             },
         },
         defaultVariants: {
