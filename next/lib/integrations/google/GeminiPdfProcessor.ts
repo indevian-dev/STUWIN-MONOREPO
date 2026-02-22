@@ -14,7 +14,7 @@ interface GeminiQuestionResult {
     question: string;
     answers: string[];
     correct_answer: string;
-    complexity?: string;
+    complexity?: "easy" | "medium" | "hard";
   }>;
 }
 
